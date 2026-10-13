@@ -30,6 +30,8 @@ This repository is in the docs-first foundation phase. The product pipeline is p
 - [Evaluation plan](docs/03-evaluation-plan.md)
 - [Risks and diligence](docs/04-risks-and-diligence.md)
 - [Milestones and issues](docs/05-milestones-and-issues.md)
+- [Architecture decision records](docs/adr/README.md)
+- [Gold-set candidates](docs/06-gold-set-candidates.md)
 
 ## Important limitations
 

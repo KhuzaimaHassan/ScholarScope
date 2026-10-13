@@ -1,0 +1,15 @@
+# Architecture Decision Records
+
+These records capture the accepted architecture and policy decisions for ScholarScope. Update the relevant ADR when an implementation choice changes, and record a new version or ADR rather than silently changing a decision.
+
+| ADR | Decision |
+|---|---|
+| [001](001-fastapi-and-nextjs.md) | FastAPI backend and Next.js frontend |
+| [002](002-pydantic-structured-outputs.md) | Pydantic structured extraction outputs |
+| [003](003-evidence-verification-is-code.md) | Evidence verification is deterministic code |
+| [004](004-deterministic-eligibility-engine.md) | Eligibility is computed by a deterministic rule engine |
+| [005](005-provider-agnostic-llm-interface.md) | Provider-agnostic LLM interface |
+| [006](006-playwright-fallback-only.md) | Playwright is a fallback fetcher |
+| [007](007-public-gold-set-private-snapshots.md) | Public labels with private snapshots by default |
+| [008](008-unverified-fields-retained-but-excluded.md) | Unverified fields are retained but excluded from logic |
+| [009](009-eligibility-rule-provenance.md) | Eligibility rules carry provenance |
