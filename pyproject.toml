@@ -1,0 +1,19 @@
+[project]
+name = "scholarscope"
+version = "0.1.0"
+description = "Evidence-first scholarship and graduate-program requirements research"
+requires-python = ">=3.11"
+license = { file = "LICENSE" }
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+exclude = [".git", ".venv", "eval/snapshots"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.mypy]
+python_version = "3.11"
+check_untyped_defs = true
+ignore_missing_imports = true
