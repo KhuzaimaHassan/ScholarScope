@@ -114,8 +114,7 @@ def child_body(ms, issue):
 
 def tracking_body(ms, children):
     lines = [f"**Goal:** {ms['goal']}", ""]
-    for n in ms["notes"]:
-        lines.append(n)
+    lines.extend(ms["notes"])
     if ms["notes"]:
         lines.append("")
     lines.append("## Issues")
@@ -132,7 +131,7 @@ def gh(args, dry, capture=True, input_text=None):
     if dry:
         print("  [dry-run] " + " ".join(cmd[:6]) + (" ..." if len(cmd) > 6 else ""))
         return ""
-    res = subprocess.run(cmd, capture_output=capture, text=True, input=input_text)
+    res = subprocess.run(cmd, check=False, capture_output=capture, text=True, input=input_text)
     if res.returncode != 0:
         sys.exit(f"gh failed: {' '.join(cmd[:6])}\n{res.stderr.strip()}")
     return res.stdout.strip()
