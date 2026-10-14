@@ -1,6 +1,6 @@
-# 06 — Gold Set Candidates (v0.1)
+# 06 — Gold Set Candidates (v0.2 research update)
 
-**Status:** Draft, first research pass on 2026-10-13. Not yet reviewed.
+**Status:** Draft research update on 2026-10-14. Owner review required before labeling.
 **Purpose:** Pick the 36 programs (nine families × four) for the evaluation set, and check source terms, layout mix, snapshot feasibility, and labeling workload before any labeling starts.
 
 ## How to read this file
@@ -179,3 +179,65 @@ Assumption: 12–15 fields per program with a supporting quote each, plus deadli
 2. Fetch each candidate to confirm content, cycle year, layout, and whether it renders without JavaScript.
 3. Check robots.txt and terms for each domain; fill `docs/source-terms.md`.
 4. Freeze the final 36-program list and close the "Choose the 36 programs" issue.
+
+## Issue #7 research update — 2026-10-14
+
+The following proposal uses official domains where the page was opened. `Fetched` means the page was opened and its content, cycle, and format were checked on 2026-10-14 or in the first research pass recorded above. `Seen` means an official-domain URL was located but not opened in this pass. `Gap` means no official URL was confirmed; it must not be labeled. JS status is `likely` when the page is an interactive finder, application system, or portal; it is not a claim that a browser was required during this pass.
+
+Japan remains **one family with four total slots**. Its MEXT and private-foundation headings above are candidate pools; they are not additive quotas.
+
+| Family | Slot | Proposed official page / program | Evidence | Cycle | Format; static/JS; language | Fields visible or expected |
+|---|---:|---|---|---|---|---|
+| CSC | 1 | [NWPU CSC-University Program](https://studyat.nwpu.edu.cn/info/1009/10571.htm) | Seen | unknown | HTML; unknown; English | eligibility, documents, deadline likely |
+| CSC | 2 | [BUCT master-programme listing](https://apply.buct.edu.cn/MasterwsPrograms_14732/list.htm) | Seen | unknown | multi-page; likely JS; English | programmes, requirements, deadlines likely |
+| CSC | 3 | [ECUST Chinese Government Scholarship](https://cie.ecust.edu.cn/chinese_government_scholarship/) | Seen | unknown | HTML; unknown; English | eligibility, funding, documents |
+| CSC | 4 | [NWAFU scholarships](https://gjs.nwafu.edu.cn/en/Scholarships/5d0265e2f358470e9467a341ca2d2b17.htm) | Seen | unknown | HTML; unknown; English | scholarship types, requirements |
+| Japan | 1 | [MEXT scholarship overview](https://www.studyinjapan.go.jp/en/planning/scholarships/mext-scholarships/) | Fetched | current guidance; latest guidelines control | HTML; static content present; English | routes, degree types, age, education, funding |
+| Japan | 2 | [MEXT research-student guidelines](https://www.studyinjapan.go.jp/en/_mt/2025/04/01-2026_Research_Guidelines_E.pdf) | Fetched | 2026 | PDF; static; English | eligibility, documents, schedule, funding |
+| Japan | 3 | [JASSO scholarships](https://studyinjapan.go.jp/en/planning/scholarships/jasso-scholarships/) | Fetched | current page | HTML; static content present; English | eligibility, application route, funding |
+| Japan | 4 | [Other scholarships](https://www.studyinjapan.go.jp/en/planning/scholarships/other-scholarships/) | Fetched | current page | HTML; static content present; English | private/local scholarships, source links |
+| Erasmus Mundus | 1 | [EMAI FAQs](https://www.upf.edu/web/emai/faqs) | Seen | unknown | HTML; unknown; English | programme requirements, documents likely |
+| Erasmus Mundus | 2 | [EMAI Ljubljana project page](https://www.uni-lj.si/en/projects/emai) | Seen | unknown | HTML; unknown; English | consortium, programme, funding likely |
+| Erasmus Mundus | 3 | [EMAI FRI Ljubljana](https://www.fri.uni-lj.si/en/node/22492) | Seen | unknown | HTML; unknown; English | programme, deadlines likely |
+| Erasmus Mundus | 4 | Official fourth EMJM programme page | Gap | — | — | Replace only after official page is opened |
+| Netherlands | 1 | [Leiden Excellence Scholarship](https://www.universiteitleiden.nl/en/scholarships/sea/leiden-university-excellence-scholarship-lexs) | Seen | unknown | HTML; unknown; English | eligibility, funding, deadline |
+| Netherlands | 2 | [Amsterdam Merit Scholarship](https://www.uva.nl/en/about-the-uva/organisation/faculties/amsterdam-law-school/education/scholarships/amsterdam-merit-scholarship.html) | Fetched | 2027–2028 | HTML; static content present; English | eligibility, deadline, funding |
+| Netherlands | 3 | [Radboud Scholarship Programme](https://www.ru.nl/en/education/scholarships/radboud-scholarship-programme) | Fetched | 2027–2028 | HTML; static content present; English | eligibility, deadline, references, funding |
+| Netherlands | 4 | [University of Twente NL Scholarship](https://www.utwente.nl/en/itc/education/study-costs/scholarships/scholarship-finder/nl-scholarship-university-of-twente/) | Fetched | 2027–2028 | HTML; scholarship finder path; likely JS; English | eligibility, GPA, English test, deadline, funding |
+| Italy | 1 | [Politecnico merit scholarships](https://www.polimi.it/en/international-prospective-students/laurea-magistrale-programmes-equivalent-to-master-of-science/scholarships/merit-based-scholarships/) | Fetched in first pass | 2024–2025 | HTML; static; English | funding; deadline in linked document; stale cycle |
+| Italy | 2 | [Politecnico scholarships overview](https://www.polimi.it/en/prospective-students/how-much-does-it-cost/scholarships) | Seen | unknown | HTML; unknown; English | scholarship types, funding |
+| Italy | 3 | [MAECI 2026–2027 call](https://studyinitaly.esteri.it/ListaBandi/ScaricaFileBando?ID=DAAAANOaK1LibkB7ECh3HBAAAAC%2Bhvf6cpmh8o0yUHxEqf5QIkXTXBz42ed%2BQbTCWiD%2FaIKtTLftDI1Ql7Q6IJuG0kqBLoTF) | Fetched | 2026–2027 | PDF; static; English | eligibility, countries, deadline, funding |
+| Italy | 4 | [Study in Italy calls page](https://studyinitaly.esteri.it/ListaBandi) | Fetched | 2025–2026 page; stale/closed | HTML; static content present; English/Italian | call links, contact, status; stale cycle |
+| Germany — DAAD | 1 | [DAAD scholarships overview](https://www.daad.de/en/studying-in-germany/scholarships/daad-scholarships/) | Fetched | current overview | HTML; static content present; English | eligibility groups, funding, database link |
+| Germany — DAAD | 2 | [EPOS scholarship database entry](https://www2.daad.de/deutschland/stipendium/datenbank/en/21148-scholarship-database?detail=50076777) | Fetched in first pass | 2027/28 listed | HTML/database; likely JS tabs; English | eligibility, work experience, funding, documents |
+| Germany — DAAD | 3 | Official DAAD programme page for a second distinct programme | Gap | — | — | Replace only after official page is opened |
+| Germany — DAAD | 4 | Official DAAD programme page for a third distinct programme | Gap | — | — | Replace only after official page is opened |
+| United Kingdom — Chevening | 1 | [Who can apply](https://www.chevening.org/scholarships/who-can-apply/) | Fetched | current cycle | HTML; static content present; English | degree level, programme, general eligibility |
+| United Kingdom — Chevening | 2 | [Eligibility criteria](https://www.chevening.org/resource-hub/guidance/eligibility/) | Fetched | current cycle | HTML; static content present; English | nationality, return, work, degree, offers |
+| United Kingdom — Chevening | 3 | [Application timeline](https://www.chevening.org/scholarships/application-timeline/) | Fetched | 2027–2028 | HTML; static content present; English | opening, closing, offer, interview dates |
+| United Kingdom — Chevening | 4 | [Online application system guidance](https://www.chevening.org/resource-hub/guidance/online-application-system/) | Fetched | current cycle | HTML; interactive application guidance; likely JS; English | application sections, referees, documents |
+| United States — Fulbright | 1 | [USEFP Fulbright Degree](https://www.usefp.org/scholarships/fulbright-degree.cfm) | Fetched | 2026; closed | HTML; static content present; English | degree, education, GRE, TOEFL, funding |
+| United States — Fulbright | 2 | [USEFP Fulbright Scholar](https://www.usefp.org/scholarships/fulbright-scholar.cfm) | Fetched | 2026; deadline 28 Oct 2026 | HTML; static content present; English | degree, proposal, references, funding |
+| United States — Fulbright | 3 | [USEFP Fulbright Degree FAQ](https://www.usefp.org/scholarships/fulbright-degree-FAQ.cfm) | Seen | 2026; closed | HTML; unknown; English | GRE, TOEFL, eligibility clarifications |
+| United States — Fulbright | 4 | Official USEFP current graduate-program page distinct from the Degree page | Gap | — | — | Replace only after official page is opened |
+| South Korea — GKS | 1 | [2026 GKS Graduate notice](https://www.studyinkorea.go.kr/en/plan/gksNoticeRead.do?bbsId=BBSMSTR_000000000461&nttId=4420) | Fetched | 2026 | HTML notice plus attachments; likely JS; English/Korean | track, guidelines, university list, documents |
+| South Korea — GKS | 2 | [2027 GKS Undergraduate University Track](https://www.studyinkorea.go.kr/en/plan/gksNoticeRead.do?bbsId=BBSMSTR_000000000461&nttId=4527) | Fetched | 2027 | HTML notice plus spreadsheet; likely JS; English/Korean | universities, schedule, application route |
+| South Korea — GKS | 3 | [GKS programme page](https://studyinkorea.go.kr/ko/plan/scholarship.do?tab=gks-tab4) | Fetched | current page | HTML; interactive tabs; likely JS; Korean/English content | eligibility, GPA, nationality, funding |
+| South Korea — GKS | 4 | [GKS programme overview](https://www.studyinkorea.go.kr/en/plan/gksNoticeRead.do?bbsId=BBSMSTR_000000000461&nttId=4385) | Seen | 2026 | HTML notice plus PDF; likely JS; English/Korean | application schedule, documents, university list |
+
+### Count and quality check
+
+- 9 families × 4 slots = 36 slots.
+- No URL is repeated in this proposal.
+- Japan is counted once and contributes four slots total.
+- Four or more likely-JS pages are present: BUCT, Twente scholarship finder, Chevening application guidance, GKS notices/programme tabs, and DAAD database tabs. This is a test hypothesis; the fetcher must confirm whether static text is sufficient.
+- Remaining `Gap` slots are intentionally not labeled. They require another official-domain research pass before the gold set can be frozen.
+
+### Owner decisions before freezing
+
+1. Accept or reject the use of official university pages as CSC evidence versus requiring a CSC portal page.
+2. Accept or reject the three partner pages for EMAI and choose a fourth official EMJM programme.
+3. Choose official replacements for the two DAAD gaps and one Fulbright gap.
+4. Decide whether the repeated Chevening guidance pages should count as four evaluation pages or be reduced to two pages plus two distinct official country/programme pages.
+5. Accept the intentional stale-cycle entries (Polimi 2024–25, closed Fulbright 2026, and closed Study in Italy 2025–26) as stale-data tests.
+6. Review all `needs owner review` rows in `docs/source-terms.md`; keep full snapshots private unless explicit permission is recorded.
