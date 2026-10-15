@@ -1,38 +1,72 @@
-# Source terms review
+# Source-terms and robots review
 
-**Review date:** 2026-10-14  
-**Policy:** ADR 007 applies. Full snapshots are private by default. No domain is marked publishable based on this pass; the owner must decide whether to accept mirrors and whether any source has permission to publish a full snapshot. This is a research record, not a legal conclusion.
+**Review date:** 2026-10-15
+**Policy:** ADR 007 applies. Full snapshots remain private by default. This record quotes site wording where useful; it is not a legal conclusion. `blocked from this network` means the checker could not retrieve that host's `robots.txt` from this machine.
 
-`robots.txt` results describe the limited URL fetch attempted on 2026-10-14. An inaccessible endpoint is recorded as such and requires owner review before labeling.
+## Per-slot robots results
 
-| Domain | robots.txt URL, date, result for required paths | Terms/copyright notice | Snapshot decision and wording | Takedown/contact route | Status |
-|---|---|---|---|---|---|
-| `daad.de` | `https://www.daad.de/robots.txt`, 2026-10-14: inaccessible in research tool; required public scholarship paths not cleared | None confirmed in this pass | Private by default; no publishable wording recorded | DAAD contact page; confirm before labeling | needs owner review |
-| `www2.daad.de` | `https://www2.daad.de/robots.txt`, 2026-10-14: not checked successfully in this pass | None confirmed in this pass | Private by default | DAAD contact page; confirm before labeling | needs owner review |
-| `funding-guide.de` | `https://funding-guide.de/robots.txt`, 2026-10-14: not checked successfully in this pass | None confirmed in this pass | Private by default | DAAD contact page; confirm before labeling | needs owner review |
-| `chevening.org` | `https://www.chevening.org/robots.txt`, 2026-10-14: allows general crawling; disallows `/wp-admin/`; crawl-delay 10 only for AhrefsBot | [Scholarship terms and conditions](https://www.chevening.org/wp-content/uploads/2025/09/Terms-Conditions-Scholarships.pdf) | Private by default; terms PDF reviewed, but no permission to republish page snapshots recorded | Chevening contact/country page | needs owner review |
-| `usefp.org` | `https://www.usefp.org/robots.txt`, 2026-10-14: inaccessible in research tool | None confirmed in this pass | Private by default | USEFP contact details on official site | needs owner review |
-| `studyinkorea.go.kr` | `https://www.studyinkorea.go.kr/robots.txt`, 2026-10-14: inaccessible in research tool | Privacy/contact links visible on official pages; no snapshot licence confirmed | Private by default | GKS Center contact shown on official pages | needs owner review |
-| `campuschina.org` | `https://www.campuschina.org/robots.txt`, 2026-10-14: inaccessible in research tool | None confirmed in this pass | Private by default | Portal contact route must be confirmed | needs owner review |
-| `studyat.nwpu.edu.cn` | `https://studyat.nwpu.edu.cn/robots.txt`, 2026-10-14: not checked successfully in this pass | None confirmed | Private by default | NWPU international admissions contact | needs owner review |
-| `apply.buct.edu.cn` | `https://apply.buct.edu.cn/robots.txt`, 2026-10-14: not checked successfully in this pass | None confirmed | Private by default | BUCT admissions contact | needs owner review |
-| `cie.ecust.edu.cn` | `https://cie.ecust.edu.cn/robots.txt`, 2026-10-14: not checked successfully in this pass | None confirmed | Private by default | ECUST international education contact | needs owner review |
-| `gjs.nwafu.edu.cn` | `https://gjs.nwafu.edu.cn/robots.txt`, 2026-10-14: not checked successfully in this pass | None confirmed | Private by default | NWAFU international office contact | needs owner review |
-| `studyinjapan.go.jp` | `https://www.studyinjapan.go.jp/robots.txt`, 2026-10-14: inaccessible in research tool | Site contact page found; no snapshot licence confirmed | Private by default | Official Contact Us page | needs owner review |
-| `erasmus-plus.ec.europa.eu` | `https://erasmus-plus.ec.europa.eu/robots.txt`, 2026-10-14: inaccessible in research tool | EU site legal/privacy pages; no permission to republish third-party programme pages inferred | Private by default | European Commission contact/legal route | needs owner review |
-| `upf.edu` | Existing candidate page reviewed as a programme-partner page; robots/terms not checked in this pass | None confirmed | Private by default | University contact page | needs owner review |
-| `uni-lj.si` | Existing candidate page reviewed as a programme-partner page; robots/terms not checked in this pass | None confirmed | Private by default | University contact page | needs owner review |
-| `fri.uni-lj.si` | Existing candidate page reviewed as a programme-partner page; robots/terms not checked in this pass | None confirmed | Private by default | Faculty contact page | needs owner review |
-| `universiteitleiden.nl` | Existing candidate page reviewed; robots/terms not checked in this pass | None confirmed | Private by default | University contact page | needs owner review |
-| `www.tudelft.nl` | `https://www.tudelft.nl/robots.txt`, 2026-10-14: 403 Forbidden; required scholarship path not cleared | None confirmed | Private by default | TU Delft contact page | needs owner review |
-| `www.uva.nl` | `https://www.uva.nl/robots.txt`, 2026-10-14: inaccessible in research tool | None confirmed | Private by default | UvA contact page | needs owner review |
-| `www.ru.nl` | `https://www.ru.nl/robots.txt`, 2026-10-14: crawl-delay 1; disallows admin, search, user, and internal paths; scholarship page is not listed as disallowed | None confirmed | Private by default | Scholarship contact: scholarships@ru.nl | needs owner review |
-| `www.utwente.nl` | `https://www.utwente.nl/robots.txt`, 2026-10-14: disallows internal, intranet, old, secure, test, and temp paths; public scholarship path not listed as disallowed | None confirmed | Private by default | Scholarship contact shown on page | needs owner review |
-| `studyinitaly.esteri.it` | `https://studyinitaly.esteri.it/robots.txt`, 2026-10-14: inaccessible in research tool | Privacy link is present on the portal; no snapshot licence confirmed | Private by default | `assistenza.studyinitaly@esteri.it` for technical support; `borsedistudio@esteri.it` for calls | needs owner review |
-| `www.polimi.it` | `https://www.polimi.it/robots.txt`, 2026-10-14: inaccessible in research tool | None confirmed | Private by default | Politecnico contact page | needs owner review |
+Generated by `scripts/check_robots.py` using `urllib.robotparser` and the user agent `ScholarScopeBot/0.1 (+https://github.com/KhuzaimaHassan/ScholarScope)`. One `robots.txt` request was made per domain. The result applies to every exact slot URL listed in the final table below.
+
+| Domain | Exact shortlist slot URL(s) | robots.txt | Checked | Result; crawl-delay |
+|---|---|---|---|---|
+| `studyat.nwpu.edu.cn` | https://studyat.nwpu.edu.cn/info/1009/10571.htm | https://studyat.nwpu.edu.cn/robots.txt | 2026-10-15 | allowed; none |
+| `apply.buct.edu.cn` | https://apply.buct.edu.cn/MasterwsPrograms_14732/list.htm | https://apply.buct.edu.cn/robots.txt | 2026-10-15 | blocked from this network (HTTPError) |
+| `cie.ecust.edu.cn` | https://cie.ecust.edu.cn/chinese_government_scholarship/ | https://cie.ecust.edu.cn/robots.txt | 2026-10-15 | blocked from this network (HTTPError) |
+| `gjs.nwafu.edu.cn` | https://gjs.nwafu.edu.cn/en/Scholarships/5d0265e2f358470e9467a341ca2d2b17.htm | https://gjs.nwafu.edu.cn/robots.txt | 2026-10-15 | blocked from this network (HTTPError) |
+| `www.pk.emb-japan.go.jp` | https://www.pk.emb-japan.go.jp/itpr_en/MEXT_Research_Scholarship.html | https://www.pk.emb-japan.go.jp/robots.txt | 2026-10-15 | blocked from this network (HTTPError) |
+| `www.uae.emb-japan.go.jp` | https://www.uae.emb-japan.go.jp/itpr_en/r_mext2027.html | https://www.uae.emb-japan.go.jp/robots.txt | 2026-10-15 | blocked from this network (HTTPError) |
+| `www.hisf.or.jp` | https://www.hisf.or.jp/wp/wp-content/uploads/2026/06/2027_bosyuyoukou_foreigner_E.pdf | https://www.hisf.or.jp/robots.txt | 2026-10-15 | allowed; none |
+| `www.rotary-yoneyama.or.jp` | https://www.rotary-yoneyama.or.jp/english/overseas | https://www.rotary-yoneyama.or.jp/robots.txt | 2026-10-15 | allowed; none |
+| `www.upf.edu` | https://www.upf.edu/web/emai/faqs | https://www.upf.edu/robots.txt | 2026-10-15 | allowed; none |
+| `www.uni-lj.si` | https://www.uni-lj.si/en/projects/emai | https://www.uni-lj.si/robots.txt | 2026-10-15 | allowed; none |
+| `www.fri.uni-lj.si` | https://www.fri.uni-lj.si/en/node/22492 | https://www.fri.uni-lj.si/robots.txt | 2026-10-15 | allowed; 10 seconds |
+| `www.marihe.eu` | https://www.marihe.eu/how-to-apply/ | https://www.marihe.eu/robots.txt | 2026-10-15 | allowed; none |
+| `www.universiteitleiden.nl` | https://www.universiteitleiden.nl/en/scholarships/sea/leiden-university-excellence-scholarship-lexs | https://www.universiteitleiden.nl/robots.txt | 2026-10-15 | allowed; none |
+| `www.uva.nl` | https://www.uva.nl/en/about-the-uva/organisation/faculties/amsterdam-law-school/education/scholarships/amsterdam-merit-scholarship.html | https://www.uva.nl/robots.txt | 2026-10-15 | allowed; none |
+| `www.ru.nl` | https://www.ru.nl/en/education/scholarships/radboud-scholarship-programme | https://www.ru.nl/robots.txt | 2026-10-15 | allowed; none |
+| `www.utwente.nl` | https://www.utwente.nl/en/itc/education/study-costs/scholarships/scholarship-finder/nl-scholarship-university-of-twente/ | https://www.utwente.nl/robots.txt | 2026-10-15 | allowed; none |
+| `www.polimi.it` | https://www.polimi.it/en/international-prospective-students/laurea-magistrale-programmes-equivalent-to-master-of-science/scholarships/merit-based-scholarships/; https://www.polimi.it/en/prospective-students/how-much-does-it-cost/scholarships | https://www.polimi.it/robots.txt | 2026-10-15 | allowed for both; none |
+| `studyinitaly.esteri.it` | https://studyinitaly.esteri.it/ListaBandi/ScaricaFileBando?ID=DAAAANOaK1LibkB7ECh3HBAAAAC%2Bhvf6cpmh8o0yUHxEqf5QIkXTXBz42ed%2BQbTCWiD%2FaIKtTLftDI1Ql7Q6IJuG0kqBLoTF; https://studyinitaly.esteri.it/ListaBandi | https://studyinitaly.esteri.it/robots.txt | 2026-10-15 | blocked from this network (HTTPError) |
+
+## Terms, snapshot decisions, and contact routes
+
+All rows are private by default and require owner review. No full snapshot is marked publishable. `None found` means no site terms or copyright notice was confirmed during this pass.
+
+| Domain | Terms/copyright notice | Snapshot decision and source wording | Takedown/contact route | Status |
+|---|---|---|---|---|
+| `studyat.nwpu.edu.cn` | None found | Private by default | NWPU international admissions contact | needs owner review |
+| `apply.buct.edu.cn` | None found | Private by default | BUCT admissions contact | needs owner review |
+| `cie.ecust.edu.cn` | None found | Private by default | ECUST international education contact | needs owner review |
+| `gjs.nwafu.edu.cn` | None found | Private by default | NWAFU international office contact | needs owner review |
+| `www.pk.emb-japan.go.jp` | None confirmed | Private by default | Embassy contact page | needs owner review |
+| `www.uae.emb-japan.go.jp` | None confirmed | Private by default | Embassy contact page | needs owner review |
+| `www.hisf.or.jp` | Foundation page footer/contact; no snapshot licence confirmed | Private by default | Honjo inquiry form / `info@hisf.or.jp` | needs owner review |
+| `www.rotary-yoneyama.or.jp` | Page footer says “Copyright (C) 2014 Rotary Yoneyama Memorial Foundation All Rights Reserved.” | Private by default; this wording does not grant snapshot permission | Foundation Contact Us form | needs owner review |
+| `www.upf.edu` | None found | Private by default | UPF programme contact | needs owner review |
+| `www.uni-lj.si` | None found | Private by default | University contact | needs owner review |
+| `www.fri.uni-lj.si` | None found | Private by default | Faculty contact | needs owner review |
+| `www.marihe.eu` | None found | Private by default | MARIHE Secretariat contact | needs owner review |
+| `www.universiteitleiden.nl` | None found | Private by default | University contact | needs owner review |
+| `www.uva.nl` | None found | Private by default | University contact | needs owner review |
+| `www.ru.nl` | None found | Private by default | `scholarships@ru.nl` | needs owner review |
+| `www.utwente.nl` | None found | Private by default | Scholarship contact shown on page | needs owner review |
+| `www.polimi.it` | None found | Private by default | Politecnico contact page | needs owner review |
+| `studyinitaly.esteri.it` | Portal privacy link; no snapshot licence confirmed | Private by default | `assistenza.studyinitaly@esteri.it`; `borsedistudio@esteri.it` | needs owner review |
+| `daad.de` | None confirmed | Private by default | DAAD contact page | needs owner review |
+| `www2.daad.de` | None confirmed; EPOS entry was not re-opened and remains `Seen` | Private by default | DAAD contact page | needs owner review |
+| `chevening.org` | No site terms/copyright page confirmed. The linked [Terms and Conditions PDF](https://www.chevening.org/wp-content/uploads/2025/09/Terms-Conditions-Scholarships.pdf) is award conditions, not site terms. | Private by default; no permission to republish snapshots inferred | Chevening contact page | needs owner review |
+| `usefp.org` | None confirmed | Private by default | USEFP contact details | needs owner review |
+| `studyinkorea.go.kr` | Privacy/contact links visible; no snapshot licence confirmed | Private by default | GKS Center contact | needs owner review |
+| `campuschina.org` | None confirmed | Private by default | Portal contact route | unused; owner review |
+
+## MAECI file metadata
+
+The MAECI URL contains an opaque `ID` download token and may not remain stable. The PDF was fetched on 2026-10-15 in memory only: `907161` bytes, SHA-256 `d0bf4e935f8770c41cf9933cd6006df5b3925d504e87a5c5b76298e1914d8447`. The file itself is not committed.
 
 ## Owner decisions required
 
-1. Confirm whether each `needs owner review` domain may be used for labeling after checking its current terms and robots policy outside this limited research pass.
-2. Decide whether university mirrors are acceptable when an owner page is unavailable; no mirror is treated as publishable.
-3. Keep all full snapshots private unless the owner records explicit permission or a clearly applicable open licence.
+1. Re-run blocked robots checks from an accessible network before labeling those domains.
+2. Decide whether official university CSC pages and partner-page mirrors are acceptable evidence.
+3. Approve the explicit gaps for NWPU and EMAI FRI, or provide replacement official pages.
+4. Decide how to apply the two-page-per-programme cap to Chevening, EMAI, Fulbright, and GKS.
+5. Keep full snapshots private unless the owner records explicit permission or a clearly applicable open licence.
