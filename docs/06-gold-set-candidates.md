@@ -19,7 +19,7 @@ Japan is one family with four slots: two MEXT pages and two private-foundation p
 
 | Family | Slot | Page / programme | Evidence | Cycle year | Format; static vs JS; language | Fields visible |
 |---|---:|---|---|---|---|---|
-| CSC | 1 | [NWPU CSC-University Program](https://studyat.nwpu.edu.cn/info/1009/10571.htm) | Gap | unknown | HTML; blocked from research tool; English | not confirmed |
+| CSC | 1 | [Tsinghua Chinese Government Scholarship](https://yz.tsinghua.edu.cn/en/info/1027/1117.htm) | Fetched | 2026; 2027 coming soon | HTML; static content present; English | eligibility, coverage, duration, procedure, documents |
 | CSC | 2 | [BUCT Chinese Government Scholarship Type A&B](https://apply.buct.edu.cn/MasterwsPrograms_14732/list.htm) | Fetched | current page; cycle not stated | HTML; static content present; English | scholarship route, master’s programmes, admissions links |
 | CSC | 3 | [ECUST Chinese Government Scholarship](https://cie.ecust.edu.cn/chinese_government_scholarship/) | Fetched | cycle not stated | HTML; static content present; English/Chinese | scholarship route, eligibility, application information |
 | CSC | 4 | [NWAFU scholarships](https://gjs.nwafu.edu.cn/en/Scholarships/5d0265e2f358470e9467a341ca2d2b17.htm) | Fetched | cycle not stated | HTML; static content present; English | scholarship types, eligibility, documents |
@@ -29,7 +29,7 @@ Japan is one family with four slots: two MEXT pages and two private-foundation p
 | Japan | 4 | [Rotary Yoneyama overseas candidates](https://www.rotary-yoneyama.or.jp/english/overseas) | Fetched | 2027 enrollment; applications 2026-10-01–2026-10-31 | HTML; static content present; English | overseas status, JLPT, admission, documents, deadline, funding |
 | Erasmus Mundus | 1 | [EMAI FAQs — Pompeu Fabra](https://www.upf.edu/web/emai/faqs) | Fetched | cycle not stated | HTML; static content present; English | programme requirements, documents, application information |
 | Erasmus Mundus | 2 | [EMAI project page — University of Ljubljana](https://www.uni-lj.si/en/projects/emai) | Fetched | cycle not stated | HTML; static content present; English | consortium, programme, mobility, funding |
-| Erasmus Mundus | 3 | [EMAI FRI Ljubljana](https://www.fri.uni-lj.si/en/node/22492) | Gap | unknown | HTML; blocked from research tool; English | not confirmed |
+| Erasmus Mundus | 3 | [IMRD Admissions and Application](https://imrd.eu/admission-application/) | Fetched | September 2027 intake opened; page also contains 2026 deadline text | HTML; static content present; English | academic requirements, language requirements, application route, deadlines, documents |
 | Erasmus Mundus | 4 | [MARIHE How to Apply](https://www.marihe.eu/how-to-apply/) | Fetched | 2027 intake closed; next scholarship intake 2028 | HTML; static content present; English | timeline, application route, requirements, assessment, funding |
 | Netherlands | 1 | [Leiden Excellence Scholarship](https://www.universiteitleiden.nl/en/scholarships/sea/leiden-university-excellence-scholarship-lexs) | Fetched | cycle not stated | HTML; static content present; English | eligibility, academic requirement, funding, deadline |
 | Netherlands | 2 | [Amsterdam Merit Scholarship](https://www.uva.nl/en/about-the-uva/organisation/faculties/amsterdam-law-school/education/scholarships/amsterdam-merit-scholarship.html) | Fetched | 2027–2028 | HTML; static content present; English | eligibility, deadline, funding |
@@ -75,8 +75,8 @@ DAAD, Chevening, Fulbright, and GKS are labeled last; their unresolved gaps do n
 
 ## Remaining owner decisions
 
-1. Accept or reject university-level CSC pages versus requiring the CSC portal; NWPU and the blocked FRI page remain explicit gaps.
+1. Accept or reject university-level CSC pages versus requiring the CSC portal; Tsinghua is an official university-level CSC page.
 2. Accept the two EMAI partner pages plus the MARIHE programme, and decide how the EMAI cap is handled.
 3. Confirm whether the owner accepts the stale Polimi 2024–2025 and Study in Italy 2025–2026 entries as deliberate stale-data tests.
-4. Review `docs/source-terms.md` robot results and the private-by-default snapshot policy, especially domains blocked from this network.
+4. Review `docs/source-terms.md` robot results and the private-by-default snapshot policy, especially the embassy domains returning HTTP 403.
 5. Decide the Chevening, Fulbright, and GKS cap-rule treatment before those families are labeled.
