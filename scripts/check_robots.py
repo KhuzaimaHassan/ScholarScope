@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Check robots.txt once per domain used by the 20-slot shortlist.
 
 The output is metadata only and is intended to be pasted into
@@ -9,9 +8,9 @@ from __future__ import annotations
 
 from collections import OrderedDict
 from datetime import date
+from urllib import robotparser
 from urllib.parse import urlparse
 from urllib.request import Request, urlopen
-from urllib.robotparser import RobotFileParser
 
 
 USER_AGENT = "ScholarScopeBot/0.1 (+https://github.com/KhuzaimaHassan/ScholarScope)"
@@ -47,7 +46,7 @@ def robots_url(url: str) -> str:
 
 def check_domain(host: str, urls: list[str], checked: str) -> str:
     robots = robots_url(urls[0])
-    parser = RobotFileParser()
+    parser = robotparser.RobotFileParser()
     parser.set_url(robots)
     request = Request(robots, headers={"User-Agent": USER_AGENT})
     try:
@@ -61,7 +60,7 @@ def check_domain(host: str, urls: list[str], checked: str) -> str:
         delay = parser.crawl_delay(USER_AGENT)
         delay_text = str(delay) if delay is not None else "none"
         return f"{', '.join(results)}; crawl-delay={delay_text}"
-    except Exception as exc:  # network conditions are part of the recorded result
+    except (OSError, TimeoutError) as exc:
         return f"blocked from this network ({type(exc).__name__})"
 
 
