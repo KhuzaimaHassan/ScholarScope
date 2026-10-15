@@ -12,7 +12,6 @@ from urllib import robotparser
 from urllib.parse import urlparse
 from urllib.request import Request, urlopen
 
-
 USER_AGENT = "ScholarScopeBot/0.1 (+https://github.com/KhuzaimaHassan/ScholarScope)"
 
 SLOT_URLS = [
