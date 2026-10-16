@@ -1,0 +1,186 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/KhuzaimaHassan/ScholarScope/eval/schema/gold-label.schema.json",
+  "title": "ScholarScope gold label (v0.1)",
+  "description": "Hand-written ground truth for one source page. Labels hold short verbatim quotes only, never page contents (ADR 007). Cross-field rules are enforced by scripts/validate_gold.py.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "program_slug",
+    "slot",
+    "source",
+    "labeler",
+    "fields",
+    "deadlines_status",
+    "deadlines",
+    "conditions"
+  ],
+  "properties": {
+    "schema_version": { "const": "0.1" },
+    "program_slug": { "type": "string", "pattern": "^_?[a-z0-9]+(-[a-z0-9]+)*$" },
+    "slot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["family", "number"],
+      "properties": {
+        "family": { "type": "string", "minLength": 1 },
+        "number": { "type": "integer", "minimum": 1, "maximum": 4 }
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "url",
+        "retrieved_on",
+        "content_sha256",
+        "format",
+        "language",
+        "page_state",
+        "is_mirror",
+        "owner_org"
+      ],
+      "properties": {
+        "url": { "type": "string", "format": "uri" },
+        "retrieved_on": { "type": "string", "format": "date" },
+        "content_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "format": { "enum": ["html", "pdf"] },
+        "language": { "type": "string", "minLength": 2 },
+        "cycle_label": { "type": ["string", "null"] },
+        "page_state": { "enum": ["open", "closed", "upcoming", "unknown"] },
+        "is_mirror": { "type": "boolean" },
+        "owner_org": { "type": "string", "minLength": 1 }
+      }
+    },
+    "labeler": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "pass", "labeled_on", "minutes_spent"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "pass": { "type": "integer", "minimum": 1 },
+        "labeled_on": { "type": "string", "format": "date" },
+        "minutes_spent": { "type": "number", "minimum": 0 }
+      }
+    },
+    "fields": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "program_name",
+        "institution",
+        "degree_levels",
+        "funding_coverage",
+        "required_documents",
+        "recommenders",
+        "application_link"
+      ],
+      "properties": {
+        "program_name": { "$ref": "#/$defs/field" },
+        "institution": { "$ref": "#/$defs/field" },
+        "degree_levels": { "$ref": "#/$defs/field" },
+        "funding_coverage": { "$ref": "#/$defs/field" },
+        "required_documents": { "$ref": "#/$defs/field" },
+        "recommenders": { "$ref": "#/$defs/field" },
+        "application_link": { "$ref": "#/$defs/field" }
+      }
+    },
+    "deadlines_status": { "enum": ["present", "absent", "ambiguous", "in_linked_document"] },
+    "deadlines": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/deadline" }
+    },
+    "conditions": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/condition" }
+    },
+    "notes": { "type": "string" }
+  },
+  "$defs": {
+    "status": { "enum": ["present", "absent", "ambiguous", "in_linked_document"] },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["quote"],
+        "properties": {
+          "quote": { "type": "string", "minLength": 1, "maxLength": 400 },
+          "context_before": { "type": "string", "maxLength": 80 },
+          "context_after": { "type": "string", "maxLength": 80 },
+          "locator": { "type": "string" }
+        }
+      }
+    },
+    "field": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "value", "evidence"],
+      "properties": {
+        "status": { "$ref": "#/$defs/status" },
+        "value": {},
+        "evidence": { "$ref": "#/$defs/evidence" },
+        "linked_url": { "type": ["string", "null"] },
+        "notes": { "type": "string" }
+      }
+    },
+    "deadline": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "label",
+        "type",
+        "cycle_year",
+        "date",
+        "time",
+        "timezone",
+        "rolling",
+        "status",
+        "evidence"
+      ],
+      "properties": {
+        "label": { "type": "string", "minLength": 1 },
+        "type": {
+          "enum": ["application", "document", "recommender", "scholarship", "interview", "other"]
+        },
+        "cycle_year": { "type": ["integer", "null"] },
+        "date": { "type": ["string", "null"], "format": "date" },
+        "time": { "type": ["string", "null"], "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]$" },
+        "timezone": { "type": ["string", "null"] },
+        "rolling": { "type": "boolean" },
+        "status": { "enum": ["present", "ambiguous"] },
+        "evidence": { "$ref": "#/$defs/evidence" },
+        "notes": { "type": "string" }
+      }
+    },
+    "condition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "value", "required", "applies_to", "evidence"],
+      "properties": {
+        "kind": {
+          "enum": [
+            "min_gpa",
+            "degree_held",
+            "nationality_allowed",
+            "nationality_excluded",
+            "residency",
+            "enrollment_status",
+            "age_min",
+            "age_max",
+            "work_experience",
+            "language",
+            "field_of_study",
+            "other"
+          ]
+        },
+        "value": {},
+        "required": { "type": "boolean" },
+        "applies_to": { "type": ["string", "null"] },
+        "evidence": { "$ref": "#/$defs/evidence" },
+        "notes": { "type": "string" }
+      }
+    }
+  }
+}

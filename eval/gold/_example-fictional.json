@@ -1,0 +1,120 @@
+{
+  "schema_version": "0.1",
+  "program_slug": "_example-fictional",
+  "slot": { "family": "Example", "number": 1 },
+  "source": {
+    "url": "https://example.org/scholarships/excellence",
+    "retrieved_on": "2026-10-16",
+    "content_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+    "format": "html",
+    "language": "en",
+    "cycle_label": "2027-2028",
+    "page_state": "open",
+    "is_mirror": false,
+    "owner_org": "Example University (fictional)"
+  },
+  "labeler": { "id": "owner", "pass": 1, "labeled_on": "2026-10-16", "minutes_spent": 35 },
+  "fields": {
+    "program_name": {
+      "status": "present",
+      "value": "Example Excellence Scholarship",
+      "evidence": [{ "quote": "Example Excellence Scholarship 2027-2028", "locator": "page title" }]
+    },
+    "institution": {
+      "status": "present",
+      "value": "Example University",
+      "evidence": [{ "quote": "awarded by Example University to outstanding international students" }]
+    },
+    "degree_levels": {
+      "status": "present",
+      "value": ["master"],
+      "evidence": [{ "quote": "open to students admitted to a full-time master's programme" }]
+    },
+    "funding_coverage": {
+      "status": "present",
+      "value": [
+        { "item": "tuition", "note": "full tuition waiver" },
+        { "item": "stipend", "amount": 1200, "currency": "EUR", "period": "month" }
+      ],
+      "evidence": [
+        { "quote": "The scholarship covers the full tuition fee" },
+        { "quote": "plus a monthly allowance of EUR 1,200" }
+      ]
+    },
+    "required_documents": {
+      "status": "in_linked_document",
+      "value": null,
+      "evidence": [],
+      "linked_url": "https://example.org/scholarships/excellence/checklist.pdf",
+      "notes": "Page says the full document list is in the linked checklist."
+    },
+    "recommenders": {
+      "status": "absent",
+      "value": null,
+      "evidence": [],
+      "notes": "Page never mentions recommendation letters."
+    },
+    "application_link": {
+      "status": "present",
+      "value": "https://example.org/apply",
+      "evidence": [{ "quote": "Apply through the online portal", "locator": "link target https://example.org/apply" }]
+    }
+  },
+  "deadlines_status": "present",
+  "deadlines": [
+    {
+      "label": "Application deadline",
+      "type": "application",
+      "cycle_year": 2027,
+      "date": "2027-01-15",
+      "time": "23:59",
+      "timezone": "UTC+01:00",
+      "rolling": false,
+      "status": "present",
+      "evidence": [{ "quote": "Applications close on 15 January 2027 at 23:59 CET" }]
+    },
+    {
+      "label": "Reference letters",
+      "type": "recommender",
+      "cycle_year": 2027,
+      "date": "2027-01-22",
+      "time": null,
+      "timezone": null,
+      "rolling": false,
+      "status": "present",
+      "evidence": [{ "quote": "letters may arrive until 22 January 2027" }],
+      "notes": "No time stated, so time and timezone stay null."
+    }
+  ],
+  "conditions": [
+    {
+      "kind": "min_gpa",
+      "value": { "value": 3.5, "scale": 4.0 },
+      "required": true,
+      "applies_to": null,
+      "evidence": [{ "quote": "a minimum GPA of 3.5 on a 4.0 scale" }]
+    },
+    {
+      "kind": "language",
+      "value": {
+        "logic": "any",
+        "options": [
+          { "test": "IELTS Academic", "min_overall": 6.5 },
+          { "test": "TOEFL iBT", "min_overall": 90 }
+        ]
+      },
+      "required": true,
+      "applies_to": null,
+      "evidence": [{ "quote": "IELTS Academic 6.5 or TOEFL iBT 90" }]
+    },
+    {
+      "kind": "other",
+      "value": "GRE",
+      "required": false,
+      "applies_to": null,
+      "evidence": [{ "quote": "The GRE is not required" }],
+      "notes": "Explicit statement that a test is NOT required."
+    }
+  ],
+  "notes": "FICTIONAL example for the labeling guide. Do not use as data."
+}
