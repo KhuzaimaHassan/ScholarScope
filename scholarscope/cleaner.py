@@ -9,15 +9,54 @@ and None source offsets; they are formatting, not quoted evidence.
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
+from itertools import pairwise
+from typing import Literal
 
 from bs4 import BeautifulSoup, Comment, Declaration, Doctype, NavigableString, ProcessingInstruction
 from bs4.element import PageElement, Tag
 
 _REMOVED_TAGS = frozenset(
-    {"nav", "header", "footer", "head", "script", "style", "form", "noscript", "template"}
+    {
+        "nav",
+        "footer",
+        "head",
+        "script",
+        "style",
+        "noscript",
+        "template",
+        "input",
+        "select",
+        "textarea",
+        "button",
+        "datalist",
+        "option",
+        "optgroup",
+        "output",
+    }
 )
 _REMOVED_ROLES = frozenset({"navigation", "banner", "contentinfo"})
+_WIDGET_ROLES = frozenset(
+    {
+        "button",
+        "checkbox",
+        "combobox",
+        "listbox",
+        "option",
+        "radio",
+        "scrollbar",
+        "searchbox",
+        "slider",
+        "spinbutton",
+        "switch",
+        "textbox",
+        "menuitem",
+        "menuitemcheckbox",
+        "menuitemradio",
+    }
+)
+_CONTENT_CONTAINERS = frozenset({"main", "article", "section"})
+_FORM_MARKERS = frozenset({"search", "searchform", "login", "loginform", "signin", "signinform"})
 _BLOCK_TAGS = frozenset(
     {
         "address",
@@ -32,12 +71,14 @@ _BLOCK_TAGS = frozenset(
         "dt",
         "figcaption",
         "figure",
+        "form",
         "h1",
         "h2",
         "h3",
         "h4",
         "h5",
         "h6",
+        "header",
         "hr",
         "li",
         "main",
@@ -89,10 +130,12 @@ class SourceSpan:
 
 @dataclass(frozen=True)
 class CleanedHTML:
-    """Plain text and a complete, ordered, non-overlapping offset map."""
+    """Offset-mapped text, separate document title, and the selected root kind."""
 
     text: str
     offset_map: tuple[SourceSpan, ...]
+    title: str | None = None
+    root_used: Literal["main", "body"] = "body"
 
 
 @dataclass(frozen=True)
@@ -163,9 +206,52 @@ def _index_nodes(node: Tag, paths: dict[int, str], prefix: str = "") -> None:
             paths[id(child)] = f"{prefix}/text()[{text_index}]"
 
 
+def _marker_words(value: str) -> list[str]:
+    dashed = re.sub(r"(?<=[a-z0-9])(?=[A-Z])", "-", value).lower()
+    return re.findall(r"[a-z0-9]+", dashed)
+
+
+def _is_search_or_login_form(node: Tag, roles: list[str]) -> bool:
+    if "search" in roles:
+        return True
+    markers = [str(node.get(name, "")) for name in ("id", "name", "action", "aria-label")]
+    markers.extend(value or "" for value in node.get_attribute_list("class"))
+    for marker in markers:
+        words = _marker_words(marker)
+        if _FORM_MARKERS.intersection(words):
+            return True
+        if any(pair in {("log", "in"), ("sign", "in")} for pair in pairwise(words)):
+            return True
+    # Recognize a bare search/login UI without treating prose mentioning search as a marker.
+    label = " ".join(node.get_text(" ", strip=True).lower().split())
+    return (
+        re.fullmatch(r"(?:search|log[ -]?in|sign[ -]?in)(?: (?:go|submit|search))?", label)
+        is not None
+    )
+
+
 def _ignored(node: Tag) -> bool:
     roles = str(node.get("role", "")).lower().split()
-    if node.name in _REMOVED_TAGS or _REMOVED_ROLES.intersection(roles):
+    content_header = node.name == "header" and any(
+        isinstance(parent, Tag)
+        and (
+            parent.name in _CONTENT_CONTAINERS
+            or "main" in str(parent.get("role", "")).lower().split()
+        )
+        for parent in node.parents
+    )
+    removed_roles = _REMOVED_ROLES.difference({"banner"}) if content_header else _REMOVED_ROLES
+    if node.name in _REMOVED_TAGS or removed_roles.intersection(roles):
+        return True
+    if node.name == "header" and not content_header:
+        return True
+    if node.name == "form" and _is_search_or_login_form(node, roles):
+        return True
+    if _WIDGET_ROLES.intersection(roles) and not (
+        str(node.get("aria-label") or "").strip()
+        or str(node.get("aria-labelledby") or "").strip()
+        or node.find_parent("label") is not None
+    ):
         return True
     if node.has_attr("hidden") or str(node.get("aria-hidden", "")).strip().lower() == "true":
         return True
@@ -237,10 +323,20 @@ def _render(
         builder.boundary(path, inline=inline)
 
 
+def _extract(roots: list[Tag], paths: dict[int, str]) -> CleanedHTML:
+    builder = _TextBuilder()
+    for root in roots:
+        builder.boundary(paths.get(id(root), ""), inline=False)
+        _render(root, builder, paths)
+    return builder.finish()
+
+
 def clean_html(html: bytes | str) -> CleanedHTML:
     """Extract visible main text without rewriting wording or translating it.
 
-    Prefer visible main/role=main containers, otherwise use body/document. All
+    Prefer visible main/role=main containers, otherwise use body/document. A main
+    fragment shorter than 500 normalized characters and 30% of cleaned body text
+    also falls back to body. The document title is metadata, outside text offsets. All
     visibility checks are static (attributes and inline CSS); external stylesheets
     and JavaScript are not executed. Bytes use the parser's encoding detection.
     Text stays in DOM order. Paragraphs, headings and list items have line breaks;
@@ -248,6 +344,8 @@ def clean_html(html: bytes | str) -> CleanedHTML:
     """
 
     soup = BeautifulSoup(html, "lxml")
+    title_node = soup.title
+    title = (" ".join(title_node.get_text().split()) or None) if title_node is not None else None
     paths: dict[int, str] = {}
     _index_nodes(soup, paths)
     mains = [
@@ -259,8 +357,14 @@ def clean_html(html: bytes | str) -> CleanedHTML:
     ]
     main_ids = {id(node) for node in mains}
     roots = [node for node in mains if not any(id(parent) in main_ids for parent in node.parents)]
-    builder = _TextBuilder()
-    for root in roots or [soup.body or soup]:
-        builder.boundary(paths.get(id(root), ""), inline=False)
-        _render(root, builder, paths)
-    return builder.finish()
+    body = soup.body or soup
+    if not roots:
+        return replace(_extract([body], paths), title=title, root_used="body")
+    main_result = _extract(roots, paths)
+    main_length = len(" ".join(main_result.text.split()))
+    if main_length < 500:
+        body_result = _extract([body], paths)
+        body_length = len(" ".join(body_result.text.split()))
+        if main_length * 10 < body_length * 3:
+            return replace(body_result, title=title, root_used="body")
+    return replace(main_result, title=title, root_used="main")

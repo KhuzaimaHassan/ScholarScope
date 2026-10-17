@@ -206,3 +206,157 @@ def test_declared_encoding_in_html_bytes() -> None:
 def test_noise_only_page_has_no_text_or_offsets() -> None:
     result = clean_html("<nav>Navigation</nav><form>Search</form><script>noise()</script>")
     assert result == CleanedHTML(text="", offset_map=())
+
+
+@pytest.mark.parametrize("as_bytes", [False, True], ids=["str", "bytes"])
+def test_aspnet_wrapping_form_preserves_eligibility(as_bytes: bool) -> None:
+    markup = """<html><body><form id='aspnetForm' runat='server'>
+    <header>Page banner</header><article><h1>Eligibility</h1>
+    <p>Applicants must hold a bachelor's degree.</p></article>
+    <input type='hidden' name='__VIEWSTATE' value='fictional-state'>
+    <button>Submit</button></form></body></html>"""
+    result = clean_html(markup.encode() if as_bytes else markup)
+    assert result.text == "Eligibility\nApplicants must hold a bachelor's degree."
+    assert result.root_used == "body"
+    assert_complete_map(result)
+    assert all("/form[1]/article[1]/" in span.node_path for span in result.offset_map)
+
+
+def test_form_controls_removed_without_discarding_content() -> None:
+    markup = """<form runat='server'><h1>Requirements</h1><p>English proficiency is required.</p>
+    <input value='ignore'><select><option>Choose an option</option></select>
+    <textarea>Draft answer</textarea><button>Apply</button>
+    <div role='combobox'>Widget options</div><span role='checkbox'>Unchecked</span>
+    <div role='textbox' aria-label>Unlabeled editor</div>
+    <p>Deadline: 1 May.</p></form>"""
+    result = clean_html(markup)
+    assert result.text == "Requirements\nEnglish proficiency is required.\nDeadline: 1 May."
+    assert_complete_map(result)
+
+
+@pytest.mark.parametrize(
+    "marker",
+    [
+        "role='search'",
+        "id='searchForm'",
+        "class='site-login-panel'",
+        "aria-label='Sign in'",
+        "action='/account/log-in'",
+    ],
+)
+def test_marked_search_login_forms_removed(marker: str) -> None:
+    result = clean_html(
+        f"<form {marker}><h2>Account tools</h2><p>UI instructions</p></form>"
+        "<article><p>Applicants from abroad are eligible.</p></article>"
+    )
+    assert result.text == "Applicants from abroad are eligible."
+    assert_complete_map(result)
+
+
+def test_content_form_prose_mentioning_search_is_retained() -> None:
+    result = clean_html(
+        "<form id='application-form'><p>Search the published programme requirements.</p>"
+        "<p>Research applicants are eligible.</p></form>"
+    )
+    assert (
+        result.text
+        == "Search the published programme requirements.\nResearch applicants are eligible."
+    )
+
+
+@pytest.mark.parametrize("container", ["main", "article", "section"])
+@pytest.mark.parametrize("header_role", ["", "role='banner'"])
+def test_content_header_heading_is_kept(container: str, header_role: str) -> None:
+    result = clean_html(
+        f"<{container}><header {header_role}><h1>Fictional award</h1></header>"
+        f"<p>Full funding is available.</p></{container}>"
+    )
+    assert result.text == "Fictional award\nFull funding is available."
+    assert result.root_used == ("main" if container == "main" else "body")
+    assert any("/header[1]/h1[1]/text()[1]" in span.node_path for span in result.offset_map)
+    assert_complete_map(result)
+
+
+def test_page_level_header_banner_and_navigation_are_dropped() -> None:
+    result = clean_html(
+        "<header role='banner'><h1>Site name</h1><nav>Links</nav><p>Promotional text</p></header>"
+        "<article><header><h1>Eligibility</h1></header><p>A degree is required.</p></article>"
+    )
+    assert result.text == "Eligibility\nA degree is required."
+    assert result.root_used == "body"
+
+
+@pytest.mark.parametrize("as_bytes", [False, True], ids=["str", "bytes"])
+def test_document_title_is_separate_from_offset_mapped_text(as_bytes: bool) -> None:
+    markup = """<html><head><meta charset='utf-8'><title>  Award &amp; eligibility
+       — 2027 </title></head><body><main><p>Applicants need a degree.</p></main></body></html>"""
+    payload = markup.encode("utf-8") if as_bytes else markup
+    result = clean_html(payload)
+    assert result.title == "Award & eligibility — 2027"
+    assert result.text == "Applicants need a degree."
+    assert result.root_used == "main"
+    assert all("/title[" not in span.node_path for span in result.offset_map)
+    assert clean_html(payload) == result
+    assert_complete_map(result)
+
+
+@pytest.mark.parametrize("head", ["", "<title> \n\t </title>"])
+def test_absent_or_blank_title_is_none(head: str) -> None:
+    result = clean_html(f"<html><head>{head}</head><body><p>Requirements.</p></body></html>")
+    assert result.title is None
+    assert result.root_used == "body"
+    assert result.text == "Requirements."
+
+
+@pytest.mark.parametrize(
+    ("main_length", "outside_length", "expected_root"),
+    [
+        (499, 1200, "body"),
+        (500, 1500, "main"),
+        (30, 69, "main"),  # Exactly 30% of the normalized body length (100).
+        (29, 70, "body"),
+        (20, 30, "main"),
+        (5, 100, "body"),
+        (0, 30, "body"),
+    ],
+)
+def test_fragment_main_fallback_thresholds(
+    main_length: int, outside_length: int, expected_root: str
+) -> None:
+    main_text = "M" * main_length
+    outside_text = "B" * outside_length
+    markup = f"<html><body><main><p>{main_text}</p></main><p>{outside_text}</p></body></html>"
+    result = clean_html(markup)
+    assert result.root_used == expected_root
+    assert result.text == (
+        "\n".join(part for part in [main_text, outside_text] if part)
+        if expected_root == "body"
+        else main_text
+    )
+    assert clean_html(markup) == result
+    assert_complete_map(result)
+    if expected_root == "body":
+        original = lxml_html.document_fromstring(markup).getroottree()
+        outside_spans = [
+            span
+            for span in result.offset_map
+            if span.node_path == "/html[1]/body[1]/p[1]/text()[1]"
+        ]
+        assert outside_spans
+        for span in outside_spans:
+            source = str(original.xpath(span.node_path)[0])
+            assert result.text[span.start : span.end] == source[span.source_start : span.source_end]
+
+
+def test_large_navigation_noise_does_not_force_body_fallback() -> None:
+    markup = f"<body><nav>{'Navigation ' * 1000}</nav><main><h1>Eligibility</h1></main></body>"
+    result = clean_html(markup)
+    assert result.text == "Eligibility"
+    assert result.root_used == "main"
+
+
+def test_multiple_main_roots_use_combined_length_for_fallback() -> None:
+    result = clean_html(f"<main>{'A' * 200}</main><main>{'B' * 200}</main><p>{'C' * 600}</p>")
+    assert result.root_used == "main"
+    assert result.text == "A" * 200 + "\n" + "B" * 200
+    assert_complete_map(result)
