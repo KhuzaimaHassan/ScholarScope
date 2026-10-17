@@ -22,7 +22,7 @@ jobs:
           cache: pip
 
       - name: Install quality tools
-        run: python -m pip install --upgrade pip ruff pytest mypy jsonschema
+        run: python -m pip install --upgrade pip ruff pytest mypy jsonschema httpx
 
       - name: Lint
         run: ruff check .
