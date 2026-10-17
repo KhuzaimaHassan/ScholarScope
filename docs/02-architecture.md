@@ -26,6 +26,7 @@ URL ──► Fetcher ──► Cleaner ──► Segmenter ──► Extractor 
 |---|---|---|
 | **Fetcher** | Download page/PDF, respect robots.txt, rate limit, cache with content hash | httpx first; Playwright only when JS rendering is required |
 | **Cleaner** | Strip navigation/boilerplate, extract main text (static HTML via BeautifulSoup with lxml; PDF text extraction is separate) | [HTML cleaner contract](08-html-cleaner.md): preserve headings and map text spans to original DOM nodes |
+| **PDF text extraction** | Extract per-page text with pypdf layout mode; flag scanned/low-text and password-protected PDFs as unsupported | [PDF extraction contract](09-pdf-extraction.md): normalized page offsets and physical page locators; no OCR |
 | **Segmenter** | Split into passages with stable IDs and character offsets | Evidence points to passage ID + span |
 | **Extractor** | LLM call(s) producing a typed Requirement Record where each field = `{value, quote, passage_id, confidence}` | Provider-agnostic interface (Gemini / Groq / local Ollama). `confidence` is advisory only |
 | **Evidence Verifier** | Confirms each quote **exists** in the cited passage (exact, then normalized fuzzy). Fails → field becomes `unverified` (kept, not dropped) | Pure code, deterministic. It proves *presence* only. Whether the quote actually *supports* the value is a separate, human-audited quality metric (see `03-evaluation-plan.md`) |
