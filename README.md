@@ -33,6 +33,7 @@ This repository is in the docs-first foundation phase. The product pipeline is p
 - [Architecture decision records](docs/adr/README.md)
 - [Gold-set candidates](docs/06-gold-set-candidates.md)
 - [HTML cleaner and source offsets](docs/08-html-cleaner.md)
+- [PDF extraction and page locators](docs/09-pdf-extraction.md)
 
 ## Important limitations
 
