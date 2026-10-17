@@ -12,6 +12,7 @@ exclude = [".git", ".venv", "eval/snapshots"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = ["."]
 
 [tool.mypy]
 python_version = "3.11"
