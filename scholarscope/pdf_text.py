@@ -6,8 +6,9 @@ from dataclasses import dataclass
 from io import BytesIO
 from typing import Literal
 
-from pypdf import PdfReader
+from pypdf import PageObject, PdfReader
 from pypdf.errors import DependencyError, FileNotDecryptedError, WrongPasswordError
+from pypdf.generic import ArrayObject, NullObject, StreamObject
 
 PDFStatus = Literal["ok", "scanned_unsupported", "encrypted_unsupported", "invalid"]
 MIN_CHARACTERS_PER_PAGE = 25
@@ -98,6 +99,29 @@ def _assemble(pages: tuple[PDFPage, ...]) -> ExtractedPDF:
     return ExtractedPDF("".join(parts), pages, tuple(spans), "ok", len(pages))
 
 
+def _extract_page(page: PageObject, page_number: int) -> PDFPage:
+    # Some pypdf versions silently treat invalid /Contents types as a blank page.
+    # Validate the PDF stream/array contract so malformed pages stay invalid.
+    contents = page.get("/Contents")
+    if contents is None:
+        return PDFPage(page_number, "")
+    contents = contents.get_object()
+    if isinstance(contents, NullObject):
+        return PDFPage(page_number, "")
+    streams = contents if isinstance(contents, ArrayObject) else [contents]
+    if any(not isinstance(stream.get_object(), StreamObject) for stream in streams):
+        raise ValueError("PDF page /Contents must be a stream or an array of streams")
+    text = (
+        page.extract_text(
+            extraction_mode="layout",
+            layout_mode_space_vertically=False,
+            layout_mode_strip_rotated=False,
+        )
+        or ""
+    )
+    return PDFPage(page_number, _normalize_whitespace(text))
+
+
 def extract_pdf_text(data: bytes) -> ExtractedPDF:
     """Extract page text using pypdf's layout mode; malformed data never escapes.
 
@@ -115,18 +139,7 @@ def extract_pdf_text(data: bytes) -> ExtractedPDF:
             return ExtractedPDF(status="encrypted_unsupported")
         page_count = len(reader.pages)
         pages = tuple(
-            PDFPage(
-                number,
-                _normalize_whitespace(
-                    page.extract_text(
-                        extraction_mode="layout",
-                        layout_mode_space_vertically=False,
-                        layout_mode_strip_rotated=False,
-                    )
-                    or ""
-                ),
-            )
-            for number, page in enumerate(reader.pages, start=1)
+            _extract_page(page, number) for number, page in enumerate(reader.pages, start=1)
         )
         characters = sum(sum(not character.isspace() for character in page.text) for page in pages)
         if page_count == 0 or characters < MIN_CHARACTERS_PER_PAGE * page_count:

@@ -6,7 +6,7 @@ from io import BytesIO
 import pytest
 from PIL import Image
 from pypdf import PdfReader, PdfWriter
-from pypdf.generic import NameObject, NumberObject
+from pypdf.generic import ArrayObject, DictionaryObject, NameObject, NullObject, NumberObject
 from reportlab.lib.utils import ImageReader
 from reportlab.pdfgen.canvas import Canvas
 
@@ -125,10 +125,15 @@ def test_corrupt_bytes_return_invalid_without_raising(data: bytes) -> None:
     assert locator(result, 0) is None
 
 
-def test_malformed_page_content_returns_invalid_without_partial_text() -> None:
+@pytest.mark.parametrize("content_type", ["number", "array", "dictionary"])
+def test_malformed_page_content_returns_invalid_without_partial_text(content_type: str) -> None:
     writer = PdfWriter()
     page = writer.add_blank_page(width=612, height=792)
-    page[NameObject("/Contents")] = NumberObject(42)
+    page[NameObject("/Contents")] = {
+        "number": NumberObject(42),
+        "array": ArrayObject([NumberObject(42)]),
+        "dictionary": DictionaryObject(),
+    }[content_type]
     output = BytesIO()
     writer.write(output)
     result = extract_pdf_text(output.getvalue())
@@ -156,6 +161,22 @@ def test_blank_page_pdf_is_low_text_unsupported() -> None:
     assert result.page_count == 1
     assert result.text == ""
     assert [page.text for page in result.pages] == [""]
+    assert result.offset_map == ()
+
+
+@pytest.mark.parametrize("content_type", ["missing", "null", "empty_array"])
+def test_valid_empty_page_contents_remain_blank(content_type: str) -> None:
+    writer = PdfWriter()
+    page = writer.add_blank_page(width=612, height=792)
+    if content_type != "missing":
+        page[NameObject("/Contents")] = NullObject() if content_type == "null" else ArrayObject()
+    output = BytesIO()
+    writer.write(output)
+    result = extract_pdf_text(output.getvalue())
+    assert result.status == "scanned_unsupported"
+    assert result.page_count == 1
+    assert [page.text for page in result.pages] == [""]
+    assert result.text == ""
     assert result.offset_map == ()
 
 
