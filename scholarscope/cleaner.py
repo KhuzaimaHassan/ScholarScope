@@ -130,12 +130,13 @@ class SourceSpan:
 
 @dataclass(frozen=True)
 class CleanedHTML:
-    """Offset-mapped text, separate document title, and the selected root kind."""
+    """Offset-mapped text, document metadata, and a low-output diagnostic."""
 
     text: str
     offset_map: tuple[SourceSpan, ...]
     title: str | None = None
     root_used: Literal["main", "body"] = "body"
+    suspiciously_empty: bool = False
 
 
 @dataclass(frozen=True)
@@ -230,6 +231,14 @@ def _is_search_or_login_form(node: Tag, roles: list[str]) -> bool:
     )
 
 
+def _is_main(node: Tag) -> bool:
+    return node.name == "main" or "main" in str(node.get("role", "")).lower().split()
+
+
+def _is_navigation(node: Tag) -> bool:
+    return node.name == "nav" or "navigation" in str(node.get("role", "")).lower().split()
+
+
 def _ignored(node: Tag) -> bool:
     roles = str(node.get("role", "")).lower().split()
     content_header = node.name == "header" and any(
@@ -241,7 +250,16 @@ def _ignored(node: Tag) -> bool:
         for parent in node.parents
     )
     removed_roles = _REMOVED_ROLES.difference({"banner"}) if content_header else _REMOVED_ROLES
-    if node.name in _REMOVED_TAGS or removed_roles.intersection(roles):
+    # Malformed/unusual layouts can nest main content in a navigation shell.
+    # Keep the shell traversable; _render keeps only its visible main descendants.
+    navigation_wrapper = _is_navigation(node) and any(
+        isinstance(child, Tag) and _is_main(child) for child in node.find_all(True)
+    )
+    if navigation_wrapper:
+        removed_roles = removed_roles.difference({"navigation"})
+    if (
+        node.name in _REMOVED_TAGS and not (node.name == "nav" and navigation_wrapper)
+    ) or removed_roles.intersection(roles):
         return True
     if node.name == "header" and not content_header:
         return True
@@ -277,6 +295,18 @@ def _ignored(node: Tag) -> bool:
     )
 
 
+def _main_roots(container: Tag) -> list[Tag]:
+    mains = [
+        node
+        for node in container.find_all(True)
+        if isinstance(node, Tag)
+        and _is_main(node)
+        and not any(_ignored(parent) for parent in (node, *node.parents) if isinstance(parent, Tag))
+    ]
+    main_ids = {id(node) for node in mains}
+    return [node for node in mains if not any(id(parent) in main_ids for parent in node.parents)]
+
+
 def _render(
     node: PageElement,
     builder: _TextBuilder,
@@ -289,6 +319,10 @@ def _render(
         builder.text(str(node), paths[id(node)], preformatted=preformatted)
         return
     if not isinstance(node, Tag) or _ignored(node):
+        return
+    if _is_navigation(node):
+        for main in _main_roots(node):
+            _render(main, builder, paths, inline=inline, preformatted=preformatted)
         return
     path = paths.get(id(node), "")
     if node.name == "br":
@@ -348,23 +382,25 @@ def clean_html(html: bytes | str) -> CleanedHTML:
     title = (" ".join(title_node.get_text().split()) or None) if title_node is not None else None
     paths: dict[int, str] = {}
     _index_nodes(soup, paths)
-    mains = [
-        node
-        for node in soup.find_all(True)
-        if isinstance(node, Tag)
-        and (node.name == "main" or "main" in str(node.get("role", "")).lower().split())
-        and not any(_ignored(parent) for parent in (node, *node.parents) if isinstance(parent, Tag))
-    ]
-    main_ids = {id(node) for node in mains}
-    roots = [node for node in mains if not any(id(parent) in main_ids for parent in node.parents)]
+    roots = _main_roots(soup)
     body = soup.body or soup
+    root_used: Literal["main", "body"] = "body"
     if not roots:
-        return replace(_extract([body], paths), title=title, root_used="body")
-    main_result = _extract(roots, paths)
-    main_length = len(" ".join(main_result.text.split()))
-    if main_length < 500:
-        body_result = _extract([body], paths)
-        body_length = len(" ".join(body_result.text.split()))
-        if main_length * 10 < body_length * 3:
-            return replace(body_result, title=title, root_used="body")
-    return replace(main_result, title=title, root_used="main")
+        result = _extract([body], paths)
+    else:
+        result = _extract(roots, paths)
+        root_used = "main"
+        main_length = len(" ".join(result.text.split()))
+        if main_length < 500:
+            body_result = _extract([body], paths)
+            body_length = len(" ".join(body_result.text.split()))
+            if main_length * 10 < body_length * 3:
+                result = body_result
+                root_used = "body"
+    input_bytes = len(html) if isinstance(html, bytes) else len(html.encode("utf-8"))
+    return replace(
+        result,
+        title=title,
+        root_used=root_used,
+        suspiciously_empty=input_bytes > 5_000 and len(result.text) < 200,
+    )
