@@ -107,6 +107,9 @@ def validate_file(path: Path, validator: Draft202012Validator) -> tuple[list[str
         label = json.loads(path.read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
         return [f"invalid JSON: {exc}"], notes
+    label_notes = label.get("notes") if isinstance(label, dict) else None
+    if isinstance(label_notes, str) and label_notes.startswith("SKELETON"):
+        return ["skeleton, not labeled by hand"], notes
     for err in sorted(validator.iter_errors(label), key=lambda e: list(e.path)):
         loc = ".".join(str(p) for p in err.path) or "(root)"
         errors.append(f"{loc}: {err.message}")
