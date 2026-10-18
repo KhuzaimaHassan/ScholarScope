@@ -96,7 +96,11 @@ Pick pages that cover the layouts the extractor will meet. These come from the n
 |---|---|---|
 | 1 | Netherlands 3, Radboud Scholarship Programme | Clean static HTML with eligibility, GPA, deadline, references and funding. The easy baseline. |
 | 2 | Japan 3, Honjo 2027 guidelines (PDF, 5 pages) | PDF text and tables; conditions on level, nationality, age, language; "graduate" wording to settle. |
-| 3 | Italy 1, Politecnico merit-based scholarships | Stale 2024–2025 cycle and a deadline in a linked document. Tests `in_linked_document` and stale handling. |
+| 3 | Netherlands 4, University of Twente NL Scholarship | Finder-style HTML layout; replaces the excluded Politecnico overview redirect. |
+
+This pilot covers a finder-style layout but does **not** cover the stale-cycle or linked-document case. Both remain untested until a replacement for Italy 1 is found. On 2026-10-18 the Italy 1 URL redirected to the slot 2 overview. The only same-host merit-based link found there was a PDF call covering several scholarship categories, not one scholarship, so it was not selected.
+
+Preparation limitation (2026-10-18): the Twente fetch returned HTML successfully, but the current cleaner produced an empty `.txt` copy. That copy is not usable for quote validation yet; no alternate extraction or labels were supplied. The committed pilot JSON files are explicitly marked mechanical skeletons, not completed hand-written labels; their `absent` statuses and labeler date/time entries are placeholders only.
 
 Protocol:
 

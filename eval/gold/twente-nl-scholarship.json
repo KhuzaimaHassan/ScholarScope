@@ -1,0 +1,66 @@
+{
+  "schema_version": "0.1",
+  "program_slug": "twente-nl-scholarship",
+  "slot": {
+    "family": "Netherlands",
+    "number": 4
+  },
+  "source": {
+    "url": "https://www.utwente.nl/en/itc/education/study-costs/scholarships/scholarship-finder/nl-scholarship-university-of-twente/",
+    "retrieved_on": "2026-10-18",
+    "content_sha256": "5c30a9589e1b3001859a3146a80ba6885793e498b493269337fef8acf0191589",
+    "format": "html",
+    "language": "en",
+    "cycle_label": null,
+    "page_state": "unknown",
+    "is_mirror": false,
+    "owner_org": "University of Twente"
+  },
+  "labeler": {
+    "id": "owner",
+    "pass": 1,
+    "labeled_on": "2026-10-18",
+    "minutes_spent": 0
+  },
+  "fields": {
+    "program_name": {
+      "status": "absent",
+      "value": null,
+      "evidence": []
+    },
+    "institution": {
+      "status": "absent",
+      "value": null,
+      "evidence": []
+    },
+    "degree_levels": {
+      "status": "absent",
+      "value": null,
+      "evidence": []
+    },
+    "funding_coverage": {
+      "status": "absent",
+      "value": null,
+      "evidence": []
+    },
+    "required_documents": {
+      "status": "absent",
+      "value": null,
+      "evidence": []
+    },
+    "recommenders": {
+      "status": "absent",
+      "value": null,
+      "evidence": []
+    },
+    "application_link": {
+      "status": "absent",
+      "value": null,
+      "evidence": []
+    }
+  },
+  "deadlines_status": "absent",
+  "deadlines": [],
+  "conditions": [],
+  "notes": "SKELETON: not yet labeled by hand."
+}
