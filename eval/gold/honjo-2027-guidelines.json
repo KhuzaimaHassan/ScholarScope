@@ -1,0 +1,66 @@
+{
+  "schema_version": "0.1",
+  "program_slug": "honjo-2027-guidelines",
+  "slot": {
+    "family": "Japan",
+    "number": 3
+  },
+  "source": {
+    "url": "https://www.hisf.or.jp/wp/wp-content/uploads/2026/06/2027_bosyuyoukou_foreigner_E.pdf",
+    "retrieved_on": "2026-10-18",
+    "content_sha256": "b2f18f08de9309bed3c10d23955532f6595df7f69f92515689bc098e5badb853",
+    "format": "pdf",
+    "language": "en",
+    "cycle_label": null,
+    "page_state": "unknown",
+    "is_mirror": false,
+    "owner_org": "Honjo International Scholarship Foundation"
+  },
+  "labeler": {
+    "id": "owner",
+    "pass": 1,
+    "labeled_on": "2026-10-18",
+    "minutes_spent": 0
+  },
+  "fields": {
+    "program_name": {
+      "status": "absent",
+      "value": null,
+      "evidence": []
+    },
+    "institution": {
+      "status": "absent",
+      "value": null,
+      "evidence": []
+    },
+    "degree_levels": {
+      "status": "absent",
+      "value": null,
+      "evidence": []
+    },
+    "funding_coverage": {
+      "status": "absent",
+      "value": null,
+      "evidence": []
+    },
+    "required_documents": {
+      "status": "absent",
+      "value": null,
+      "evidence": []
+    },
+    "recommenders": {
+      "status": "absent",
+      "value": null,
+      "evidence": []
+    },
+    "application_link": {
+      "status": "absent",
+      "value": null,
+      "evidence": []
+    }
+  },
+  "deadlines_status": "absent",
+  "deadlines": [],
+  "conditions": [],
+  "notes": "SKELETON: not yet labeled by hand."
+}

@@ -1,0 +1,66 @@
+{
+  "schema_version": "0.1",
+  "program_slug": "radboud-scholarship-programme",
+  "slot": {
+    "family": "Netherlands",
+    "number": 3
+  },
+  "source": {
+    "url": "https://www.ru.nl/en/education/scholarships/radboud-scholarship-programme",
+    "retrieved_on": "2026-10-18",
+    "content_sha256": "8f7fa0da8416942a97ee1db662353b05e5824e61b4648ad511f065c52f0a1ea2",
+    "format": "html",
+    "language": "en",
+    "cycle_label": null,
+    "page_state": "unknown",
+    "is_mirror": false,
+    "owner_org": "Radboud University"
+  },
+  "labeler": {
+    "id": "owner",
+    "pass": 1,
+    "labeled_on": "2026-10-18",
+    "minutes_spent": 0
+  },
+  "fields": {
+    "program_name": {
+      "status": "absent",
+      "value": null,
+      "evidence": []
+    },
+    "institution": {
+      "status": "absent",
+      "value": null,
+      "evidence": []
+    },
+    "degree_levels": {
+      "status": "absent",
+      "value": null,
+      "evidence": []
+    },
+    "funding_coverage": {
+      "status": "absent",
+      "value": null,
+      "evidence": []
+    },
+    "required_documents": {
+      "status": "absent",
+      "value": null,
+      "evidence": []
+    },
+    "recommenders": {
+      "status": "absent",
+      "value": null,
+      "evidence": []
+    },
+    "application_link": {
+      "status": "absent",
+      "value": null,
+      "evidence": []
+    }
+  },
+  "deadlines_status": "absent",
+  "deadlines": [],
+  "conditions": [],
+  "notes": "SKELETON: not yet labeled by hand."
+}
