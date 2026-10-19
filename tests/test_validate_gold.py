@@ -5,6 +5,8 @@ from __future__ import annotations
 import copy
 import importlib.util
 import json
+import subprocess
+import sys
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any
@@ -40,6 +42,28 @@ def _base() -> dict[str, Any]:
 
 def test_example_is_valid(tmp_path: Path) -> None:
     assert _errors_for(_base(), tmp_path) == []
+
+
+@pytest.mark.parametrize("notes", ["SKELETON", "SKELETON: not yet labeled by hand."])
+def test_skeleton_notes_are_rejected(notes: str, tmp_path: Path) -> None:
+    label = _base()
+    label["notes"] = notes
+    assert _errors_for(label, tmp_path) == ["skeleton, not labeled by hand"]
+
+
+def test_skeleton_cli_exits_with_failure(tmp_path: Path) -> None:
+    label = _base()
+    label["notes"] = "SKELETON: not yet labeled by hand."
+    path = tmp_path / f"{label['program_slug']}.json"
+    path.write_text(json.dumps(label), encoding="utf-8")
+    result = subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "validate_gold.py"), str(path)],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 1
+    assert "skeleton, not labeled by hand" in result.stdout
 
 
 def _absent_with_value(d: dict[str, Any]) -> None:
