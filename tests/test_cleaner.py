@@ -360,3 +360,69 @@ def test_multiple_main_roots_use_combined_length_for_fallback() -> None:
     assert result.root_used == "main"
     assert result.text == "A" * 200 + "\n" + "B" * 200
     assert_complete_map(result)
+
+
+@pytest.mark.parametrize("wrapper", ["nav", "div role='navigation'"])
+@pytest.mark.parametrize("as_bytes", [False, True], ids=["str", "bytes"])
+def test_navigation_wrapper_preserves_main_without_menu_noise(wrapper: str, as_bytes: bool) -> None:
+    tag = wrapper.split()[0]
+    markup = (
+        f"<body><{wrapper} class='synthetic-shell'><a>Menu noise</a>"
+        "<div class='synthetic-container'><main class='synthetic-main'>"
+        "<h1>Fictional notice</h1><p>Original content stays intact.</p>"
+        f"</main><a>More menu noise</a></div></{tag}></body>"
+    )
+    result = clean_html(markup.encode() if as_bytes else markup)
+    assert result.text == "Fictional notice\nOriginal content stays intact."
+    assert result.root_used == "main"
+    assert clean_html(markup) == result
+    assert_complete_map(result)
+    assert any("/div[1]/main[1]/p[1]/text()[1]" in s.node_path for s in result.offset_map)
+
+
+def test_navigation_wrapper_does_not_leak_menu_during_body_fallback() -> None:
+    result = clean_html(
+        "<body><nav><a>Menu noise</a><div><main><p>Brief notice.</p></main></div>"
+        f"<p>More menu noise</p></nav><article><p>{'Body content. ' * 40}</p></article></body>"
+    )
+    assert result.root_used == "body"
+    assert result.text.startswith("Brief notice.\nBody content.")
+    assert "Menu noise" not in result.text
+    assert "More menu noise" not in result.text
+    assert_complete_map(result)
+
+
+@pytest.mark.parametrize("hidden", ["hidden", "aria-hidden='true'"])
+def test_navigation_wrapper_still_respects_hidden_ancestors(hidden: str) -> None:
+    result = clean_html(
+        f"<nav><div {hidden}><main><p>Invisible content</p></main></div></nav>"
+        "<article><p>Visible notice.</p></article>"
+    )
+    assert result.text == "Visible notice."
+    assert result.root_used == "body"
+
+
+@pytest.mark.parametrize(
+    ("input_bytes", "text_length", "expected"),
+    [(5_000, 199, False), (5_001, 199, True), (5_001, 200, False), (5_001, 0, True)],
+)
+@pytest.mark.parametrize("as_bytes", [False, True], ids=["str", "bytes"])
+def test_suspiciously_empty_thresholds(
+    input_bytes: int, text_length: int, expected: bool, as_bytes: bool
+) -> None:
+    markup = f"<body><p>{'x' * text_length}</p><!----></body>"
+    markup = markup.replace("<!---->", "<!--" + " " * (input_bytes - len(markup)) + "-->")
+    assert len(markup.encode()) == input_bytes
+    result = clean_html(markup.encode() if as_bytes else markup)
+    assert result.text == "x" * text_length
+    assert result.suspiciously_empty is expected
+    assert_complete_map(result)
+
+
+@pytest.mark.parametrize("as_bytes", [False, True], ids=["str", "bytes"])
+def test_suspiciously_empty_string_size_is_measured_in_utf8_bytes(as_bytes: bool) -> None:
+    markup = "<body><p>Brief.</p><!--" + "界" * 2_000 + "--></body>"
+    assert len(markup) < 5_000 < len(markup.encode())
+    result = clean_html(markup.encode() if as_bytes else markup)
+    assert result.text == "Brief."
+    assert result.suspiciously_empty
