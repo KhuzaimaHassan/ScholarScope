@@ -13,3 +13,4 @@ These records capture the accepted architecture and policy decisions for Scholar
 | [007](007-public-gold-set-private-snapshots.md) | Public labels with private snapshots by default |
 | [008](008-unverified-fields-retained-but-excluded.md) | Unverified fields are retained but excluded from logic |
 | [009](009-eligibility-rule-provenance.md) | Eligibility rules carry provenance |
+| [010](010-two-axis-field-status.md) | Separate content status from evidence verification |

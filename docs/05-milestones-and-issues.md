@@ -39,7 +39,7 @@ Tracking issue: *[M0] Foundations and docs*
 
 | Issue | Type | Delegation | Acceptance criteria |
 |---|---|---|---|
-| Pydantic schema for Requirement Record | feature | human | Every field has value, quote, passage_id, status (`verified`/`unverified`), and advisory confidence |
+| Pydantic schema for Requirement Record | feature | human | Every field has value, evidence list (quote, passage_id, locator), status (present/absent/ambiguous/in_linked_document), verification (not_checked/verified/unverified), linked_url, notes, and advisory confidence; usable_for_logic only when present and verified (ADR 010) |
 | Deadline model: type, cycle/year, timezone, rolling flag, multiple per program | feature | human | Schema + tests for multiple deadlines, unknown timezone, and rolling programs |
 | Provider-agnostic LLM interface (Gemini, Groq, Ollama) | feature | pair | Swap by config; retries and caching |
 | Extractor v0 (single prompt baseline) | feature | pair | Produces valid records on 10 pages |

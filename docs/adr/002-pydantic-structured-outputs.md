@@ -1,6 +1,6 @@
 # ADR 002 — Structured extraction via Pydantic schemas
 
-**Status:** Accepted · **Date:** 2026-10-12
+**Status:** Accepted; field model amended by ADR 010 · **Date:** 2026-10-12
 
 ## Context
 Extraction results feed deterministic code (eligibility, checklist), so free-form text is not acceptable. Every field must carry its evidence (quote and passage ID) and a status.
