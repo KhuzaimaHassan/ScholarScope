@@ -44,6 +44,38 @@ def test_example_is_valid(tmp_path: Path) -> None:
     assert _errors_for(_base(), tmp_path) == []
 
 
+def ambiguous_example() -> dict[str, Any]:
+    """A fresh fictional copy; the committed example and real labels stay untouched."""
+    label = copy.deepcopy(_base())
+    label["deadlines"].append({
+        "label": "Conflicting fictional scholarship notice", "type": "scholarship",
+        "cycle_year": 2027, "date": None, "time": None, "timezone": None,
+        "rolling": False, "status": "ambiguous",
+        "evidence": [{"quote": "Fictional closing date: 20 January 2027"},
+                     {"quote": "Fictional closing date: 21 January 2027"}],
+        "notes": "Candidates: 2027-01-20 and 2027-01-21; neither selected.",
+    })
+    return label
+
+
+def test_ambiguous_deadline_is_valid(tmp_path: Path) -> None:
+    assert _errors_for(ambiguous_example(), tmp_path) == []
+
+
+def test_ambiguous_deadline_with_date_is_rejected(tmp_path: Path) -> None:
+    label = ambiguous_example()
+    label["deadlines"][-1]["date"] = "2027-01-20"
+    errors = _errors_for(label, tmp_path)
+    assert any("ambiguous deadline must have date null" in e for e in errors)
+
+
+def test_ambiguous_deadline_without_evidence_is_rejected(tmp_path: Path) -> None:
+    label = ambiguous_example()
+    label["deadlines"][-1]["evidence"] = []
+    errors = _errors_for(label, tmp_path)
+    assert any("status 'ambiguous' needs at least one evidence quote" in e for e in errors)
+
+
 @pytest.mark.parametrize("notes", ["SKELETON", "SKELETON: not yet labeled by hand."])
 def test_skeleton_notes_are_rejected(notes: str, tmp_path: Path) -> None:
     label = _base()

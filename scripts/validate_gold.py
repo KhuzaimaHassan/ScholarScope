@@ -52,7 +52,9 @@ def check_evidence(
 
 def check_deadline(i: int, d: dict[str, Any], errors: list[str]) -> None:
     where = f"deadlines[{i}]"
-    check_evidence(where, d["status"], "x", d["evidence"], errors)
+    # Deadlines have no `value`; the field helper's ambiguous/null rule cannot apply.
+    if d["status"] in ("present", "ambiguous") and not d["evidence"]:
+        errors.append(f"{where}: status '{d['status']}' needs at least one evidence quote")
     if d["rolling"] and d["date"] is not None:
         errors.append(f"{where}: rolling deadline must have date null")
     if d["status"] == "present" and not d["rolling"] and d["date"] is None:
