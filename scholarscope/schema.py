@@ -7,9 +7,12 @@ is advisory metadata only: nothing may branch on it, including usability for log
 
 from __future__ import annotations
 
+import re
 from copy import deepcopy
+from datetime import UTC, timedelta, timezone, tzinfo
 from datetime import date as calendar_date
 from typing import Annotated, Any, Generic, Literal, Self, TypeVar
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from pydantic import (
     BaseModel,
@@ -42,6 +45,31 @@ OtherConditionKind = Literal[
 NonEmptyString = Annotated[str, StringConstraints(min_length=1)]
 ISODate = Annotated[str, StringConstraints(pattern=r"^\d{4}-\d{2}-\d{2}$")]
 T = TypeVar("T")
+
+# Syntax only for IANA names; timezone_info also checks zoneinfo's actual database.
+# Numeric UTC offsets must be strictly inside 24 hours (datetime's offset range).
+TZ_PATTERN = re.compile(
+    r"^(?:unknown|UTC(?:[+-](?:[01][0-9]|2[0-3]):[0-5][0-9])?|"
+    r"[A-Za-z][A-Za-z0-9._+-]*(?:/[A-Za-z0-9._+-]+)*)$"
+)
+
+
+def timezone_info(name: str) -> tzinfo | None:
+    """Validate without normalizing; unknown has no timezone, never an inferred one."""
+    if not TZ_PATTERN.fullmatch(name):
+        raise ValueError("invalid timezone")
+    if name == "unknown":
+        return None
+    if name == "UTC":
+        return UTC
+    if name.startswith(("UTC+", "UTC-")):
+        hours, minutes = map(int, name[4:].split(":"))
+        delta = timedelta(hours=hours, minutes=minutes)
+        return timezone(delta if name[3] == "+" else -delta)
+    try:
+        return ZoneInfo(name)
+    except (ZoneInfoNotFoundError, ValueError) as exc:
+        raise ValueError("unknown IANA timezone") from exc
 
 
 class RecordModel(BaseModel):
@@ -186,7 +214,7 @@ Condition = Annotated[
 
 
 class Deadline(RecordModel):
-    """Gold-compatible shape only; cross-field deadline policy belongs to #17."""
+    """Gold-compatible deadline plus verifier-owned state; resolution is separate."""
 
     label: NonEmptyString
     type: DeadlineType
@@ -198,6 +226,7 @@ class Deadline(RecordModel):
     status: Literal["present", "ambiguous"]
     evidence: list[Evidence]
     notes: str | None = None
+    verification: Verification = "not_checked"
 
     @field_validator("date")
     @classmethod
@@ -205,6 +234,34 @@ class Deadline(RecordModel):
         if value is not None:
             calendar_date.fromisoformat(value)
         return value
+
+    @field_validator("timezone")
+    @classmethod
+    def valid_timezone(cls, value: str | None) -> str | None:
+        if value is not None:
+            timezone_info(value)
+        return value
+
+    @model_validator(mode="after")
+    def validate_deadline(self) -> Self:
+        if not self.evidence:
+            raise ValueError(f"status '{self.status}' needs at least one evidence quote")
+        if self.rolling and self.date is not None:
+            raise ValueError("rolling deadline must have date null")
+        if self.status == "present" and not self.rolling and self.date is None:
+            raise ValueError("present, non-rolling deadline needs a date")
+        if self.status == "ambiguous" and self.date is not None:
+            raise ValueError("ambiguous deadline must have date null")
+        if self.time is not None and self.timezone is None:
+            raise ValueError("time given, so timezone must be set (use 'unknown' if not stated)")
+        if self.time is None and self.timezone is not None:
+            raise ValueError("timezone set without a time; use null")
+        return self
+
+    @property
+    def usable_for_logic(self) -> bool:
+        """ADR 008/010: neutral resolution cannot make unchecked evidence usable."""
+        return self.status == "present" and self.verification == "verified"
 
 
 class Source(RecordModel):
@@ -258,6 +315,25 @@ class RequirementRecord(RecordModel):
     labeler: Labeler | None = None
     notes: str | None = None
 
+    @model_validator(mode="after")
+    def no_duplicate_deadlines(self) -> Self:
+        seen: set[tuple[str, int | None, str | None, str | None, str | None, str]] = set()
+        for deadline in self.deadlines:
+            key = (
+                deadline.type,
+                deadline.cycle_year,
+                deadline.date,
+                deadline.time,
+                deadline.timezone,
+                deadline.label,
+            )
+            if key in seen:
+                raise ValueError(
+                    "exact duplicate deadline (type, cycle_year, date, time, timezone, label)"
+                )
+            seen.add(key)
+        return self
+
 
 def to_json_schema() -> dict[str, Any]:
     """Export a local JSON Schema; no network, extraction, or verifier calls."""
@@ -274,4 +350,6 @@ def from_gold_label(label: dict[str, Any]) -> RequirementRecord:
     data = deepcopy(label)
     for field in data["fields"].values():
         field["verification"] = "not_checked"
+    for deadline in data["deadlines"]:
+        deadline["verification"] = "not_checked"
     return RequirementRecord.model_validate(data)

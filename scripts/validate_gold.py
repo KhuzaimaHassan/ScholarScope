@@ -11,6 +11,7 @@ normalization. Snapshots are private and never committed (ADR 007).
 
 from __future__ import annotations
 
+import importlib
 import json
 import re
 import sys
@@ -22,11 +23,17 @@ from typing import Any
 from jsonschema import Draft202012Validator
 
 ROOT = Path(__file__).resolve().parent.parent
+# Preserve `python scripts/validate_gold.py` as a standalone repository command.
+if __package__ in (None, ""):
+    sys.path.insert(0, str(ROOT))
+_deadline_schema = importlib.import_module("scholarscope.schema")
+TZ_PATTERN = _deadline_schema.TZ_PATTERN
+timezone_info = _deadline_schema.timezone_info
+
 SCHEMA_PATH = ROOT / "eval" / "schema" / "gold-label.schema.json"
 GOLD_DIR = ROOT / "eval" / "gold"
 SNAPSHOT_DIR = ROOT / "eval" / "snapshots"
 
-TZ_PATTERN = re.compile(r"^(unknown|UTC([+-](0[0-9]|1[0-4]):[0-5][0-9])?|[A-Z][A-Za-z_]+/[A-Za-z_]+(/[A-Za-z_]+)?)$")
 SMART_PUNCTUATION = {"‘": "'", "’": "'", "“": '"', "”": '"', "–": "-", "—": "-"}
 
 
@@ -52,7 +59,9 @@ def check_evidence(
 
 def check_deadline(i: int, d: dict[str, Any], errors: list[str]) -> None:
     where = f"deadlines[{i}]"
-    check_evidence(where, d["status"], "x", d["evidence"], errors)
+    # Deadlines have no `value`; the field helper's ambiguous/null rule cannot apply.
+    if d["status"] in ("present", "ambiguous") and not d["evidence"]:
+        errors.append(f"{where}: status '{d['status']}' needs at least one evidence quote")
     if d["rolling"] and d["date"] is not None:
         errors.append(f"{where}: rolling deadline must have date null")
     if d["status"] == "present" and not d["rolling"] and d["date"] is None:
@@ -61,8 +70,11 @@ def check_deadline(i: int, d: dict[str, Any], errors: list[str]) -> None:
         errors.append(f"{where}: ambiguous deadline must have date null (put candidates in notes)")
     if d["time"] is not None and d["timezone"] is None:
         errors.append(f"{where}: time given, so timezone must be set (use 'unknown' if not stated)")
-    if d["timezone"] is not None and not TZ_PATTERN.match(d["timezone"]):
-        errors.append(f"{where}: timezone '{d['timezone']}' must be 'unknown', 'UTC+hh:mm', or an IANA name")
+    if d["timezone"] is not None:
+        try:
+            timezone_info(d["timezone"])
+        except ValueError:
+            errors.append(f"{where}: timezone '{d['timezone']}' must be 'unknown', 'UTC+hh:mm', or an IANA name")
     if d["time"] is None and d["timezone"] is not None:
         errors.append(f"{where}: timezone set without a time; use null")
 

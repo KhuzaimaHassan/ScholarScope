@@ -351,12 +351,13 @@ def test_deadline_structural_errors(change: dict[str, Any]) -> None:
         Deadline.model_validate({**example()["deadlines"][0], **change})
 
 
-def test_deadline_cross_field_rules_are_deferred_to_issue_17() -> None:
+def test_deadline_cross_field_rules_are_enforced_by_issue_17() -> None:
     data = {**example()["deadlines"][0], "rolling": True, "timezone": None}
-    deadline = Deadline.model_validate(data)
-    assert deadline.rolling and deadline.date is not None and deadline.timezone is None
-    record = from_gold_label({**example(), "deadlines": [data, data]})
-    assert len(record.deadlines) == 2
+    with pytest.raises(ValidationError):
+        Deadline.model_validate(data)
+    valid = example()["deadlines"][0]
+    with pytest.raises(ValidationError, match="exact duplicate deadline"):
+        from_gold_label({**example(), "deadlines": [valid, valid]})
 
 
 def test_extractor_metadata_and_unknown_keys() -> None:

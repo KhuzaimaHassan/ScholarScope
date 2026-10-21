@@ -32,13 +32,13 @@ Verification defaults to `not_checked`. Only deterministic verifier #20 sets `ve
 
 ## Gold conversion and JSON Schema
 
-`from_gold_label(dict) -> RequirementRecord` copies a label without mutating it and sets every generic field's verification to `not_checked`. It preserves content values, quotes, links, conditions, deadlines, source and label metadata. It is a structural converter, not a replacement for the hand-label validator; conversion does not certify a skeleton as labeled. Gold files and snapshots remain untouched.
+`from_gold_label(dict) -> RequirementRecord` copies a label without mutating it and sets every generic field's and deadline's verification to `not_checked`. It preserves content values, quotes, links, conditions, deadlines, source and label metadata. It is a structural converter, not a replacement for the hand-label validator; conversion does not certify a skeleton as labeled. Gold files and snapshots remain untouched.
 
 `to_json_schema()` exports a local JSON Schema. A regression test compares all gold-schema property names (including nested source, evidence and label metadata) with the exported schema, checks the seven claim-field names exactly, and exercises the fictional example. Typed value constraints supplement the gold schema's deliberately permissive `value` property according to doc 07. JSON round trips preserve the `pass` alias in labeler metadata.
 
 ## Deliberately deferred
 
-- **#17:** full timezone, rolling/date, deadline-status and multiple-deadline cross-field policy. This issue validates primitive types, date/time formats, actual calendar dates, and vocabulary only; it does not infer years/timezones or implement buffers.
+- **#17 implemented:** [Deadline validation and resolution](11-deadlines.md) now cover timezone recognition, rolling/date/time rules, exact duplicate rejection, verifier-owned deadline state and neutral resolution/comparison/ordering. Buffers and checklist generation remain #40; no year/timezone is inferred.
 - **#19:** LLM calls, prompts/retries, provider handling, and ensuring extractor output cannot claim verifier authority.
 - **#20:** quote matching, evidence presence/support checks, and deterministic verification transitions. `present` does not mean verified. Conditions/deadlines keep gold's structural shapes; this issue does not make them usable for decision logic.
 
