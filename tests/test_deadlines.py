@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import subprocess
+import sys
 from datetime import UTC, date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
@@ -199,31 +201,84 @@ def test_compare_instants(now: datetime, expected: str) -> None:
 
 @pytest.mark.parametrize("unknown_zone", [False, True])
 @pytest.mark.parametrize(
-    "day, hour, expected",
-    [(19, 23, "upcoming"), (20, 0, "upcoming"), (20, 23, "upcoming"), (21, 0, "past")],
+    "utc_now, expected",
+    [
+        (datetime(2027, 1, 19, 23, tzinfo=UTC), "upcoming"),
+        (datetime(2027, 1, 20, 9, 59, 59, 999999, tzinfo=UTC), "upcoming"),
+        (datetime(2027, 1, 20, 10, tzinfo=UTC), "unknown"),
+        (datetime(2027, 1, 20, 18, tzinfo=UTC), "unknown"),
+        (datetime(2027, 1, 21, 11, 59, 59, 999999, tzinfo=UTC), "unknown"),
+        (datetime(2027, 1, 21, 12, tzinfo=UTC), "past"),
+        (datetime(2027, 1, 21, 12, 0, 1, tzinfo=UTC), "past"),
+    ],
 )
-def test_date_past_only_on_following_calendar_day(
+@pytest.mark.parametrize("offset_hours", [-12, 5, 14])
+def test_date_comparison_global_window_is_offset_invariant(
     unknown_zone: bool,
-    day: int,
-    hour: int,
+    utc_now: datetime,
     expected: str,
+    offset_hours: int,
 ) -> None:
     item = deadline(timezone="unknown") if unknown_zone else deadline(time=None, timezone=None)
-    now = datetime(2027, 1, day, hour, tzinfo=timezone(timedelta(hours=5)))
+    now = utc_now.astimezone(timezone(timedelta(hours=offset_hours)))
     assert compare(item, now) == expected
 
 
-def test_date_comparison_uses_supplied_calendar_not_utc() -> None:
-    item = deadline(time=None, timezone=None)
-    now = datetime(2027, 1, 21, tzinfo=timezone(timedelta(hours=5)))
-    assert now.astimezone(UTC).date() == date(2027, 1, 20)
-    assert compare(item, now) == "past"
+@pytest.mark.parametrize("unknown_zone", [False, True])
+def test_review_example_does_not_prematurely_expire(unknown_zone: bool) -> None:
+    item = (
+        deadline(date="2026-10-21", timezone="unknown")
+        if unknown_zone
+        else deadline(
+            date="2026-10-21",
+            time=None,
+            timezone=None,
+        )
+    )
+    now = datetime(2026, 10, 22, 1, tzinfo=timezone(timedelta(hours=5)))
+    assert compare(item, now) == "unknown"
 
 
 def test_naive_now_rejected_even_for_unresolved() -> None:
-    for item in [deadline(), deadline(rolling=True, date=None)]:
+    for item in [
+        deadline(),
+        deadline(rolling=True, date=None),
+        deadline(time=None, timezone=None),
+        deadline(timezone="unknown"),
+    ]:
         with pytest.raises(ValueError, match="timezone-aware"):
             compare(item, datetime(2027, 1, 20))
+
+
+@pytest.mark.parametrize("optimized", [False, True])
+def test_resolve_missing_known_zone_raises_even_when_optimized(optimized: bool) -> None:
+    # Exercise the defensive guard with an injected impossible helper outcome.
+    # No page data, snapshots or files are involved; -O must not remove the guard.
+    code = """
+from scholarscope import deadlines
+from scholarscope.schema import Deadline
+d = Deadline.model_validate({
+    'label': 'Fictional', 'type': 'application', 'cycle_year': 2027,
+    'date': '2027-01-20', 'time': '12:00', 'timezone': 'UTC',
+    'rolling': False, 'status': 'present', 'evidence': [{'quote': 'Fictional notice'}],
+})
+deadlines.timezone_info = lambda _: None
+try:
+    deadlines.resolve(d)
+except ValueError as exc:
+    print(str(exc))
+else:
+    raise SystemExit('Expected explicit ValueError')
+"""
+    result = subprocess.run(
+        [sys.executable, *(["-O"] if optimized else []), "-B", "-c", code],
+        cwd=Path(__file__).resolve().parent.parent,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stderr
+    assert "cannot resolve a datetime without a known timezone" in result.stdout
 
 
 def test_compare_unresolved() -> None:

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 from dataclasses import dataclass
-from datetime import UTC, date, datetime
+from datetime import UTC, date, datetime, timedelta
 from typing import Literal
 from zoneinfo import ZoneInfo
 
@@ -37,7 +37,8 @@ def resolve(deadline: Deadline) -> ResolvedDeadline:
     if deadline.timezone is None or deadline.timezone == "unknown":
         return ResolvedDeadline(None, local_date, "date", "timezone unknown; time not trusted")
     zone = timezone_info(deadline.timezone)
-    assert zone is not None
+    if zone is None:
+        raise ValueError("cannot resolve a datetime without a known timezone")
     naive = datetime.fromisoformat(f"{deadline.date}T{deadline.time}")
     local = naive.replace(tzinfo=zone, fold=0)
     instant = local.astimezone(UTC)
@@ -55,11 +56,11 @@ def resolve(deadline: Deadline) -> ResolvedDeadline:
 
 
 def compare(deadline: Deadline, now: datetime) -> Literal["past", "upcoming", "unknown"]:
-    """Date precision stays upcoming throughout its calendar day, never at midnight.
+    """Use a global closing window for date precision, not the caller's calendar.
 
-    With a known source zone use that calendar. Otherwise the caller's explicit
-    aware `now` supplies the reference calendar, not an inferred source timezone.
-    Callers needing a source-local guarantee must provide/confirm that calendar.
+    For date D: upcoming before D 10:00 UTC, past at/after (D+1) 12:00
+    UTC, unknown in between. These UTC+14/UTC-12 bounds do not assign a
+    source timezone or turn the date into an exact closing instant.
     """
     if now.tzinfo is None or now.utcoffset() is None:
         raise ValueError("now must be timezone-aware")
@@ -69,9 +70,15 @@ def compare(deadline: Deadline, now: datetime) -> Literal["past", "upcoming", "u
     if resolved.instant_utc is not None:
         return "past" if resolved.instant_utc < now else "upcoming"
     assert resolved.local_date is not None
-    zone = timezone_info(deadline.timezone) if deadline.timezone is not None else None
-    current_date = now.astimezone(zone).date() if zone is not None else now.date()
-    return "past" if current_date > resolved.local_date else "upcoming"
+    day_start = datetime.combine(resolved.local_date, datetime.min.time(), tzinfo=UTC)
+    earliest_end = day_start + timedelta(hours=10)
+    latest_end = day_start + timedelta(days=1, hours=12)
+    utc_now = now.astimezone(UTC)
+    if utc_now < earliest_end:
+        return "upcoming"
+    if utc_now >= latest_end:
+        return "past"
+    return "unknown"
 
 
 class OrderedDeadlines(list[Deadline]):

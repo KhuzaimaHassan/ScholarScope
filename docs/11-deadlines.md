@@ -28,9 +28,17 @@ For IANA zones, `fold=0` is always used. At a fall-back overlap this selects the
 
 ## Conservative comparison
 
-`compare(deadline, now)` requires an aware `now`; it never reads today's date or the machine timezone. Datetime precision compares instants (past only strictly after the deadline; equality is upcoming). Date precision remains upcoming throughout that date and becomes past only on a later calendar day. Unresolved deadlines yield `unknown`.
+`compare(deadline, now)` requires an aware `now`; it never reads today's date or the machine timezone. Datetime precision is unchanged: compare instants (past only strictly after the deadline; equality is upcoming). Unresolved deadlines yield `unknown`.
 
-Use the deadline's timezone calendar when a known zone is available. With no known source zone (date-only or `unknown` zone), the explicitly supplied `now` calendar is the reference; no UTC/country/institution default is invented. A caller needing a source-local guarantee must supply or confirm the appropriate reference calendar. This limitation cannot be resolved from a date-only page alone. It is not a fabricated source timezone, nor an assumed closing time.
+For precision `date` (both a date without a time and a time with an unknown zone), compare the UTC instant of `now` against a global closing window for the stated local date D:
+
+- `upcoming` only **before D at 10:00 UTC**, the end of D in the easternmost zone UTC+14.
+- `past` only **at or after (D + 1 day) at 12:00 UTC**, the end of D in the westernmost zone UTC-12.
+- `unknown` throughout the interval between those bounds, including the first bound but excluding the last. The outcome depends on which zone the page meant: **unknown is the safe answer**.
+
+These bounds do not assign a source timezone, invent an exact closing time, or change `resolve`'s date precision. The caller's timezone is irrelevant: the same instant expressed in UTC-12, UTC+05:00 or UTC+14 produces the same comparison. The unreachable known-zone/date-only branch is removed; the model forbids timezone without time, while time with a known zone resolves to datetime precision.
+
+For example, D=21 October and `now`=22 October 01:00 at UTC+05:00 is inside the window and returns `unknown`, never prematurely `past`. The resolver's defensive known-zone check explicitly raises ValueError rather than relying on an assertion, including under Python `-O`.
 
 ## Ordering and verification safety
 
