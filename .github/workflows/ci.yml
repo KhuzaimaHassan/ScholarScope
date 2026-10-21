@@ -24,7 +24,7 @@ jobs:
       - name: Install quality tools
         run: >-
           python -m pip install --upgrade pip ruff pytest mypy jsonschema
-          httpx beautifulsoup4 lxml pypdf reportlab "pydantic>=2.12,<3"
+          httpx beautifulsoup4 lxml pypdf reportlab "pydantic>=2.12,<3" tzdata
 
       - name: Lint
         run: ruff check .
