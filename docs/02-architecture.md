@@ -42,7 +42,7 @@ URL ──► Fetcher ──► Cleaner ──► Segmenter ──► Extractor 
 
 ```
 Program(id, url, fetched_at, content_hash, institution, country, ...)
-Passage(id, program_id, text, start, end)
+Passage(id, index, start, end, text_hash, section_heading, locator, source_refs, exceeds_max) -- text is a property slicing the shared immutable SegmentedDocument.text; no stored passage copy (ADR 011)
 ExtractedField(id, program_id, name, value_json, evidence[{quote, passage_id, locator}], status[present|absent|ambiguous|in_linked_document], verification[not_checked|verified|unverified], linked_url, notes, confidence[advisory], model, prompt_version) -- usable_for_logic iff present and verified (ADR 010)
 Deadline(id, program_id, extracted_field_id, type[application|document|recommender|scholarship|interview|other],
          cycle_year, date, time, timezone, rolling[bool], notes)   -- multiple per program
