@@ -4,7 +4,7 @@
 
 ## 1. Design principles
 
-1. **Evidence or abstain.** A field is shown as `verified` only if its quote is found in the cited passage. A field that fails this check is **retained but marked `unverified`**: it stays visible with a "check official page" notice and is **excluded from eligibility and checklist logic**.
+1. **Evidence or abstain.** A field is shown as `verified` only if every quote is found in its cited passage or a contiguous match starting/ending there across adjacent passages (ADR 012). A field that fails this check is **retained but marked `unverified`**: it stays visible with a "check official page" notice and is **excluded from eligibility and checklist logic**.
 2. **LLMs extract; code decides.** Eligibility and date logic are deterministic and unit-tested. The LLM never produces the final verdict. **LLM confidence is advisory only** (display and triage) and never affects eligibility or checklist output.
 3. **Measure everything.** Every pipeline change is scored against the gold set in CI.
 4. **Free-tier friendly.** Must run on free LLM tiers and a free host; model provider is swappable.
@@ -14,7 +14,7 @@
 
 ```
 URL ──► Fetcher ──► Cleaner ──► Segmenter ──► Extractor ──► Evidence Verifier ──► Requirement Record
-        (httpx,     (main       (passages     (LLM,          (exact/fuzzy match      │
+        (httpx,     (main       (passages     (LLM,          (exact/normalized       │
         Playwright  content,    with stable   structured     of quote in source;     ▼
         fallback,   PDF text)   IDs + offsets) output,       fail=unverified)     Eligibility Engine ──► Checklist Generator
         robots.txt)                          Pydantic)                          (rules, profile)        (dates, missing docs)
@@ -29,7 +29,7 @@ URL ──► Fetcher ──► Cleaner ──► Segmenter ──► Extractor 
 | **PDF text extraction** | Extract per-page text with pypdf layout mode; flag scanned/low-text and password-protected PDFs as unsupported | [PDF extraction contract](09-pdf-extraction.md): normalized page offsets and physical page locators; no OCR |
 | **Segmenter** | Split into passages with stable IDs and character offsets | Evidence points to passage ID + span |
 | **Extractor** | LLM call(s) producing a typed Requirement Record with `{status, verification, value, evidence[], linked_url, notes, confidence}` fields; evidence holds quote, passage ID and locator | Verification starts `not_checked`; only the deterministic verifier sets `verified`/`unverified` (ADR 010). `confidence` is advisory only |
-| **Evidence Verifier** | Confirms each quote **exists** in the cited passage (exact, then normalized fuzzy). Fails → field becomes `unverified` (kept, not dropped) | Pure code, deterministic. It proves *presence* only. Whether the quote actually *supports* the value is a separate, human-audited quality metric (see `03-evaluation-plan.md`) |
+| **Evidence Verifier** | Confirms every quote **exists** in its cited passage or a contiguous match starting/ending there across adjacent passages (exact, then formatting normalization; ADR 012). Fails → claim becomes `unverified` (kept, not dropped) | Pure code, deterministic; no character-edit fuzzy matching. It proves *presence* only. Whether the quote actually *supports* the value is a separate, human-audited quality metric (see `03-evaluation-plan.md`) |
 | **Eligibility Engine** | Rules over `(RequirementRecord, Profile)` → `eligible / not_eligible / unclear` + reasons. Uses **verified fields only**; any rule that needs an `unverified` or missing field yields `unclear` | Unit-tested; unknown data → `unclear`, never a guess. Every rule carries provenance (see section 3) |
 | **Checklist Generator** | Dated tasks from deadline(s), missing documents, test dates | Buffers configurable |
 | **Plugin interface** | `SiteParser` protocol: `can_handle(url)`, `parse(raw) -> RequirementRecord` | Enables contributions |

@@ -20,7 +20,7 @@ The credibility of this project rests on measured accuracy. The evaluation set i
 |---|---|
 | Field precision / recall | Per field, value match vs. gold (normalized) |
 | Deadline exact-match | Date **and** deadline type, cycle/year, and timezone equal to gold, per deadline; rolling status correct |
-| Evidence presence | % of fields with `verification="verified"` whose quote is found in the cited passage. **Deterministic invariant, target 100%**; any miss is a bug in the verifier, because failures must already have `verification="unverified"`. Content `status="present"` alone does not imply verification |
+| Evidence presence | % of fields with `verification="verified"` whose every quote is found in the cited passage or a contiguous match starting/ending there across adjacent passages (ADR 012; formatting normalization only, no character edits). **Deterministic invariant, target 100%**; any miss is a bug in the verifier, because failures must already have `verification="unverified"`. Content `status="present"` alone does not imply verification |
 | Evidence support | % of verified quotes that a human agrees actually **support** the extracted value (sampled audit, 50 fields). **Quality metric, not an invariant**: presence does not prove support |
 | Abstention quality | Compare content status with gold (absent/ambiguous/linked versus present); separately audit withholding due to `verification="not_checked"` or `"unverified"`. Failed verification does not imply that gold says absent; the retained value may still be correct |
 | Eligibility agreement | Verdict vs. hand-labeled verdict for 5 synthetic profiles per program |
