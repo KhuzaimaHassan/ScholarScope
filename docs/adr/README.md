@@ -14,3 +14,4 @@ These records capture the accepted architecture and policy decisions for Scholar
 | [008](008-unverified-fields-retained-but-excluded.md) | Unverified fields are retained but excluded from logic |
 | [009](009-eligibility-rule-provenance.md) | Eligibility rules carry provenance |
 | [010](010-two-axis-field-status.md) | Separate content status from evidence verification |
+| [011](011-passage-ids-and-segmentation.md) | Deterministic passage IDs, source references and bounded segmentation |
