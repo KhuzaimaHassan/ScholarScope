@@ -16,6 +16,9 @@ from typing import Literal
 from bs4 import BeautifulSoup, Comment, Declaration, Doctype, NavigableString, ProcessingInstruction
 from bs4.element import PageElement, Tag
 
+# Bump whenever extraction behavior changes; snapshot hashes depend on these rules.
+CLEANER_VERSION = "1"
+
 _REMOVED_TAGS = frozenset(
     {
         "nav",

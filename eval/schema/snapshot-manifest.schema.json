@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ScholarScope public snapshot manifest (metadata only)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "snapshots"],
+  "properties": {
+    "schema_version": {"const": "0.1"},
+    "snapshots": {
+      "type": "object",
+      "propertyNames": {"pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
+      "additionalProperties": {"$ref": "#/$defs/snapshot"}
+    }
+  },
+  "$defs": {
+    "hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "version": {"type": ["string", "null"], "minLength": 1},
+    "snapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["slug", "url", "final_url", "retrieved_on", "format", "bytes", "content_sha256", "cleaned_text_sha256", "text_chars", "cleaner_version", "pdf_extractor_version", "segmenter_version", "passage_count", "extraction_status"],
+      "properties": {
+        "slug": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
+        "url": {"type": "string", "pattern": "^https?://\\S+$"},
+        "final_url": {"type": "string", "pattern": "^https?://\\S+$"},
+        "retrieved_on": {"type": "string", "format": "date", "pattern": "^\\d{4}-\\d{2}-\\d{2}$"},
+        "format": {"enum": ["html", "pdf"]},
+        "bytes": {"type": "integer", "minimum": 0},
+        "content_sha256": {"$ref": "#/$defs/hash"},
+        "cleaned_text_sha256": {"$ref": "#/$defs/hash"},
+        "text_chars": {"type": "integer", "minimum": 0},
+        "cleaner_version": {"$ref": "#/$defs/version"},
+        "pdf_extractor_version": {"$ref": "#/$defs/version"},
+        "segmenter_version": {"type": "string", "minLength": 1},
+        "passage_count": {"type": "integer", "minimum": 0},
+        "extraction_status": {"enum": ["ok", "scanned_unsupported", "encrypted_unsupported", "invalid"]}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"format": {"const": "html"}}},
+          "then": {"properties": {"cleaner_version": {"type": "string"}, "pdf_extractor_version": {"type": "null"}, "extraction_status": {"const": "ok"}}},
+          "else": {"properties": {"cleaner_version": {"type": "null"}, "pdf_extractor_version": {"type": "string"}}}
+        }
+      ]
+    }
+  }
+}
