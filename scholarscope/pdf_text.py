@@ -10,6 +10,9 @@ from pypdf import PageObject, PdfReader
 from pypdf.errors import DependencyError, FileNotDecryptedError, WrongPasswordError
 from pypdf.generic import ArrayObject, NullObject, StreamObject
 
+# Bump whenever extraction behavior changes; snapshot hashes depend on these rules.
+PDF_EXTRACTOR_VERSION = "1"
+
 PDFStatus = Literal["ok", "scanned_unsupported", "encrypted_unsupported", "invalid"]
 MIN_CHARACTERS_PER_PAGE = 25
 
