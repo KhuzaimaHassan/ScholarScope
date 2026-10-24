@@ -187,10 +187,18 @@ class LanguageValue(RecordModel):
 
 
 class ConditionBase(RecordModel):
+    """An evidence-bearing claim; verifier state never establishes value support."""
+
     required: bool
     applies_to: str | None
     evidence: Annotated[list[Evidence], PydanticField(min_length=1)]
     notes: str | None = None
+    verification: Verification = "not_checked"
+
+    @property
+    def usable_for_logic(self) -> bool:
+        """Conditions are claims (no absent status); only checked presence is usable."""
+        return self.verification == "verified"
 
 
 class GPACondition(ConditionBase):
@@ -352,4 +360,6 @@ def from_gold_label(label: dict[str, Any]) -> RequirementRecord:
         field["verification"] = "not_checked"
     for deadline in data["deadlines"]:
         deadline["verification"] = "not_checked"
+    for condition in data["conditions"]:
+        condition["verification"] = "not_checked"
     return RequirementRecord.model_validate(data)
