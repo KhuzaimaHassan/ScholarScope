@@ -82,4 +82,4 @@ Each deterministic eligibility rule records: a stable ID and version, a plain-la
 
 - JS-heavy sites → Playwright fallback adds latency; mitigated by cache.
 - Long pages exceed context → passage-level retrieval before extraction.
-- Rate-limited free LLM tiers → queue, retries, response caching keyed by content hash + prompt version.
+- Rate-limited free LLM tiers → queue, retries, response caching keyed by the canonical provider/model, trusted messages, passage IDs/text, response schema, generation parameters and prompt version (see `15-llm-interface.md`).
