@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from typing import Any
 
 from scholarscope.llm.base import BaseClient, StructuredRequest, StructuredResponse, T, Usage
@@ -12,7 +12,11 @@ class FakeClient(BaseClient):
     provider = "fake"
 
     def __init__(
-        self, model: str = "fake-v1", *, responses: Sequence[str] = (), **kwargs: Any
+        self,
+        model: str = "fake-v1",
+        *,
+        responses: Sequence[str | Callable[[StructuredRequest[Any]], str]] = (),
+        **kwargs: Any,
     ) -> None:
         super().__init__(model, **kwargs)
         self._responses = list(responses)
@@ -30,4 +34,4 @@ class FakeClient(BaseClient):
             return None, Usage(), 0, "fake response script exhausted"
         raw = self._responses[self.calls]
         self.calls += 1
-        return raw, Usage(), 1, None
+        return raw(request) if callable(raw) else raw, Usage(), 1, None

@@ -1,0 +1,35 @@
+Extract ONLY deadlines_status, deadlines, linked_url and notes.
+Each deadline has label, type, cycle_year, date, time, timezone, rolling, status,
+evidence and notes. Types: application, document, recommender, scholarship,
+interview, other. Rolling requires date null. Present nonrolling requires a date.
+An ambiguous deadline requires date null and evidence for conflicting candidates
+in notes. Keep separate entries for different cycles/types/routes; do not duplicate.
+Do not invent a date when the year is missing: retain the wording as ambiguous.
+The whole set is absent when unstated; linked sets have no entries and a linked_url.
+Ambiguous sets may contain candidate entries; conditions are not deadlines.
+
+Copy quotes verbatim, at most 400 characters each: choose the shortest passage
+that carries the fact; use several quotes for facts split across passages.
+Cite passage_id exactly as supplied. Never infer or guess. Do not set verification.
+For ordinary fields use status absent, value null, evidence [] when unstated.
+Use in_linked_document with linked_url, value null and evidence [] when the page
+points elsewhere; never follow links. Ambiguous fields have value null and quotes;
+put conflicting candidates in notes. Present fields need nonempty values and quotes.
+Return every schema property; use null for missing nullable properties.
+
+Normalize values only (never rewrite quotes): dates YYYY-MM-DD, with a year only
+when explicitly stated in the sentence, row or directly governing heading. Never
+infer the year from today. Times HH:MM (24 hour); leave midnight/end of day/close
+of business uninterpreted with time null. Timezone only if explicitly named;
+unknown if time is given without a zone, null if time is null. JST -> Asia/Tokyo,
+Beijing time -> Asia/Shanghai, CET -> UTC+01:00, CEST -> UTC+02:00. Other abbreviations
+become an explicit UTC offset only when unambiguous, otherwise unknown with notes.
+Money: amount/currency/period as stated, never converted; up to -> amount_max.
+GPA: {value, scale} as stated; missing scale -> condition kind other, never assume
+4.0. Degree levels require explicit words: master/MSc/MA/laurea magistrale -> master;
+PhD/doctoral -> phd; graduate alone is ambiguous. Nationality wording stays verbatim.
+Closed/stale cycles stay as printed; never modernize them. Explicit not required
+conditions use required false. Recommenders explicitly not required use counts 0.
+For language alternatives use logic any or all with options exactly as stated.
+Use only the fictional Example Excellence Scholarship for illustrative reasoning;
+no outside knowledge or examples may supply missing facts.
