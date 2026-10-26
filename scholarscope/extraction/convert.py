@@ -64,6 +64,8 @@ def convert_group(
     if group in {"identity", "funding", "documents"}:
         for name, raw in data.items():
             annotation = RequirementFields.model_fields[name].annotation
+            if annotation is None:
+                raise ValueError("canonical field must define a type annotation")
             try:
                 value: Any = TypeAdapter(annotation).validate_python(_unchecked(raw))
             except ValidationError as error:
