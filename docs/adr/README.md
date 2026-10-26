@@ -16,3 +16,4 @@ These records capture the accepted architecture and policy decisions for Scholar
 | [010](010-two-axis-field-status.md) | Separate content status from evidence verification |
 | [011](011-passage-ids-and-segmentation.md) | Deterministic passage IDs, source references and bounded segmentation |
 | [012](012-verifier-matching-rules.md) | Formatting-only quote presence checks and original offsets |
+| [013](013-field-group-extraction-and-wire-schemas.md) | Field-group wire schemas with local domain validation and mandatory verification |
