@@ -25,20 +25,26 @@ tool execution or rendering of active Markdown/HTML automatically.
 ## Request fencing and cache identity
 
 The shared renderer in llm/base.py wraps one JSON array inside the exact fences
-`[BEGIN UNTRUSTED DATA V2]` and `[END UNTRUSTED DATA V2]`. Only renderer-owned JSON
-record structure and passage_id properties identify passages. In JSON string
-values, only ASCII letters/digits/spaces remain literal; punctuation, controls
-and non-ASCII characters are escaped losslessly. Decoding recovers the original
-IDs/text, including Unicode, literal backslashes and line breaks. Source text
-cannot insert a raw closing fence, another record/header or a system/task section.
-This does not erase the meaning of instructions after a model reads the data.
+`[BEGIN UNTRUSTED DATA V3]` and `[END UNTRUSTED DATA V3]`. Only renderer-owned JSON
+record structure and passage_id properties identify passages. Strings use standard
+JSON (`ensure_ascii=False`), then escape only square brackets, angle brackets,
+vertical bars and backticks as Unicode escapes. URLs, dates, colons/commas and
+non-ASCII text remain readable. JSON still escapes quotes, backslashes and
+newlines normally; source header-like text stays inside a quoted string rather
+than creating a separate passage, system or task line. Fence/tag building blocks
+cannot appear raw inside source strings. Decoding recovers the original IDs/text
+exactly. This does not erase the meaning of instructions after a model reads data.
 
 Gemini, Groq and Ollama all use this single renderer. Their native system field
 remains the trusted request.system, and the original request.task is not edited.
-`RENDERING_VERSION="2"` is part of the cache key, so older rendering results are
+`RENDERING_VERSION="3"` is part of the cache key, so older rendering results are
 not replayed. Any rendering behavior change must bump this version. Quotes are
 copied from the decoded strings and verified against the original document,
 never against the escaped provider-message representation.
+
+The normal-prose regression fixture measures 5,162 rendered characters for 5,000
+source characters (1.0324x, including fences and JSON record overhead). This is
+an example, not a general bound for delimiter-heavy or control-heavy payloads.
 
 ## URL provenance and advisory findings
 
@@ -50,6 +56,13 @@ case change or percent-decoded reconstruction cannot supply a URL. A failed item
 is recorded with reason exactly `URL_NOT_ON_PAGE`, original raw input and index;
 valid sibling claims/deadlines survive. No URL is repaired, followed or fetched.
 This intentionally rejects some legitimate links not visible in cleaned text.
+
+**Known limitation:** the cleaner keeps no link targets. An application_link or
+linked_url present only as an href attribute is rejected as `URL_NOT_ON_PAGE`.
+Fixing this requires a cleaner change, a CLEANER_VERSION bump and review of
+snapshot drift/derived hashes, offsets and passage IDs. It is out of scope here;
+[M1 issue #81](https://github.com/KhuzaimaHassan/ScholarScope/issues/81) tracks it.
+Application-link recall depends on preserving those source targets.
 
 The scan reports SuspiciousPassage(passage_id, reasons) in document order, with
 fixed-order reason codes: instruction_override, fake_role_tag, requested_output,
@@ -93,7 +106,7 @@ cleaner version change, not a silent filter in this issue.
 | False factual page content | Verifier checks quote presence only (ADR 003/012) | Genuine false source content can be verified; support, authority and truth need separate review |
 | Hidden instructions | Static cleaner excludes the four audited hiding mechanisms above | Tiny/zero-size and stylesheet-hidden cases remain in passages |
 | Advisory detection bypass | Deterministic findings help audit/debugging | False positives/negatives; no security decision can depend on a clean scan |
-| Context size | Existing selection budgets original passage characters | JSON escaping increases request size; the soft character target is not a provider token limit |
+| Context size | Readable JSON with only six additional escaped characters keeps inflation small for normal prose | Fences/JSON add overhead; delimiter-heavy text expands more, and the soft character target is not a provider token limit |
 | **Deferred to M3** | Reusable fictional adversarial fixtures committed for offline boundary tests | **Live-provider adversarial evaluation using these same fixtures**, comparing real-model compliance in the M3 harness; not performed here |
 
 The obeyed-fake-deadline test **documents a residual risk, not a defended case**.

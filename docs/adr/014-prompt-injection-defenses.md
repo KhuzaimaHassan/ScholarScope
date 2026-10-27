@@ -14,11 +14,15 @@ measurement to M3 rather than claiming output invariance.
 
 ## Decision
 
-Use one shared fenced JSON rendering for all adapters. Losslessly escape source
-punctuation/control characters and Unicode inside string values so source text
-cannot close fences, fake another passage record or create trusted sections.
-Keep original segmented text/offsets untouched. Include RENDERING_VERSION (now 2)
-in the cache key; bump it for any rendering behavior change.
+Use one shared fenced JSON rendering for all adapters (V3 markers). Encode strings
+with json.dumps(ensure_ascii=False), then additionally escape only square/angle
+brackets, vertical bars and backticks as Unicode escapes. Keep URLs, normal
+punctuation and non-ASCII text readable; standard JSON quotes and escaped newlines
+keep header-like text inside strings rather than creating separate records or
+trusted sections. Decoding recovers the original text. Keep segmented text/offsets
+untouched. Include RENDERING_VERSION (now 3) in the cache key; bump it for any
+rendering behavior change. Normal-prose size inflation is small; delimiter-heavy
+payloads can expand more, and the character budget remains a soft target.
 
 After canonical conversion, reject application_link values and all field-level/
 deadline-set linked_url metadata unless they occur verbatim in the selected

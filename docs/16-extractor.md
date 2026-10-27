@@ -135,3 +135,11 @@ hidden text that survives cleaning, and real-model compliance remain residual
 risks; live-provider adversarial evaluation using the reusable fixtures is deferred
 to M3. The old claim that injected instructions cannot change any output is not
 made; the owner-approved interpretation is recorded in issue #21's comment.
+
+**Known limitation:** the cleaner keeps no link targets. An application_link or
+linked_url that exists only as an href is rejected as `URL_NOT_ON_PAGE` because
+it is absent from the passage text. Fixing this needs a cleaner change with a
+CLEANER_VERSION bump and snapshot-drift review (derived hashes, offsets and
+passage IDs may change even when raw HTML does not). This is out of scope here;
+[M1 issue #81](https://github.com/KhuzaimaHassan/ScholarScope/issues/81) tracks it.
+Application-link recall depends on that follow-up.
