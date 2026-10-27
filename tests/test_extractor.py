@@ -94,7 +94,7 @@ def content(case: str) -> bytes:
         "table": "<table><tr><td>Funding</td><td>500 USD each month</td></tr></table>",
         "list": "<ul><li>A transcript is required.</li><li>A passport is required.</li></ul>",
         "headings": "<h2>Eligibility requirements</h2><h3>Degree route</h3><p>Master students only.</p>",
-        "linked": "<p>See the linked application document.</p>",
+        "linked": "<p>See the linked application document: https://example.invalid/call.pdf</p>",
         "rolling": "<p>Applications are accepted on a rolling basis.</p>",
         "two_cycles": "<p>Apply by 1 May 2027.</p><p>Apply by 1 May 2028.</p>",
         "stale": "<p>Apply by 1 May 2020.</p>",

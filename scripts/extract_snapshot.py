@@ -7,6 +7,7 @@ import hashlib
 import json
 import re
 import sys
+from dataclasses import asdict
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -64,6 +65,7 @@ def main() -> int:
                 else None,
                 "failed_groups": result.extraction.failed_groups if result.extraction else [],
                 "rejected_items": len(result.extraction.rejected_items) if result.extraction else 0,
+                "suspicious_passages": [asdict(item) for item in result.suspicious_passages],
             }
         )
     )

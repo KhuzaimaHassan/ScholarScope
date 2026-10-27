@@ -116,8 +116,30 @@ to run_pipeline. The script was not run as part of implementation.
 ## Deliberate limits
 
 This issue measures no accuracy and labels no real pages. Eleven synthetic page
-layouts exercise contracts, not product quality. Injection hardening remains
-#21; this baseline does not claim a hostile model obeys the prompt. Prompt registry
+layouts exercise contracts, not product quality. Boundary defenses do not claim
+a hostile model obeys the prompt. Prompt registry
 and experiment management remain #22; version tags here identify fixed v1 files.
 No inference from country/year, currency conversion, OCR, link following,
 eligibility decisions, character-edit quote matching, or new dependencies.
+
+## Injection defenses and remaining risks
+
+[Threat model 17](17-threat-model-injection.md) and [ADR 014](adr/014-prompt-injection-defenses.md)
+describe shared escaped fencing, rendering-version cache invalidation, literal
+URL provenance on each group's selected passages, and advisory suspicious_passages
+on PipelineResult/manual script output. Rejected URLs use URL_NOT_ON_PAGE; valid
+siblings survive. A URL must appear in cleaned text, not merely an href attribute.
+Original passages and cleaner behavior are unchanged. The scan never filters data
+or changes verification. False page content (including an obeyed fake deadline),
+hidden text that survives cleaning, and real-model compliance remain residual
+risks; live-provider adversarial evaluation using the reusable fixtures is deferred
+to M3. The old claim that injected instructions cannot change any output is not
+made; the owner-approved interpretation is recorded in issue #21's comment.
+
+**Known limitation:** the cleaner keeps no link targets. An application_link or
+linked_url that exists only as an href is rejected as `URL_NOT_ON_PAGE` because
+it is absent from the passage text. Fixing this needs a cleaner change with a
+CLEANER_VERSION bump and snapshot-drift review (derived hashes, offsets and
+passage IDs may change even when raw HTML does not). This is out of scope here;
+[M1 issue #81](https://github.com/KhuzaimaHassan/ScholarScope/issues/81) tracks it.
+Application-link recall depends on that follow-up.

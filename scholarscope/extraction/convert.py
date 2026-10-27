@@ -6,6 +6,7 @@ from typing import Any
 
 from pydantic import TypeAdapter, ValidationError
 
+from scholarscope.extraction.guards import url_on_page
 from scholarscope.schema import Condition, Deadline, RequirementFields, RequirementRecord
 
 
@@ -42,6 +43,7 @@ def convert_group(
     data: dict[str, Any],
     record_data: dict[str, Any],
     *,
+    sent_passages: tuple[tuple[str, str], ...],
     original: dict[str, Any] | None = None,
 ) -> list[RejectedItem]:
     """Populate a draft record, with no implicit claim of quote presence.
@@ -72,7 +74,14 @@ def convert_group(
                 rejected.append(RejectedItem(group, name, _reason(error), raw_item(name)))
                 record_data["fields"][name] = absent(f"EXTRACTION_REJECTED:{group}:{name}")
             else:
-                record_data["fields"][name] = value.model_dump()
+                urls = [value.linked_url] if value.linked_url is not None else []
+                if name == "application_link" and value.value is not None:
+                    urls.append(value.value)
+                if any(not url_on_page(url, sent_passages) for url in urls):
+                    rejected.append(RejectedItem(group, name, "URL_NOT_ON_PAGE", raw_item(name)))
+                    record_data["fields"][name] = absent(f"EXTRACTION_REJECTED:{group}:{name}")
+                else:
+                    record_data["fields"][name] = value.model_dump()
         return rejected
 
     items = data[group]
@@ -91,6 +100,12 @@ def convert_group(
     record_data[group] = accepted
     if group == "deadlines":
         status = data["deadlines_status"]
+        linked_url = data["linked_url"]
+        if linked_url is not None and not url_on_page(linked_url, sent_passages):
+            rejected.append(RejectedItem(group, "set", "URL_NOT_ON_PAGE", deepcopy(original)))
+            linked_url = None
+            if status == "in_linked_document":
+                status = "absent"
         if status in {"absent", "in_linked_document"} and items:
             # This inconsistency is a set-level failure, not an empty successful set.
             rejected.append(
@@ -98,7 +113,7 @@ def convert_group(
             )
             record_data["deadlines"] = []
             status = "absent"
-        if status == "in_linked_document" and not (data["linked_url"] or "").strip():
+        if status == "in_linked_document" and not (linked_url or "").strip():
             rejected.append(
                 RejectedItem(group, "set", "linked set needs linked_url", deepcopy(data))
             )
@@ -113,9 +128,7 @@ def convert_group(
         # The canonical Record has no set-level linked_url/notes. Retain them
         # explicitly as metadata in record.notes, not as a fabricated Deadline.
         record_data["notes"] = (
-            "\n".join(
-                part for part in [record_data["notes"], data["notes"], data["linked_url"]] if part
-            )
+            "\n".join(part for part in [record_data["notes"], data["notes"], linked_url] if part)
             or None
         )
     return rejected
