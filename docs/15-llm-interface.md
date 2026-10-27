@@ -12,10 +12,11 @@ prompt_version, temperature (finite 0–2, default 0), and positive
 max_output_tokens (default 2048). Empty tasks/versions, invalid models/parameters
 or passage shapes raise ValueError with fixed messages, not input dumps.
 
-`render_user_message(task, passages)` alone renders the task and labeled data
-blocks. It preserves passage text exactly, keeps system/task separate, and says
-the blocks are untrusted data. These simple delimiters are **not** an injection
-defense: hostile text may contain delimiters. Stronger hardening remains #21.
+`render_user_message(task, passages)` alone renders the task and fenced JSON data.
+It preserves decoded passage text exactly, escaping source punctuation/controls
+in the provider message while keeping original documents and trusted system/task
+separate. RENDERING_VERSION is in the cache key. These structural defenses do not
+guarantee model compliance; see the [threat model](17-threat-model-injection.md).
 Callers must never interpolate page content into trusted system/task strings.
 
 `LLMClient.generate_structured(request)` returns a frozen

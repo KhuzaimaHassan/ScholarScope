@@ -164,6 +164,7 @@ def extract_record(
             group,
             response.parsed.model_dump(),
             data,
+            sent_passages=tuple((p.id, p.text) for p in selected),
             original=original if isinstance(original, dict) else None,
         )
         rejected.extend(errors)

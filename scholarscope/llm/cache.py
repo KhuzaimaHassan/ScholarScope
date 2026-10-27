@@ -10,7 +10,7 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict
 
-from scholarscope.llm.base import StructuredRequest, Usage
+from scholarscope.llm.base import RENDERING_VERSION, StructuredRequest, Usage
 
 CacheMode = Literal["read_write", "read_only", "off"]
 
@@ -32,6 +32,7 @@ def cache_key(provider: str, model: str, request: StructuredRequest[Any]) -> str
         "temperature": float(request.temperature),
         "max_output_tokens": request.max_output_tokens,
         "prompt_version": request.prompt_version,
+        "rendering_version": RENDERING_VERSION,
     }
     canonical = json.dumps(
         payload, sort_keys=True, ensure_ascii=False, separators=(",", ":"), allow_nan=False

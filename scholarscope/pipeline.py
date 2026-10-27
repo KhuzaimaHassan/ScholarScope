@@ -14,6 +14,7 @@ from typing import Literal
 
 from scholarscope.cleaner import CLEANER_VERSION, CleanedHTML, clean_html
 from scholarscope.extraction import PROMPT_VERSIONS, ExtractionResult, extract_record
+from scholarscope.extraction.injection_scan import SuspiciousPassage, scan_passages
 from scholarscope.fetcher import FetchResult
 from scholarscope.llm.base import LLMClient
 from scholarscope.pdf_text import PDF_EXTRACTOR_VERSION, ExtractedPDF, extract_pdf_text
@@ -30,6 +31,7 @@ class PipelineResult:
     verification: VerificationReport | None
     versions: dict[str, object]
     error: str | None = None
+    suspicious_passages: tuple[SuspiciousPassage, ...] = ()
 
 
 def run_pipeline(
@@ -92,6 +94,7 @@ def run_pipeline(
     if source.content_sha256 != digest or source.format != kind:
         raise ValueError("source hash/format does not match the input")
     doc = segment(cleaned, max_chars=max_chars)
+    suspicious = scan_passages(doc.passages)
     if not doc.passages:
         return unavailable("empty_text", doc.unsupported_reason or "no cleaned text")
     extraction = extract_record(
@@ -104,4 +107,6 @@ def run_pipeline(
         if len(extraction.failed_groups) == len(prompts)
         else ("partial" if extraction.failed_groups or extraction.rejected_items else "ok")
     )
-    return PipelineResult(status, final, extraction, report, versions)
+    return PipelineResult(
+        status, final, extraction, report, versions, suspicious_passages=suspicious
+    )
