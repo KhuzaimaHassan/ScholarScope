@@ -96,7 +96,9 @@ class _OffsetMap:
                     source_start += a - span.start
                     source_end -= span.end - b
                 # A collapsed whitespace character retains its whole raw range.
-                refs.append(SourceSpan(a, b, span.node_path, source_start, source_end))
+                refs.append(
+                    SourceSpan(a, b, span.node_path, source_start, source_end, span.is_synthetic)
+                )
             else:
                 page_start, page_end = span.page_start, span.page_end
                 if not span.is_separator:
@@ -310,6 +312,18 @@ def segment(source: CleanedHTML | ExtractedPDF, *, max_chars: int = 1200) -> Seg
 
 def passage_by_id(doc: SegmentedDocument, passage_id: str) -> Passage | None:
     return next((p for p in doc.passages if p.id == passage_id), None)
+
+
+def source_refs_for_range(doc: SegmentedDocument, start: int, end: int) -> tuple[SourceRef, ...]:
+    """Clip existing references, preserving synthetic flags and null DOM ranges.
+
+    Passage gaps can contain whitespace only; no source character is invented for
+    those gaps. This uses the same clipping rule as passage construction.
+    """
+    if not 0 <= start <= end <= len(doc.text):
+        raise ValueError("source range must be within document text")
+    refs = tuple(ref for p in doc.passages for ref in p.source_refs)
+    return _OffsetMap(refs).clipped(start, end)
 
 
 def locate(doc: SegmentedDocument, passage_id: str, quote: str) -> tuple[int, int] | None:

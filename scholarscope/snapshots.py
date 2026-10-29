@@ -132,7 +132,7 @@ def snapshot_page(
     cleaner_version: str | None
     pdf_version: str | None
     if media_type == "text/html":
-        parsed_source = clean_html(content)
+        parsed_source = clean_html(content, base_url=fetch_result.final_url or fetch_result.url)
         format_: Literal["html", "pdf"] = "html"
         cleaner_version, pdf_version = CLEANER_VERSION, None
     elif media_type == "application/pdf":

@@ -66,7 +66,7 @@ def test_html_snapshot_names_hashes_and_metadata(tmp_path: Path, fake_server: Fa
     assert record.cleaned_text_sha256 == hashlib.sha256(" ".join(text.split()).encode()).hexdigest()
     assert record.content_sha256 == record.content_sha256.lower()
     assert record.text_chars == len(text) and record.passage_count == 1
-    assert record.cleaner_version == CLEANER_VERSION == "1"
+    assert record.cleaner_version == CLEANER_VERSION == "2"
     assert record.pdf_extractor_version is None
     assert record.segmenter_version == SEGMENTER_VERSION
     assert record.url == record.final_url == fake_server[0] + "/page"

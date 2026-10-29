@@ -69,7 +69,7 @@ def run_pipeline(
     if media_type == "text/html":
         kind = "html"
         versions["cleaner"] = CLEANER_VERSION
-        cleaned = clean_html(content)
+        cleaned = clean_html(content, base_url=fetch_result.final_url or fetch_result.url)
     elif media_type == "application/pdf":
         kind = "pdf"
         versions["pdf_extractor"] = PDF_EXTRACTOR_VERSION

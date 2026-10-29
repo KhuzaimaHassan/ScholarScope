@@ -508,7 +508,7 @@ def test_usage_totals_and_versions() -> None:
     result = run_pipeline(fetch(content("simple")), UsageClient(responses=[scripted()] * 5))
     assert result.extraction and result.extraction.usage == Usage(input_tokens=50, output_tokens=15)
     assert result.versions == {
-        "cleaner": "1",
+        "cleaner": "2",
         "pdf_extractor": None,
         "segmenter": "1",
         "verifier": "1",

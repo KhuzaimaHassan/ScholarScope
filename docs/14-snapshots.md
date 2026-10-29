@@ -33,9 +33,12 @@ input. An unsupported/invalid PDF keeps private bytes and empty text, zero
 passages, and an explicit extraction_status; it is **not** usable text. An empty
 cleaned hash does not establish content equivalence for unreadable PDFs.
 
-`CLEANER_VERSION="1"`, `PDF_EXTRACTOR_VERSION="1"` and existing
+`CLEANER_VERSION="2"`, `PDF_EXTRACTOR_VERSION="1"` and existing
 `SEGMENTER_VERSION="1"` identify behavior. **Any behavior change must bump its
-version.** The constants added here do not change extraction behavior.
+version.** Cleaner v2 adds source link targets; original raw hashes can remain
+identical while cleaned hashes, offsets and passage IDs change. HTML snapshots
+resolve relative targets using final_url (or the original fetch URL if absent),
+with the first HTML base href taking precedence. No real baseline is migrated here.
 
 ## Drift classes and precedence
 
