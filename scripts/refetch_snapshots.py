@@ -84,7 +84,7 @@ def refetch(
         if result.status == "ok":
             try:
                 new = snapshot_page(result, slug, snapshots_dir=snapshots_dir)
-                drift = classify_drift(old, new) if old is not None else "new"
+                drift = classify_drift(old, new).classification if old is not None else "new"
                 records[slug] = new
                 if new.extraction_status != "ok":
                     status = f"ok (PDF {new.extraction_status}; text unavailable)"

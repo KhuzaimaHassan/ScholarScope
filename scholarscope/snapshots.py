@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import hashlib
 import re
+from dataclasses import dataclass
 from datetime import UTC, date, datetime
 from pathlib import Path
 from tempfile import NamedTemporaryFile
@@ -169,16 +170,24 @@ def snapshot_page(
     return record
 
 
-def classify_drift(old: SnapshotRecord, new: SnapshotRecord) -> Drift:
-    if old.content_sha256 == new.content_sha256:
-        return "unchanged"
+@dataclass(frozen=True)
+class DriftResult:
+    classification: Drift
+    cleaned_text_changed: bool
+
+
+def classify_drift(old: SnapshotRecord, new: SnapshotRecord) -> DriftResult:
+    """Tool versions take precedence even for identical original bytes."""
+    changed = old.cleaned_text_sha256 != new.cleaned_text_sha256
     old_versions = (old.cleaner_version, old.pdf_extractor_version, old.segmenter_version)
     new_versions = (new.cleaner_version, new.pdf_extractor_version, new.segmenter_version)
     if old_versions != new_versions:
-        return "tool_version_changed"
-    if old.cleaned_text_sha256 == new.cleaned_text_sha256:
-        return "benign_raw_change"
-    return "content_changed"
+        return DriftResult("tool_version_changed", changed)
+    if old.content_sha256 == new.content_sha256:
+        return DriftResult("unchanged", changed)
+    if not changed:
+        return DriftResult("benign_raw_change", False)
+    return DriftResult("content_changed", True)
 
 
 def load_manifest(path: Path = MANIFEST_PATH) -> SnapshotManifest:
