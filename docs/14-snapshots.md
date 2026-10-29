@@ -33,20 +33,35 @@ input. An unsupported/invalid PDF keeps private bytes and empty text, zero
 passages, and an explicit extraction_status; it is **not** usable text. An empty
 cleaned hash does not establish content equivalence for unreadable PDFs.
 
-`CLEANER_VERSION="1"`, `PDF_EXTRACTOR_VERSION="1"` and existing
+`CLEANER_VERSION="2"`, `PDF_EXTRACTOR_VERSION="1"` and existing
 `SEGMENTER_VERSION="1"` identify behavior. **Any behavior change must bump its
-version.** The constants added here do not change extraction behavior.
+version.** Cleaner v2 adds source link targets; original raw hashes can remain
+identical while cleaned hashes, offsets and passage IDs change. HTML snapshots
+resolve relative targets using final_url (or the original fetch URL if absent),
+with the first HTML base href taking precedence. No real baseline is migrated here.
 
 ## Drift classes and precedence
 
-1. Raw hashes equal: `unchanged`, even if tool versions differ. This describes
-   raw bytes, not a guarantee that different tools would yield identical text.
-2. Raw differs and cleaner/PDF-extractor or segmenter versions differ:
-   `tool_version_changed`. Do not compare cleaned hashes across tool versions.
+1. Any cleaner/PDF-extractor or segmenter version differs from the baseline:
+   `tool_version_changed`, regardless of raw-hash equality. Tool changes must not
+   be hidden by identical original bytes. Do not compare cleaned hashes as if
+   the tools were unchanged.
+2. Otherwise raw hashes equal: `unchanged`.
 3. Raw differs, versions equal, cleaned hashes equal: `benign_raw_change`, such
    as a rotating nonce attribute. This is a text-level diagnostic, not proof
    that layout, hidden content or scholarship semantics stayed the same.
 4. Otherwise: `content_changed`. Inspect privately; never silently revise labels.
+
+`classify_drift` returns a frozen DriftResult with `classification` and
+`cleaned_text_changed: bool` (whether the cleaned hashes differ). A version bump
+can have either boolean value: the diagnostic distinguishes an unchanged output
+hash from an output change, without claiming semantic equivalence or correctness.
+The refetch table keeps its existing columns/class strings and old/new hashes;
+it prints tool_version_changed even when raw hashes match. Exit codes are unchanged.
+
+After a version bump the owner reviews derived output and deliberately re-baselines.
+The `--adopt` flow is planned after hand labels exist and is **not implemented**
+here. No labels, frozen snapshots or manifest baselines are migrated automatically.
 
 ## Re-fetch command
 

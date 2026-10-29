@@ -10,6 +10,14 @@ Each passage has `id`, zero-based `index`, half-open Python character `start`/`e
 
 Source references reuse the existing immutable `SourceSpan` / `PDFTextSpan` types, clipped to their overlap with the passage. Their `start`/`end` remain document-global; HTML paths and source offsets remain entity-decoded DOM coordinates. A collapsed whitespace character retains its full original raw source range. Generated HTML separators retain null source indices, and PDF page separators retain their zero-width page ranges and separator flag: neither becomes quoted page evidence. PDF text references use one-based physical pages and per-page character ranges. No original maps are mutated or renumbered.
 
+Cleaner v2 also supplies SourceSpan.is_synthetic for generated link-target
+suffixes. Preserve it through clipping, with null DOM indices and the anchor path;
+these spans are not layout separators. Existing coverage, exact-slice, ordering
+and clipping rules remain unchanged. source_refs_for_range(doc, start, end) reuses
+the same clipping rule for verifier provenance; whitespace-only passage gaps have
+no invented references. No segmentation/ID rule changes, so SEGMENTER_VERSION
+remains 1 (different cleaner text can still produce different IDs).
+
 HTML's locator is the first referenced node path. PDF locators are `p.N` or `p.N-M` from non-separator page references; with ordinary extractor output, forced page boundaries mean each passage normally has a single-page locator. `section_heading` is the most recent short structural heading line, or the last heading in its consecutive run. It is null for PDFs. A long heading treated as ordinary text does not replace this metadata.
 
 ## Explicit precedence and ceiling

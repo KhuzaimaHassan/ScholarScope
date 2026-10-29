@@ -1,6 +1,6 @@
 # HTML cleaner and source offsets
 
-`scholarscope.cleaner.clean_html(html: bytes | str) -> CleanedHTML` extracts static HTML text for the future segmenter. It performs no network requests or file writes.
+`scholarscope.cleaner.clean_html(html: bytes | str, *, base_url: str | None = None) -> CleanedHTML` extracts static HTML text and link-target metadata. It performs no network requests or file writes. `CLEANER_VERSION="2"`; any behavior change bumps the version.
 
 BeautifulSoup with the `lxml` parser provides malformed-HTML recovery and a traversable DOM. Both libraries are declared in `pyproject.toml` and installed by CI. Byte input uses the parser's encoding detection, including declared HTML encodings; string input keeps its Unicode text.
 
@@ -14,6 +14,29 @@ Forms are content containers, not blanket exclusions: an ASP.NET-style `<form ru
 
 Headings, paragraphs and list items remain in the output, separated by line breaks. Inline text retains source spacing and punctuation after whitespace normalization. Table rows become lines with ` | ` between cells; empty cells preserve column delimiters. Blocks inside a cell are joined with spaces. `<pre>` retains normalized line breaks while collapsing repeated spaces/tabs. Empty input produces empty text and an empty map.
 
+## Link targets (version 2)
+
+For each retained anchor with a nonempty retained label and a supported href,
+render `label (absolute_url)`. Preserve inline markup's text order/spacing; only
+the URL suffix is added. Skip empty/fragment-only hrefs and non-HTTP(S) schemes
+(including javascript, mailto, tel, data). Hidden/excluded anchors and labels
+stay excluded; hidden-text rules are unchanged. Do not duplicate a target when
+the stripped rendered label already equals the URL, its scheme-less host/path,
+or its protocol-relative form. Never follow a link, strip tracking parameters,
+case-fold, decode percent escapes or remove query/fragment components. HTML
+entities in attribute values are decoded by the DOM parser, and outer href
+whitespace is trimmed before interpreting a reference.
+
+An explicit base_url enables relative resolution. The first HTML base href takes
+precedence (relative bases resolve against the supplied context); otherwise use
+the supplied fetch final URL. Empty/fragment bases retain that context. An invalid
+or non-HTTP HTML base disables relative resolution. A source HTML base that is an
+absolute HTTP(S) URL can also provide context for a local-file caller. With
+base_url=None, relative links are skipped even if HTML has a base; absolute anchor
+targets still work. The pipeline and snapshot store pass final_url, falling back
+to the fetch URL. Synthetic suffixes are excluded from fragment-main length
+comparisons so link length cannot change the existing main/body selection rule.
+
 ## Offset contract
 
 `CleanedHTML` contains `text`, an ordered tuple `offset_map`, `title: str | None`, `root_used: Literal["main", "body"]`, and `suspiciously_empty: bool` (default `False`). The diagnostic is `True` exactly when the input is larger than 5,000 bytes and the final cleaned text has fewer than 200 Python characters. String input size is its UTF-8 byte length; byte input size is its original byte length. The boundaries are strict (5,000 bytes or 200 output characters does not trigger it). This is a heuristic warning, not proof of a blocked/empty page, and does not change extraction, offsets, or root selection. Callers should investigate flagged results rather than silently accepting them.
@@ -24,14 +47,27 @@ Headings, paragraphs and list items remain in the output, separated by line brea
 |---|---|
 | `start`, `end` | Half-open Python character range in `CleanedHTML.text` |
 | `node_path` | Absolute XPath-style path in the original parsed DOM, such as `/html[1]/body[1]/main[1]/p[2]/text()[2]` |
-| `source_start`, `source_end` | Half-open character range in that entity-decoded text node |
+| `source_start`, `source_end` | Half-open range in the entity-decoded text node for original text; None for layout or synthetic link metadata |
 | `is_separator` | True for generated layout separators; both source offsets are then `None` |
+| `is_synthetic` | True only for inserted link-target suffixes; both source offsets are `None`, node_path is the anchor element, and is_separator is False |
 
 The map covers every output character exactly once, with no overlaps or gaps. Source paths are assigned before filtering, so hidden/removed siblings do not renumber retained nodes. Repeated text in different nodes has distinct paths. Source offsets refer to decoded DOM characters, **not HTML byte offsets** or entity spellings such as `&amp;`.
 
-To trace a passage `[a:b]`, select spans where `span.start < b and span.end > a`. A source span identifies its original node and raw decoded character range; normalizing whitespace in that source slice recovers the cleaned span. Word spans preserve exact characters; collapsed whitespace runs retain their complete source range. This also supports passages that cross inline markup.
+To trace a passage `[a:b]`, select spans where `span.start < b and span.end > a`. An original-text source span identifies its node and raw decoded character range; normalizing whitespace in that source slice recovers the cleaned span. Word spans preserve exact characters; collapsed whitespace runs retain their complete source range. This also supports passages that cross inline markup. Synthetic/layout spans follow the distinct rules below.
 
 Line breaks and table delimiters inserted for layout point to the responsible element with `source_start = source_end = None`. They are formatting and must not be treated as quoted source characters. Whitespace retained from a text node has actual source offsets instead.
+
+Synthetic suffixes include the leading space and parentheses, point to the anchor
+element, and are distinguishable from both original DOM text and layout. They
+have no fabricated DOM character range. For original text spans the existing
+decoded-DOM round trip remains unchanged; synthetic spans resolve to the anchor
+and its href, which may be relative while the rendered target is absolute. The
+segmenter preserves the flag when clipping references. Passage text still exactly
+slices cleaned text. Verifier reports retain document-global match offsets and
+add source_refs/locator metadata; any match overlapping synthetic text locates
+the anchor (all touched anchors remain visible in source_refs), never an invented
+DOM text span. Input evidence locators are not rewritten. Presence here means
+presence in the enriched cleaned representation, not literal visible DOM text.
 
 Parse the private original HTML with the same parser when resolving paths, especially for malformed markup where parser repairs define the DOM. The tests include an independent XPath round-trip for a valid synthetic document and checks that repeated text retains its original sibling positions.
 

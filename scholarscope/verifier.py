@@ -13,8 +13,10 @@ from collections.abc import Iterator
 from dataclasses import dataclass
 from enum import StrEnum
 
+from scholarscope.cleaner import SourceSpan
+from scholarscope.pdf_text import PDFTextSpan
 from scholarscope.schema import Evidence, RequirementFields, RequirementRecord
-from scholarscope.segmenter import Passage, SegmentedDocument
+from scholarscope.segmenter import Passage, SegmentedDocument, SourceRef, source_refs_for_range
 
 VERIFIER_VERSION = "1"
 _REMOVED = frozenset("\u00ad\u200b\u200c\u200d\u2060\ufeff")
@@ -48,6 +50,8 @@ class EvidenceResult:
     occurrences: int = 0
     ambiguous_location: bool = False
     near_match: str | None = None
+    source_refs: tuple[SourceRef, ...] = ()
+    locator: str | None = None
 
 
 @dataclass(frozen=True)
@@ -221,6 +225,7 @@ class _Matcher:
         candidates = exact_inside or inside or overlapping
         if candidates:
             match, ambiguous = self.select(candidates, evidence)
+            refs = source_refs_for_range(self.doc, *match)
             outcome = (
                 QuoteOutcome.SPANS_PASSAGES
                 if not inside
@@ -237,6 +242,8 @@ class _Matcher:
                 passage_ids=self.touched(match),
                 occurrences=len(candidates),
                 ambiguous_location=ambiguous,
+                source_refs=refs,
+                locator=self.location(refs),
             )
         return EvidenceResult(
             owner,
@@ -247,6 +254,19 @@ class _Matcher:
             occurrences=len(matches),
             ambiguous_location=len(matches) > 1,
         )
+
+    def location(self, refs: tuple[SourceRef, ...]) -> str | None:
+        html = [ref for ref in refs if isinstance(ref, SourceSpan)]
+        if html:
+            anchors = [ref for ref in html if ref.is_synthetic]
+            return (anchors or html)[0].node_path
+        pages = [
+            ref.page_number for ref in refs if isinstance(ref, PDFTextSpan) and not ref.is_separator
+        ]
+        if not pages:
+            return None
+        first, last = min(pages), max(pages)
+        return f"p.{first}" if first == last else f"p.{first}-{last}"
 
     def _crosses(self, match: tuple[int, int], passage: Passage) -> bool:
         start, end = match

@@ -66,7 +66,7 @@ def test_html_snapshot_names_hashes_and_metadata(tmp_path: Path, fake_server: Fa
     assert record.cleaned_text_sha256 == hashlib.sha256(" ".join(text.split()).encode()).hexdigest()
     assert record.content_sha256 == record.content_sha256.lower()
     assert record.text_chars == len(text) and record.passage_count == 1
-    assert record.cleaner_version == CLEANER_VERSION == "1"
+    assert record.cleaner_version == CLEANER_VERSION == "2"
     assert record.pdf_extractor_version is None
     assert record.segmenter_version == SEGMENTER_VERSION
     assert record.url == record.final_url == fake_server[0] + "/page"
@@ -120,7 +120,7 @@ def test_raw_nonce_and_content_drift(
         tmp_path, fake_server, b'<main data-nonce="one"><p>Fictional text is unchanged.</p></main>'
     )
     new = fetch_and_store(tmp_path, fake_server, replacement)
-    assert classify_drift(old, new) == expected
+    assert classify_drift(old, new).classification == expected
 
 
 def test_cleaned_hash_normalizes_whitespace_but_not_case_or_digits(
@@ -134,13 +134,13 @@ def test_cleaned_hash_normalizes_whitespace_but_not_case_or_digits(
     )
     assert old.text_chars == spaced.text_chars  # LF vs space, different private text.
     assert old.cleaned_text_sha256 == spaced.cleaned_text_sha256
-    assert classify_drift(old, spaced) == "benign_raw_change"
+    assert classify_drift(old, spaced).classification == "benign_raw_change"
     for body in [
         b"<p>Fictional award 2026 Tuition support.</p>",
         b"<p>fictional award 2027 Tuition support.</p>",
     ]:
         edited = fetch_and_store(tmp_path, fake_server, body)
-        assert classify_drift(old, edited) == "content_changed"
+        assert classify_drift(old, edited).classification == "content_changed"
 
 
 @pytest.mark.parametrize("tool", ["cleaner_version", "segmenter_version"])
@@ -148,10 +148,12 @@ def test_version_change_precedes_equal_cleaned_hashes(
     tmp_path: Path, fake_server: FakeServer, tool: str
 ) -> None:
     old = fetch_and_store(tmp_path, fake_server, b"<p>Fictional page text.</p>")
-    new = old.model_copy(update={tool: "2", "content_sha256": "f" * 64})
+    new = old.model_copy(update={tool: "next", "content_sha256": "f" * 64})
     assert old.cleaned_text_sha256 == new.cleaned_text_sha256
-    assert classify_drift(old, new) == "tool_version_changed"
-    assert classify_drift(old, old.model_copy(update={tool: "2"})) == "unchanged"
+    assert classify_drift(old, new).classification == "tool_version_changed"
+    same_raw = classify_drift(old, old.model_copy(update={tool: "next"}))
+    assert same_raw.classification == "tool_version_changed"
+    assert same_raw.cleaned_text_changed is False
 
 
 def test_pdf_extractor_version_drift(tmp_path: Path, fake_server: FakeServer) -> None:
@@ -162,7 +164,81 @@ def test_pdf_extractor_version_drift(tmp_path: Path, fake_server: FakeServer) ->
         media="application/pdf",
     )
     new = old.model_copy(update={"pdf_extractor_version": "2", "content_sha256": "e" * 64})
-    assert classify_drift(old, new) == "tool_version_changed"
+    assert classify_drift(old, new).classification == "tool_version_changed"
+    assert (
+        classify_drift(old, old.model_copy(update={"pdf_extractor_version": "next"})).classification
+        == "tool_version_changed"
+    )
+
+
+@pytest.mark.parametrize("changed", [False, True])
+def test_same_raw_cleaner_bump_reports_cleaned_hash_change(tmp_path: Path, changed: bool) -> None:
+    result = FetchResult(
+        url="https://example.invalid/page",
+        status="ok",
+        content=b"<p>Fictional content.</p>",
+        content_type="text/html",
+        fetched_at="2026-10-29T10:00:00Z",
+    )
+    old = snapshot_page(result, "fictional", snapshots_dir=tmp_path)
+    new = old.model_copy(
+        update={
+            "cleaner_version": "next",
+            "cleaned_text_sha256": "e" * 64 if changed else old.cleaned_text_sha256,
+        }
+    )
+    drift = classify_drift(old, new)
+    assert old.content_sha256 == new.content_sha256
+    assert drift.classification == "tool_version_changed"
+    assert drift.cleaned_text_changed is changed
+    identical = classify_drift(old, old.model_copy(deep=True))
+    assert identical.classification == "unchanged" and not identical.cleaned_text_changed
+
+
+@pytest.mark.parametrize("changed", [False, True])
+def test_refetch_prints_version_drift_for_identical_raw_bytes(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+    changed: bool,
+) -> None:
+    result = FetchResult(
+        url="https://example.invalid/page",
+        status="ok",
+        content=b"<p>Fictional content.</p>",
+        content_type="text/html",
+        fetched_at="2026-10-29T10:00:00Z",
+    )
+    record = snapshot_page(result, "fictional", snapshots_dir=tmp_path / "copies")
+    old = record.model_copy(
+        update={
+            "cleaner_version": "baseline",
+            "cleaned_text_sha256": "e" * 64 if changed else record.cleaned_text_sha256,
+        }
+    )
+    manifest = tmp_path / "manifest.json"
+    write_manifest(SnapshotManifest(snapshots={old.slug: old}), manifest)
+    before = manifest.read_bytes()
+    write_source(tmp_path / "gold", old.slug, old.url)
+    with Fetcher(tmp_path / "fetched", min_interval_seconds=0) as fetcher:
+        monkeypatch.setattr(fetcher, "fetch", lambda url: result)
+        assert (
+            cli.refetch(
+                gold_dir=tmp_path / "gold",
+                manifest_path=manifest,
+                snapshots_dir=tmp_path / "copies",
+                update_manifest=False,
+                fetcher=fetcher,
+            )
+            == 0
+        )
+    output = capsys.readouterr().out
+    assert (
+        output.splitlines()[0]
+        == "slug | status | drift class | old/new raw hash | old/new cleaned hash"
+    )
+    assert " | tool_version_changed | " in output and " | unchanged | " not in output
+    assert manifest.read_bytes() == before
 
 
 @pytest.mark.parametrize("slug", ["../escape", "nested/name", "Bad_slug", "", "a\\b"])

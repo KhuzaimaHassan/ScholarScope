@@ -128,18 +128,20 @@ eligibility decisions, character-edit quote matching, or new dependencies.
 describe shared escaped fencing, rendering-version cache invalidation, literal
 URL provenance on each group's selected passages, and advisory suspicious_passages
 on PipelineResult/manual script output. Rejected URLs use URL_NOT_ON_PAGE; valid
-siblings survive. A URL must appear in cleaned text, not merely an href attribute.
-Original passages and cleaner behavior are unchanged. The scan never filters data
+siblings survive. Cleaner v2 appends retained HTTP(S) href targets as synthetic
+anchor-located text, so the unchanged provenance guard can accept those targets.
+The scan never filters data
 or changes verification. False page content (including an obeyed fake deadline),
 hidden text that survives cleaning, and real-model compliance remain residual
 risks; live-provider adversarial evaluation using the reusable fixtures is deferred
 to M3. The old claim that injected instructions cannot change any output is not
 made; the owner-approved interpretation is recorded in issue #21's comment.
 
-**Known limitation:** the cleaner keeps no link targets. An application_link or
-linked_url that exists only as an href is rejected as `URL_NOT_ON_PAGE` because
-it is absent from the passage text. Fixing this needs a cleaner change with a
-CLEANER_VERSION bump and snapshot-drift review (derived hashes, offsets and
-passage IDs may change even when raw HTML does not). This is out of scope here;
-[M1 issue #81](https://github.com/KhuzaimaHassan/ScholarScope/issues/81) tracks it.
-Application-link recall depends on that follow-up.
+**Residual link cases:** targets in excluded/empty anchors, unsupported schemes,
+relative targets without enabled/usable base context, and URLs in omitted passages
+are still absent from the group's text and rejected as URL_NOT_ON_PAGE. Scheme-less
+labels suppress duplicate suffixes; a model-produced absolute URL absent from that
+text is still rejected, not repaired. Both scan and provenance rules are unchanged.
+Cleaner v2 changes derived text/maps and requires deliberate baseline review even
+when raw bytes are identical. No labels/snapshots were migrated. Existing prompts
+already ask for the page's actual target, so prompts/versions remain unchanged.

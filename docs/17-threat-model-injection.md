@@ -51,18 +51,23 @@ an example, not a general bound for delimiter-heavy or control-heavy payloads.
 After local canonical validation, application_link and field-level linked_url
 must occur verbatim within one passage sent to that field's group. The deadline
 set's linked_url is checked against the deadline group's passages before metadata
-is retained. An omitted passage, href-only attribute, relative/resolved variant,
-case change or percent-decoded reconstruction cannot supply a URL. A failed item
+is retained. Cleaner v2 now appends retained HTTP(S) link targets to cleaned text,
+including deterministic relative resolution with explicit base context. Synthetic
+target spans identify their anchors, never fabricated DOM text offsets. A model's
+variant absent from those selected passages, case change or percent-decoded
+reconstruction cannot supply a URL. A failed item
 is recorded with reason exactly `URL_NOT_ON_PAGE`, original raw input and index;
 valid sibling claims/deadlines survive. No URL is repaired, followed or fetched.
 This intentionally rejects some legitimate links not visible in cleaned text.
 
-**Known limitation:** the cleaner keeps no link targets. An application_link or
-linked_url present only as an href attribute is rejected as `URL_NOT_ON_PAGE`.
-Fixing this requires a cleaner change, a CLEANER_VERSION bump and review of
-snapshot drift/derived hashes, offsets and passage IDs. It is out of scope here;
-[M1 issue #81](https://github.com/KhuzaimaHassan/ScholarScope/issues/81) tracks it.
-Application-link recall depends on preserving those source targets.
+**Residual link limitations:** excluded/empty anchors and unsupported schemes do
+not contribute targets. Relative links without enabled/usable context are skipped;
+scheme-less labels suppress duplicate suffixes, so an absolute variant can remain
+absent. Omitted passages cannot supply a group's URL. No guard rule is relaxed or
+URL fetched/repaired. A URL present through a synthetic suffix proves only a
+retained source href/resolution, not authority or safety. The cleaner version is 2;
+review derived-text/offset/passage changes and re-baseline deliberately. No real
+snapshots or gold labels are migrated by this implementation.
 
 The scan reports SuspiciousPassage(passage_id, reasons) in document order, with
 fixed-order reason codes: instruction_override, fake_role_tag, requested_output,
@@ -77,7 +82,8 @@ instructions and novel patterns evade it; benign policy text may trigger it.
 
 These observations are regression-tested with fictional sentinel text, including
 checking the final passages. They are not a computed-browser visibility guarantee.
-No cleaner rule or version changes in this PR.
+The hidden-text rules remain unchanged in cleaner v2; only retained link targets
+are added. Hidden/excluded links do not leak target suffixes into passages.
 
 | HTML case | Sentinel reaches passages? | Existing behavior |
 |---|---|---|

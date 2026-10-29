@@ -64,6 +64,16 @@ partial ligature expansions cannot falsely certify a different original slice.
 All report offsets are half-open Python character offsets into **doc.text**, not
 normalized-string, HTML-byte, or PDF-byte offsets. Source maps remain untouched.
 
+Cleaner v2's text includes synthetic link-target suffixes. Successful matches now
+also report immutable source_refs clipped to the matched range and a locator.
+When any matched reference is synthetic, locator identifies the first touched
+anchor element; all touched anchors/ranges remain in source_refs with null DOM
+indices and is_synthetic=True. Original text references retain real DOM indices;
+PDF references retain page ranges/locators. Input evidence/citations are never
+rewritten. The quote's exact original slice is still doc.text[start:end], including
+derived URL text: this is not a claim that a resolved URL was visible DOM prose.
+Matching/normalization rules are unchanged; VERIFIER_VERSION remains 1.
+
 ## Report and limits
 
 Frozen report/item dataclasses hold owner path (`fields.program_name`,
