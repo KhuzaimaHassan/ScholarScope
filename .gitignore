@@ -1,3 +1,5 @@
 eval/snapshots/
 .env
 .cache/
+eval/reports/*
+!eval/reports/.gitkeep
