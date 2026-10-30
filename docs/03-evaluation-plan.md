@@ -24,7 +24,7 @@ The credibility of this project rests on measured accuracy. The evaluation set i
 | Evidence support | % of verified quotes that a human agrees actually **support** the extracted value (sampled audit, 50 fields). **Quality metric, not an invariant**: presence does not prove support |
 | Abstention quality | Compare content status with gold (absent/ambiguous/linked versus present); separately audit withholding due to `verification="not_checked"` or `"unverified"`. Failed verification does not imply that gold says absent; the retained value may still be correct |
 | Eligibility agreement | Verdict vs. hand-labeled verdict for 5 synthetic profiles per program |
-| Dangerous-error rate | Wrong "eligible" verdict, or a wrong deadline shown with `verification="verified"` (tracked separately; should trend to ~0). Includes a verified quote that exists but does not support the value; `status="present"` is not a verification result |
+| Dangerous-error rate | The extraction harness lists normalized gold disagreements on fields, deadlines and conditions with `verification="verified"`, divided by comparable verified claims. Wrong eligibility verdicts remain a separate future metric. Presence does not establish support; `status="present"` is not a verification result |
 | Confidence usefulness (diagnostic only) | Whether advisory confidence correlates with correctness. Reported for triage; **never used by eligibility** |
 | Latency / cost | Median seconds and tokens per program |
 
@@ -33,12 +33,12 @@ The credibility of this project rests on measured accuracy. The evaluation set i
 1. Build gold set and harness first (M3). Labeling runs **in parallel** with M1; extraction tuning (M2) does not start until the labeling guide and the first labeled programs exist.
 2. Run a naive baseline (single prompt, no verification) → record numbers.
 3. Add each pipeline improvement one at a time; keep or revert based on metrics.
-4. CI runs the harness on a small fixed subset on every PR and fails if the dangerous-error rate regresses or evidence presence falls below 100%.
+4. Planned (#32): CI will run the harness on a small fixed subset on every PR and fail if the dangerous-error rate regresses or evidence presence falls below 100%. The current harness reports these metrics but is not a CI quality gate.
 5. Publish a results table in the README, with date and model/prompt versions.
 
 ## 4. Judge usage
 
-An LLM judge is used only for the *evidence support* audit and always spot-checked by you. Primary metrics are code-computed against hand labels.
+Any future LLM-judge assistance is limited to the *evidence support* audit and always spot-checked by you. The current harness exports a blank human audit and never judges support. Primary metrics are code-computed against hand labels. See [doc 18](18-evaluation-harness.md) for failure exclusions, confusion counts, private artifacts and deferred eligibility/held-out enforcement; no real labeled baseline has been run.
 
 ## 5. Error analysis log
 
