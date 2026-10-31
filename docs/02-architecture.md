@@ -24,7 +24,7 @@ URL ──► Fetcher ──► Cleaner ──► Segmenter ──► Extractor 
 
 | Component | Responsibility | Notes |
 |---|---|---|
-| **Fetcher** | Download page/PDF, respect robots.txt, rate limit, cache with content hash | httpx first; Playwright only when JS rendering is required |
+| **Fetcher** | Download page/PDF with plain httpx, respect robots.txt, rate limit, cache with content hash | Explicit prepare_page helper uses optional Playwright only for suspiciously_empty HTTP HTML; exact-host redirects, explicit subresource allow_hosts ([contract](19-rendering-fallback.md)) |
 | **Cleaner** | Strip navigation/boilerplate, extract main text (static HTML via BeautifulSoup with lxml; PDF text extraction is separate) | [HTML cleaner contract](08-html-cleaner.md): preserve headings and map text spans to original DOM nodes |
 | **PDF text extraction** | Extract per-page text with pypdf layout mode; flag scanned/low-text and password-protected PDFs as unsupported | [PDF extraction contract](09-pdf-extraction.md): normalized page offsets and physical page locators; no OCR |
 | **Segmenter** | Split into passages with stable IDs and character offsets | Evidence points to passage ID + span |

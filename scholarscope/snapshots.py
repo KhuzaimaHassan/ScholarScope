@@ -60,6 +60,19 @@ class SnapshotRecord(_Metadata):
     segmenter_version: Version
     passage_count: Annotated[int, Field(ge=0)]
     extraction_status: PDFStatus = "ok"
+    fetch_mode: Literal["http", "rendered"] = "http"
+    playwright_version: Version | None = None
+    browser_version: Version | None = None
+    allow_hosts: tuple[str, ...] = ()
+
+    @field_validator("allow_hosts")
+    @classmethod
+    def valid_allow_hosts(cls, value: tuple[str, ...]) -> tuple[str, ...]:
+        from scholarscope.renderer import validated_hosts
+
+        if value != validated_hosts(value):
+            raise ValueError("allow_hosts must be sorted, deduplicated canonical hostnames")
+        return value
 
     @field_validator("retrieved_on")
     @classmethod
@@ -69,6 +82,15 @@ class SnapshotRecord(_Metadata):
 
     @model_validator(mode="after")
     def matching_tool(self) -> Self:
+        if self.fetch_mode == "rendered":
+            if self.format != "html" or not self.playwright_version or not self.browser_version:
+                raise ValueError("rendered snapshots require HTML and renderer versions")
+        elif (
+            self.playwright_version is not None
+            or self.browser_version is not None
+            or self.allow_hosts
+        ):
+            raise ValueError("HTTP snapshots cannot carry renderer metadata")
         if self.format == "html":
             if self.cleaner_version is None or self.pdf_extractor_version is not None:
                 raise ValueError("HTML requires only cleaner_version")
@@ -160,6 +182,10 @@ def snapshot_page(
         segmenter_version=SEGMENTER_VERSION,
         passage_count=len(document.passages),
         extraction_status=extraction_status,
+        fetch_mode=fetch_result.fetch_mode,
+        playwright_version=fetch_result.playwright_version,
+        browser_version=fetch_result.browser_version,
+        allow_hosts=fetch_result.allow_hosts,
     )
     directory = snapshots_dir.resolve()
     if directory.is_relative_to((ROOT / "eval/gold").resolve()):
@@ -179,8 +205,24 @@ class DriftResult:
 def classify_drift(old: SnapshotRecord, new: SnapshotRecord) -> DriftResult:
     """Tool versions take precedence even for identical original bytes."""
     changed = old.cleaned_text_sha256 != new.cleaned_text_sha256
-    old_versions = (old.cleaner_version, old.pdf_extractor_version, old.segmenter_version)
-    new_versions = (new.cleaner_version, new.pdf_extractor_version, new.segmenter_version)
+    old_versions = (
+        old.cleaner_version,
+        old.pdf_extractor_version,
+        old.segmenter_version,
+        old.fetch_mode,
+        old.playwright_version,
+        old.browser_version,
+        old.allow_hosts,
+    )
+    new_versions = (
+        new.cleaner_version,
+        new.pdf_extractor_version,
+        new.segmenter_version,
+        new.fetch_mode,
+        new.playwright_version,
+        new.browser_version,
+        new.allow_hosts,
+    )
     if old_versions != new_versions:
         return DriftResult("tool_version_changed", changed)
     if old.content_sha256 == new.content_sha256:

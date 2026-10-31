@@ -33,13 +33,22 @@
         "pdf_extractor_version": {"$ref": "#/$defs/version"},
         "segmenter_version": {"type": "string", "minLength": 1},
         "passage_count": {"type": "integer", "minimum": 0},
-        "extraction_status": {"enum": ["ok", "scanned_unsupported", "encrypted_unsupported", "invalid"]}
+        "extraction_status": {"enum": ["ok", "scanned_unsupported", "encrypted_unsupported", "invalid"]},
+        "fetch_mode": {"enum": ["http", "rendered"], "default": "http"},
+        "playwright_version": {"$ref": "#/$defs/version", "default": null},
+        "browser_version": {"$ref": "#/$defs/version", "default": null},
+        "allow_hosts": {"type": "array", "uniqueItems": true, "default": [], "items": {"type": "string", "maxLength": 253, "pattern": "^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)*$"}}
       },
       "allOf": [
         {
           "if": {"properties": {"format": {"const": "html"}}},
           "then": {"properties": {"cleaner_version": {"type": "string"}, "pdf_extractor_version": {"type": "null"}, "extraction_status": {"const": "ok"}}},
           "else": {"properties": {"cleaner_version": {"type": "null"}, "pdf_extractor_version": {"type": "string"}}}
+        },
+        {
+          "if": {"required": ["fetch_mode"], "properties": {"fetch_mode": {"const": "rendered"}}},
+          "then": {"required": ["playwright_version", "browser_version"], "properties": {"format": {"const": "html"}, "playwright_version": {"type": "string"}, "browser_version": {"type": "string"}}},
+          "else": {"properties": {"playwright_version": {"type": "null"}, "browser_version": {"type": "null"}, "allow_hosts": {"maxItems": 0}}}
         }
       ]
     }
