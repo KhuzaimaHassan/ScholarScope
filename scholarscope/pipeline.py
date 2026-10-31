@@ -1,7 +1,8 @@
-"""Local bytes -> extraction -> ALWAYS deterministic evidence verification.
+"""Local verified pipeline plus an explicit network-capable preparation helper.
 
-No fetching, snapshot writes, or label access. Only the injected LLM client may
-perform inference; tests inject FakeClient and prohibit real socket connections.
+run_pipeline never fetches, saves snapshots or reads labels. prepare_page alone
+may render suspiciously_empty HTTP HTML before the local pipeline is called.
+Inference uses the injected LLM client; tests use synthetic inputs/FakeClient.
 """
 
 from __future__ import annotations

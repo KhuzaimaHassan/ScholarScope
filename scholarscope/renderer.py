@@ -263,6 +263,7 @@ def render(
                             response = await route.fetch(
                                 url=str(current),
                                 max_redirects=0,
+                                max_retries=0,
                                 timeout=max(1, (timeout - (monotonic() - started)) * 1000),
                             )
                             if response.status in REDIRECT_STATUSES:
@@ -278,12 +279,10 @@ def render(
                                             response.headers.get("location", str(current))
                                         ).host
                                     )
-                                    if main:
-                                        state["error"] = (
-                                            "redirect_host_change"
-                                            if reason and "changes host" in reason
-                                            else "redirect_limit"
-                                        )
+                                    if reason and "changes host" in reason:
+                                        state["error"] = "redirect_host_change"
+                                    elif main:
+                                        state["error"] = "redirect_limit"
                                     await route.abort()
                                     return
                                 if main:
@@ -326,6 +325,8 @@ def render(
                         if (
                             route.request.is_navigation_request()
                             and route.request.frame == page.main_frame
+                            and pending is None
+                            and state["error"] is None
                         ):
                             state["error"] = "request_failed"
                         try:
@@ -364,6 +365,12 @@ def render(
                         return outcome(render_status, error=state["error"])
                     if pending is not None:
                         target = pending
+                        # An aborted main navigation can leave Chromium's old
+                        # document in transition even after goto raises. Replace
+                        # that page before the next checked HTTP hop; keep the
+                        # context (including cookies) and shared redirect budget.
+                        await page.close()
+                        page = await context.new_page()
                         continue
                     state["final_url"] = page.url
                     html = (await page.content()).encode("utf-8")
@@ -390,9 +397,9 @@ def render(
             return await asyncio.wait_for(work(), timeout - reserve)
         except TimeoutError:
             return outcome("timeout", error="overall render timeout")
-        except Exception:  # noqa: BLE001 -- public render boundary must sanitize browser failures
+        except Exception as exc:  # noqa: BLE001 -- public render boundary must sanitize browser failures
             # Never echo arbitrary provider/page/browser exception bodies or URLs.
-            return outcome("render_error", error="browser operation failed")
+            return outcome("render_error", error=f"browser operation failed ({type(exc).__name__})")
 
     result = asyncio.run(bounded())
     return replace(result, elapsed=monotonic() - started)

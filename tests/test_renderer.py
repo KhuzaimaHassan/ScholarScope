@@ -347,7 +347,18 @@ def test_browser_robots_no_launch(
 
 @pytest.mark.browser
 @pytest.mark.parametrize(
-    "case", ["bot", "huge", "hang", "pdf", "redirect", "loop", "same-host", "disallowed-hop"]
+    "case",
+    [
+        "bot",
+        "huge",
+        "hang",
+        "pdf",
+        "redirect",
+        "loop",
+        "same-host",
+        "disallowed-hop",
+        "resource-redirect",
+    ],
 )
 def test_browser_boundaries(browser_runtime: None, local_site: Any, case: str) -> None:
     base, routes, counts = local_site
@@ -366,6 +377,17 @@ def test_browser_boundaries(browser_runtime: None, local_site: Any, case: str) -
         expected = "timeout"
     elif case == "pdf":
         routes[path] = (200, b"%PDF fictional", {"Content-Type": "application/pdf"})
+        expected = "render_error"
+    elif case == "resource-redirect":
+        routes[path] = page(
+            b"<main>Fictional requirements.</main><script src='/redirect.js'></script>"
+        )
+        routes["/redirect.js"] = (
+            302,
+            b"",
+            {"Location": base.replace("127.0.0.1", "localhost") + "/target"},
+        )
+        kwargs["allow_hosts"] = ("localhost",)
         expected = "render_error"
     else:
         target = (
@@ -395,7 +417,7 @@ def test_browser_boundaries(browser_runtime: None, local_site: Any, case: str) -
     assert result.status == expected, result.error
     if case == "hang":
         assert monotonic() - started < 4
-    if case == "redirect":
+    if case in {"redirect", "resource-redirect"}:
         assert result.error == "redirect_host_change" and "/target" not in counts
     if case == "same-host":
         assert result.final_url == base + "/target"

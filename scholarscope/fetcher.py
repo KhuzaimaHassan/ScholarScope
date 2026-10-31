@@ -261,7 +261,10 @@ class Fetcher:
                     elif response.status_code in {404, 410}:
                         policy = _RobotsPolicy("ok")
                     elif not response.is_success:
-                        policy = _RobotsPolicy("blocked", "robots.txt redirect not followed")
+                        policy = _RobotsPolicy(
+                            "blocked",
+                            f"robots.txt redirect not followed: HTTP status {response.status_code}",
+                        )
                     else:
                         body = bytearray()
                         async for chunk in response.aiter_bytes(
