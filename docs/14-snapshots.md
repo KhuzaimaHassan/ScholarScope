@@ -11,6 +11,8 @@ fetched or added. The owner populates it after labeling.
 `snapshot_page(fetch_result, slug, *, snapshots_dir=eval/snapshots)` requires a
 successful HTML/PDF FetchResult. It writes original bytes to `<slug>.html|pdf`
 and the cleaner/extractor text to `<slug>.txt`, UTF-8 with unchanged line breaks.
+For fetch_mode=rendered, the raw HTML is the captured DOM, not the original HTTP
+body. The optional rendering step occurs before this local-only snapshot API.
 Each file is atomically replaced, but the pair is not a transactional bundle.
 The function returns a metadata-only, frozen Pydantic SnapshotRecord. It does
 not fetch URLs, read labels, or write into the repository's `eval/gold/`.
@@ -20,7 +22,11 @@ slug files are written. `retrieved_on` is the fetch timestamp's UTC date.
 Public fields: slug, original/final URL, retrieved_on, format, **bytes (a count,
 not raw bytes)**, lowercase raw `content_sha256`, `cleaned_text_sha256`,
 text_chars, cleaner_version or pdf_extractor_version (the other is null),
-segmenter_version, passage_count and extraction_status. No title, text, snippet,
+segmenter_version, passage_count and extraction_status. Also fetch_mode (default
+http for old manifests), nullable playwright_version/browser_version and explicit
+allow_hosts (default empty, sorted unique hostnames). Rendered records require
+HTML and both renderer versions; HTTP/PDF records cannot claim renderer metadata.
+No title, text, snippet,
 DOM, PDF, label values or raw content can be serialized into an entry.
 The manifest is keyed by slug; each key must equal its entry's slug. It is built
 from label program_slug/source.url plus successful snapshot records, not claims.
@@ -42,7 +48,8 @@ with the first HTML base href taking precedence. No real baseline is migrated he
 
 ## Drift classes and precedence
 
-1. Any cleaner/PDF-extractor or segmenter version differs from the baseline:
+1. Any cleaner/PDF-extractor/segmenter version, fetch_mode, renderer version or
+   allow_hosts differs from the baseline:
    `tool_version_changed`, regardless of raw-hash equality. Tool changes must not
    be hidden by identical original bytes. Do not compare cleaned hashes as if
    the tools were unchanged.
@@ -75,8 +82,12 @@ The script reads real `eval/gold/*.json` files, **including skeletons**, without
 validating or modifying label claims. Underscore examples such as
 `_example-fictional.json` are skipped, matching the label validator convention.
 It uses Fetcher sequentially with its robots/redirect policy, identifying user
-agent, size cap, timeouts and per-host pacing. No logins, workarounds, mirrors,
-Playwright or LLM calls. A fresh process refetches; Fetcher's cache is per instance.
+agent, size cap, timeouts and per-host pacing. An explicit preparation step uses
+optional Playwright only for suspiciously_empty HTTP HTML ([doc 19](19-rendering-fallback.md)).
+There is no force-render flag. Repeatable --allow-host explicitly permits exact
+subresource hostnames per source decision; blocked hosts are reported, never
+automatically allowed. No logins, workarounds, mirrors or LLM calls. A fresh
+process refetches; Fetcher's cache is per instance.
 
 By default originals/text copies go to **eval/snapshots/refetched/**, and Fetcher's
 hash-addressed copies to its `fetched/` child. This deliberately preserves the
@@ -88,7 +99,7 @@ local/test runs; use them deliberately, never put content in the public manifest
 
 The printed table shows slug, fetch status, drift class and old/new raw/cleaned
 hash prefixes (12 characters). `new` means no baseline entry exists. Failures
-(blocked/not_found/network_error) are reported per slug and preserve old entries;
+(HTTP blocked/not_found/network_error or non-ok renderer statuses) are reported per slug and preserve old entries;
 other sources continue. Drift and those fetch failures exit **0**. Script errors
 (bad metadata/JSON, unsupported MIME, file errors, invalid options) exit **1**.
 Non-ok PDF extraction is printed explicitly, not passed off as meaningful text.

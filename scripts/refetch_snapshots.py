@@ -17,6 +17,8 @@ if __package__ in (None, ""):
     sys.path.insert(0, str(ROOT))
 
 from scholarscope.fetcher import Fetcher
+from scholarscope.pipeline import prepare_page
+from scholarscope.renderer import validated_hosts
 from scholarscope.snapshots import (
     MANIFEST_PATH,
     SLUG_PATTERN,
@@ -61,7 +63,9 @@ def refetch(
     snapshots_dir: Path,
     update_manifest: bool,
     fetcher: Fetcher,
+    allow_hosts: tuple[str, ...] = (),
 ) -> int:
+    allow_hosts = validated_hosts(allow_hosts)
     protected = {gold_dir.resolve(), (ROOT / "eval/gold").resolve()}
     if any(
         path.resolve().is_relative_to(directory)
@@ -81,7 +85,24 @@ def refetch(
         drift = "-"
         result = fetcher.fetch(url)
         status: str = result.status
-        if result.status == "ok":
+        prepared = prepare_page(
+            result,
+            allow_hosts=allow_hosts,
+            user_agent=fetcher.user_agent,
+            timeout=fetcher.timeout_seconds,
+            max_bytes=fetcher.max_bytes,
+        )
+        if prepared.rendering is not None:
+            result = prepared.fetch_result
+            status = prepared.status
+            if prepared.rendering.blocked_hosts:
+                print(
+                    f"{slug}: blocked subresource hosts: {', '.join(prepared.rendering.blocked_hosts)}",
+                    file=sys.stderr,
+                )
+            if prepared.error:
+                print(f"{slug}: {prepared.error}", file=sys.stderr)
+        if result.status == "ok" and prepared.status == "ok":
             try:
                 new = snapshot_page(result, slug, snapshots_dir=snapshots_dir)
                 drift = classify_drift(old, new).classification if old is not None else "new"
@@ -109,6 +130,12 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--snapshots-dir", type=Path, default=SNAPSHOTS_DIR / "refetched")
     parser.add_argument("--gold-dir", type=Path, default=ROOT / "eval/gold")
     parser.add_argument("--manifest", type=Path, default=MANIFEST_PATH)
+    parser.add_argument(
+        "--allow-host",
+        action="append",
+        default=[],
+        help="explicit exact subresource hostname; repeat per source decision",
+    )
     try:
         args = parser.parse_args(argv)
         with Fetcher(args.snapshots_dir / "fetched") as fetcher:
@@ -118,6 +145,7 @@ def main(argv: list[str] | None = None) -> int:
                 snapshots_dir=args.snapshots_dir,
                 update_manifest=args.update_manifest,
                 fetcher=fetcher,
+                allow_hosts=tuple(args.allow_host),
             )
     except SystemExit as exc:
         return 0 if exc.code == 0 else 1

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import hashlib
 from dataclasses import dataclass, replace
 from datetime import UTC, datetime
@@ -38,6 +39,12 @@ class FetchResult:
     content: bytes | None = None
     error: str | None = None
     from_cache: bool = False
+    fetch_mode: Literal["http", "rendered"] = "http"
+    playwright_version: str | None = None
+    browser_version: str | None = None
+    allow_hosts: tuple[str, ...] = ()
+    blocked_requests: int = 0
+    blocked_hosts: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -144,7 +151,11 @@ class Fetcher:
                         )
                     if response.status_code in {401, 403}:
                         return self._remember(
-                            replace(result, status="blocked", error=f"HTTP status {response.status_code}")
+                            replace(
+                                result,
+                                status="blocked",
+                                error=f"HTTP status {response.status_code}",
+                            )
                         )
                     if not response.is_success:
                         return self._remember(
@@ -215,10 +226,77 @@ class Fetcher:
         origin = str(url.copy_with(path="/", query=None, fragment=None))
         if origin not in self._robots_cache:
             self._robots_cache[origin] = self._load_robots(url)
+        return self._robots_decision(url)
+
+    def _robots_decision(self, url: httpx.URL) -> tuple[FetchStatus, str | None]:
+        origin = str(url.copy_with(path="/", query=None, fragment=None))
         policy = self._robots_cache[origin]
         if policy.parser is not None and not policy.parser.can_fetch(self.user_agent, str(url)):
             return "blocked", "disallowed by robots.txt"
         return policy.status, policy.error
+
+    async def check_robots_async(self, url: httpx.URL) -> tuple[FetchStatus, str | None]:
+        """Renderer I/O bridge using the HTTP fetcher's SAME cache/status/policy rules.
+
+        Async transport lets the renderer's overall deadline cancel robots I/O.
+        No page or snapshot is fetched/written here. Call serially per instance.
+        """
+        origin = str(url.copy_with(path="/", query=None, fragment=None))
+        if origin not in self._robots_cache:
+            robots_url = url.copy_with(path="/robots.txt", query=None, fragment=None)
+            await self.wait_for_host_async(url)
+            try:
+                async with (
+                    httpx.AsyncClient(
+                        headers={"User-Agent": self.user_agent},
+                        follow_redirects=False,
+                        timeout=self.timeout_seconds,
+                        trust_env=False,
+                    ) as client,
+                    client.stream("GET", robots_url) as response,
+                ):
+                    status, error = self._classify_robots_status(response.status_code)
+                    if status != "ok":
+                        policy = _RobotsPolicy(status, error)
+                    elif response.status_code in {404, 410}:
+                        policy = _RobotsPolicy("ok")
+                    elif not response.is_success:
+                        policy = _RobotsPolicy(
+                            "blocked",
+                            f"robots.txt redirect not followed: HTTP status {response.status_code}",
+                        )
+                    else:
+                        body = bytearray()
+                        async for chunk in response.aiter_bytes(
+                            chunk_size=min(65_536, self.max_bytes + 1)
+                        ):
+                            body.extend(chunk)
+                            if len(body) > self.max_bytes:
+                                break
+                        if len(body) > self.max_bytes:
+                            policy = _RobotsPolicy("network_error", "robots.txt response too large")
+                        else:
+                            parser = RobotFileParser(str(robots_url))
+                            parser.parse(body.decode("utf-8", errors="replace").splitlines())
+                            policy = _RobotsPolicy("ok", parser=parser)
+            except httpx.RequestError as exc:
+                policy = _RobotsPolicy(
+                    "network_error", f"robots.txt network error: {type(exc).__name__}"
+                )
+            self._robots_cache[origin] = policy
+        return self._robots_decision(url)
+
+    async def wait_for_host_async(self, url: httpx.URL) -> None:
+        """Renderer pacing, also honoring explicit robots crawl-delay."""
+        origin = str(url.copy_with(path="/", query=None, fragment=None))
+        policy = self._robots_cache.get(origin)
+        delay = policy.parser.crawl_delay(self.user_agent) if policy and policy.parser else None
+        interval = max(self.min_interval_seconds, delay if isinstance(delay, int) else 0)
+        host = url.netloc.decode("ascii")
+        remaining = interval - (monotonic() - self._last_request_by_host.get(host, 0))
+        if remaining > 0:
+            await asyncio.sleep(remaining)
+        self._last_request_by_host[host] = monotonic()
 
     def _load_robots(self, url: httpx.URL) -> _RobotsPolicy:
         robots_url = url.copy_with(path="/robots.txt", query=None, fragment=None)
@@ -232,7 +310,8 @@ class Fetcher:
                     return _RobotsPolicy("ok")
                 if not response.is_success:
                     return _RobotsPolicy(
-                        "blocked", f"robots.txt redirect not followed: HTTP status {response.status_code}"
+                        "blocked",
+                        f"robots.txt redirect not followed: HTTP status {response.status_code}",
                     )
                 body = self._read_content(response)
                 if body is None:

@@ -1,16 +1,20 @@
-"""Local bytes -> extraction -> ALWAYS deterministic evidence verification.
+"""Local verified pipeline plus an explicit network-capable preparation helper.
 
-No fetching, snapshot writes, or label access. Only the injected LLM client may
-perform inference; tests inject FakeClient and prohibit real socket connections.
+run_pipeline never fetches, saves snapshots or reads labels. prepare_page alone
+may render suspiciously_empty HTTP HTML before the local pipeline is called.
+Inference uses the injected LLM client; tests use synthetic inputs/FakeClient.
 """
 
 from __future__ import annotations
 
 import hashlib
 from collections.abc import Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import UTC, datetime
-from typing import Literal
+from typing import TYPE_CHECKING, Literal
+
+if TYPE_CHECKING:
+    from scholarscope.renderer import RenderResult
 
 from scholarscope.cleaner import CLEANER_VERSION, CleanedHTML, clean_html
 from scholarscope.extraction import PROMPT_VERSIONS, ExtractionResult, extract_record
@@ -21,6 +25,84 @@ from scholarscope.pdf_text import PDF_EXTRACTOR_VERSION, ExtractedPDF, extract_p
 from scholarscope.schema import RequirementRecord, Source
 from scholarscope.segmenter import SEGMENTER_VERSION, segment
 from scholarscope.verifier import VERIFIER_VERSION, VerificationReport, verify_record
+
+
+@dataclass(frozen=True)
+class PreparedPage:
+    fetch_result: FetchResult
+    rendering: RenderResult | None = None
+    status: str = "ok"
+    error: str | None = None
+
+
+def prepare_page(
+    result: FetchResult,
+    *,
+    allow_hosts: tuple[str, ...] = (),
+    timeout: float = 20,
+    settle_ms: int = 1500,
+    max_bytes: int = 15_000_000,
+    user_agent: str | None = None,
+) -> PreparedPage:
+    """Explicit network-capable step BEFORE local run_pipeline; no override trigger.
+
+    Only successful, plain HTTP HTML whose cleaner flags suspiciously_empty is
+    rendered. PDFs/non-HTML/failures/local or already-rendered snapshots stay local.
+    On rendering failure callers MUST use this status, not silently use thin HTML.
+    """
+    from scholarscope.fetcher import USER_AGENT
+    from scholarscope.renderer import render, validated_hosts
+
+    hosts = validated_hosts(allow_hosts)
+    if (
+        result.status != "ok"
+        or result.content is None
+        or result.fetch_mode != "http"
+        or (result.content_type or "").split(";", 1)[0].strip().lower() != "text/html"
+        or not (result.final_url or result.url).startswith(("http://", "https://"))
+    ):
+        return PreparedPage(result, status=result.status, error=result.error)
+    if (
+        result.content_sha256
+        and hashlib.sha256(result.content).hexdigest() != result.content_sha256
+    ):
+        raise ValueError("fetch content_sha256 does not match original bytes")
+    if not clean_html(result.content, base_url=result.final_url or result.url).suspiciously_empty:
+        return PreparedPage(result)
+    rendered = render(
+        result.final_url or result.url,
+        timeout=timeout,
+        settle_ms=settle_ms,
+        max_bytes=max_bytes,
+        user_agent=user_agent or USER_AGENT,
+        allow_hosts=hosts,
+    )
+    if rendered.status != "ok":
+        return PreparedPage(result, rendered, rendered.status, rendered.error)
+    if rendered.html is None:
+        return PreparedPage(
+            result, rendered, "render_error", rendered.error or "renderer returned no HTML"
+        )
+    return PreparedPage(
+        replace(
+            result,
+            content=rendered.html,
+            content_sha256=hashlib.sha256(rendered.html).hexdigest(),
+            content_type="text/html",
+            final_url=rendered.final_url,
+            fetched_at=datetime.now(UTC).isoformat(),
+            http_status=None,  # DOM capture is not a claim about an HTTP status code.
+            snapshot_path=None,
+            from_cache=False,
+            fetch_mode="rendered",
+            playwright_version=rendered.playwright_version,
+            browser_version=rendered.browser_version,
+            allow_hosts=rendered.allow_hosts,
+            blocked_requests=rendered.blocked_requests,
+            blocked_hosts=rendered.blocked_hosts,
+        ),
+        rendered,
+    )
 
 
 @dataclass(frozen=True)
