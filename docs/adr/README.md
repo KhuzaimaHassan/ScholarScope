@@ -21,3 +21,4 @@ These records capture the accepted architecture and policy decisions for Scholar
 | [015](015-link-targets-in-cleaned-text.md) | Link-target metadata, synthetic anchor provenance and version-first snapshot drift |
 | [016](016-evaluation-harness-failure-semantics.md) | Failure-aware offline evaluation and private human-support audit artifacts |
 | [017](017-rendering-fallback.md) | Heuristic-only restricted rendering, exact-host policy and snapshot provenance |
+| [018](018-profile-schema-and-no-gpa-conversion.md) | Private profile data, shared vocabularies and exact-scale GPA comparison without conversion |
