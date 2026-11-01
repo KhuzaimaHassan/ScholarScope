@@ -3,3 +3,5 @@ eval/snapshots/
 .cache/
 eval/reports/*
 !eval/reports/.gitkeep
+profiles/
+*.profile.json

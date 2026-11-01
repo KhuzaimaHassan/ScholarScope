@@ -46,7 +46,7 @@ Passage(id, index, start, end, text_hash, section_heading, locator, source_refs,
 ExtractedField(id, program_id, name, value_json, evidence[{quote, passage_id, locator}], status[present|absent|ambiguous|in_linked_document], verification[not_checked|verified|unverified], linked_url, notes, confidence[advisory], model, prompt_version) -- usable_for_logic iff present and verified (ADR 010)
 Deadline(id, program_id, extracted_field_id, type[application|document|recommender|scholarship|interview|other],
          cycle_year, date, time, timezone, rolling[bool], notes)   -- multiple per program
-Profile(id, degree, field, gpa, gpa_scale, nationality, language_scores_json, documents_json)
+Profile(id, schema_version, degree_level, field_of_study, gpas[{value, scale, label?}], nationalities[ISO alpha-2], language_scores, documents, date_of_birth?, years_experience?) -- private owner data; exact-scale GPA comparison only, never sent to an LLM (ADR 018)
 EligibilityRule(id, name, version, description, rationale, source_note, tests_ref)   -- provenance per rule
 Eligibility(id, program_id, profile_id, verdict, reasons_json[{rule_id, rule_version, field_id, quote_ref}])
 ```
