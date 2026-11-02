@@ -22,3 +22,4 @@ These records capture the accepted architecture and policy decisions for Scholar
 | [016](016-evaluation-harness-failure-semantics.md) | Failure-aware offline evaluation and private human-support audit artifacts |
 | [017](017-rendering-fallback.md) | Heuristic-only restricted rendering, exact-host policy and snapshot provenance |
 | [018](018-profile-schema-and-no-gpa-conversion.md) | Private profile data, shared vocabularies and exact-scale GPA comparison without conversion |
+| [019](019-checklist-buffers-and-unknown-timezones.md) | Evidence-gated calendar planning, unknown-zone dates without buffers and cross-calendar safety |
