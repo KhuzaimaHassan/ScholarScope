@@ -1,12 +1,14 @@
 # 02 — Architecture
 
+**Implementation status:** Implementation status is tracked in the [README status table](../README.md#project-status); this document describes intent and plan.
+
 **Status:** Draft v0.2 (reviewed; edits applied)
 
 ## 1. Design principles
 
 1. **Evidence or abstain.** A field is shown as `verified` only if every quote is found in its cited passage or a contiguous match starting/ending there across adjacent passages (ADR 012). A field that fails this check is **retained but marked `unverified`**: it stays visible with a "check official page" notice and is **excluded from eligibility and checklist logic**.
-2. **LLMs extract; code decides.** Eligibility and date logic are deterministic and unit-tested. The LLM never produces the final verdict. **LLM confidence is advisory only** (display and triage) and never affects eligibility or checklist output.
-3. **Measure everything.** Every pipeline change is scored against the gold set in CI.
+2. **LLMs extract; code decides.** Date logic is deterministic and unit-tested; the planned eligibility logic must be too. The LLM never produces the final verdict. **LLM confidence is advisory only** (display and triage) and never affects eligibility or checklist output.
+3. **Measure everything.** The goal is to score every pipeline change against the gold set in CI; the harness exists, but hand labels, baseline results and the CI regression gate are pending.
 4. **Free-tier friendly.** Must run on free LLM tiers and a free host; model provider is swappable.
 5. **Pluggable sources.** A generic extractor works everywhere; site-specific parsers override it where they are better.
 
@@ -20,6 +22,8 @@ URL ──► Fetcher ──► Cleaner ──► Segmenter ──► Extractor 
         robots.txt)                          Pydantic)                          (rules, profile)        (dates, missing docs)
 ```
 
+This is the intended integration: the current checklist runs directly from a Requirement Record; eligibility/profile integration and missing-document matching remain planned ([checklist contract](21-checklist.md)).
+
 ### Components
 
 | Component | Responsibility | Notes |
@@ -30,13 +34,13 @@ URL ──► Fetcher ──► Cleaner ──► Segmenter ──► Extractor 
 | **Segmenter** | Split into passages with stable IDs and character offsets | Evidence points to passage ID + span |
 | **Extractor** | Five field-group prompts return provider-safe wire models, converted locally into a typed Requirement Record with `{status, verification, value, evidence[], linked_url, notes, confidence}` fields (ADR 013); evidence holds quote, passage ID and locator | Verification starts `not_checked`; only the deterministic verifier sets `verified`/`unverified` (ADR 010). `confidence` is advisory only. Consumers must inspect failed_groups/rejected_items before interpreting empty fields ([contract](16-extractor.md)) |
 | **Evidence Verifier** | Confirms every quote **exists** in its cited passage or a contiguous match starting/ending there across adjacent passages (exact, then formatting normalization; ADR 012). Fails → claim becomes `unverified` (kept, not dropped) | Pure code, deterministic; no character-edit fuzzy matching. It proves *presence* only. Whether the quote actually *supports* the value is a separate, human-audited quality metric (see `03-evaluation-plan.md`) |
-| **Eligibility Engine** | Rules over `(RequirementRecord, Profile)` → `eligible / not_eligible / unclear` + reasons. Uses **verified fields only**; any rule that needs an `unverified` or missing field yields `unclear` | Unit-tested; unknown data → `unclear`, never a guess. Every rule carries provenance (see section 3) |
-| **Checklist Generator** | Dated tasks from deadline(s), missing documents, test dates | Buffers configurable |
-| **Plugin interface** | `SiteParser` protocol: `can_handle(url)`, `parse(raw) -> RequirementRecord` | Enables contributions |
-| **API** | FastAPI: `POST /programs` (URL), `GET /programs/{id}`, `POST /profile`, `GET /programs/{id}/eligibility` | Async job for slow fetches |
-| **Storage** | PostgreSQL (programs, passages, extractions, profiles, runs) | Free-tier hosted Postgres |
-| **Frontend** | Next.js: paste URL, result view with click-to-source highlight, checklist, compare view | Evidence side-panel is the signature UI |
-| **Eval harness** | Runs pipeline over gold set, computes metrics, outputs report + CI gate | See `03-evaluation-plan.md` |
+| **Eligibility Engine** | Rules over `(RequirementRecord, Profile)` → `eligible / not_eligible / unclear` + reasons. Uses **verified fields only**; any rule that needs an `unverified` or missing field yields `unclear` | Planned, with unit tests required; unknown data → `unclear`, never a guess. Every rule carries provenance (see section 3) |
+| **Checklist Generator** | Dated tasks from verified requirements; missing-document matching and test-date planning remain planned | Buffers configurable ([implemented contract](21-checklist.md)) |
+| **Plugin interface** | `SiteParser` protocol: `can_handle(url)`, `parse(raw) -> RequirementRecord` | Planned; enables contributions |
+| **API** | FastAPI: `POST /programs` (URL), `GET /programs/{id}`, `POST /profile`, `GET /programs/{id}/eligibility` | Planned; async job for slow fetches |
+| **Storage** | PostgreSQL (programs, passages, extractions, profiles, runs) | Planned; free-tier hosted Postgres |
+| **Frontend** | Next.js: paste URL, result view with click-to-source highlight, checklist, compare view | Planned; evidence side-panel is the signature UI |
+| **Eval harness** | Runs pipeline over local gold snapshots, computes metrics and outputs reports; CI gate remains planned | See [implemented harness](18-evaluation-harness.md) and `03-evaluation-plan.md` |
 
 ## 3. Data model (core)
 
@@ -57,7 +61,7 @@ A program can have several deadlines. Each deadline stores its **type**, **cycle
 
 ### Rule provenance
 
-Each deterministic eligibility rule records: a stable ID and version, a plain-language description, the rationale for how it interprets the requirement (for example how a GPA scale is normalized), a note on where that interpretation comes from (program wording, common convention, or your own decision), and a link to its unit tests. Every verdict lists the `rule_id` and `rule_version` it used, so any result can be audited and reproduced.
+Each planned deterministic eligibility rule will record: a stable ID and version, a plain-language description, the rationale for how it interprets the requirement (for example how a GPA scale is normalized), a note on where that interpretation comes from (program wording, common convention, or your own decision), and a link to its unit tests. Every verdict will list the `rule_id` and `rule_version` it used, so any result can be audited and reproduced.
 
 ## 4. Key decisions (ADR summaries — write one ADR file each in `docs/adr/`)
 
@@ -75,7 +79,7 @@ Each deterministic eligibility rule records: a stable ID and version, a plain-la
 
 - Frontend on Vercel free tier.
 - API + worker in a Docker container on a free VM or container host (decide at M6 based on what is free then).
-- GitHub Actions: lint, tests, eval regression gate, container build.
+- GitHub Actions currently runs lint, tests and type-checking plus advisory browser tests; the eval regression gate and container build remain planned.
 - Secrets via environment variables; no API keys in repo.
 
 ## 6. Technical risks specific to architecture

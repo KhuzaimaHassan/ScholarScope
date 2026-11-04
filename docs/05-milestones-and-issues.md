@@ -1,5 +1,7 @@
 # 05 — GitHub Milestones and Issues Plan
 
+**Implementation status:** Implementation status is tracked in the [README status table](../README.md#project-status); this document describes intent and plan.
+
 **Status:** Draft v0.2 (reviewed; edits applied). One milestone per phase, one tracking issue per milestone (checklist of its child issues).
 Labels to create: `type:docs`, `type:feature`, `type:eval`, `type:infra`, `type:bug`, `good first issue`, `delegate:ai`, `delegate:human`, `delegate:pair`, `risk`, `blocked`.
 
@@ -47,6 +49,8 @@ Tracking issue: *[M0] Foundations and docs*
 | Prompt-injection hardening of extraction step | risk | human | Test pages with injected instructions do not change output |
 | Prompt/version registry | infra | ai | Each extraction stores model + prompt version |
 
+Implementation clarification (acceptance criteria retained verbatim): the baseline uses five field groups ([ADR 013](adr/013-field-group-extraction-and-wire-schemas.md)); verification allows formatting tolerance, not character edits ([ADR 012](adr/012-verifier-matching-rules.md)). Injection hardening follows the [owner-approved boundary interpretation](17-threat-model-injection.md); real-model compliance and false page content remain residual risks. Model and per-group prompt-version metadata are already stored; a broader registry remains deferred ([extractor contract](16-extractor.md)).
+
 ## M3 — Gold set and evaluation harness
 **Goal:** Reproducible accuracy numbers.
 **Labeling runs in parallel with M1.** The labeling guide and first labels must exist before M2 tuning begins.
@@ -76,6 +80,8 @@ Tracking issue: *[M0] Foundations and docs*
 | 5 synthetic profiles per gold program with hand-labeled verdicts | eval | human | Used for eligibility agreement metric |
 | Checklist generator with deadline buffers | feature | ai | Uses verified deadlines only; handles multiple deadlines, rolling programs, and unknown timezone (warn, no buffer); tested |
 | Missing-document detector | feature | ai | Compares required vs. profile documents |
+
+The retained profile criterion's "GPA scale normalization" means numeric representation equality and exact-scale matching, not conversion between scales ([ADR 018](adr/018-profile-schema-and-no-gpa-conversion.md)).
 
 ## M5 — API and UI
 **Goal:** Usable end-to-end product.
@@ -128,6 +134,6 @@ Gate between milestones: tracking issue checklist complete and eval numbers reco
 
 ## Immediate next actions
 
-1. Run `scripts/create_issues.py --dry-run`, review the output, then run it against the new repo.
-2. Confirm the five gold-set families against your real application shortlist.
+1. Issue bootstrap is complete; use `scripts/create_issues.py --dry-run` to review any future regeneration before applying it to the existing repo.
+2. Confirm the nine gold-set families and proposed slots against your real application shortlist ([candidate list](06-gold-set-candidates.md)); final selection remains owner work.
 3. Register the domain (or defer on purpose) and review source terms of use.

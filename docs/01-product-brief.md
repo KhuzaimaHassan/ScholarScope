@@ -1,7 +1,9 @@
 # 01 — Product Brief
 
+**Implementation status:** Implementation status is tracked in the [README status table](../README.md#project-status); this document describes intent and plan.
+
 **Name:** ScholarScope (final) · **License:** MIT
-**Status:** Draft v0.2 — reviewed and approved with edits; docs-first, no code yet
+**Status:** Draft v0.2 — reviewed and approved with edits
 
 ## 1. Problem
 
