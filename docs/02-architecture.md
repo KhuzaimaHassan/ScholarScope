@@ -1,7 +1,6 @@
 # 02 — Architecture
 
-**Status:**
-Implementation status is tracked in the [README status table](../README.md#project-status); this document describes intent and plan.
+**Implementation status:** Implementation status is tracked in the [README status table](../README.md#project-status); this document describes intent and plan.
 
 **Status:** Draft v0.2 (reviewed; edits applied)
 

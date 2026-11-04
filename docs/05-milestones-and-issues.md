@@ -1,10 +1,9 @@
 # 05 — GitHub Milestones and Issues Plan
 
-**Status:**
-Implementation status is tracked in the [README status table](../README.md#project-status); this document describes intent and plan.
+**Implementation status:** Implementation status is tracked in the [README status table](../README.md#project-status); this document describes intent and plan.
 
 **Status:** Draft v0.2 (reviewed; edits applied). One milestone per phase, one tracking issue per milestone (checklist of its child issues).
-Labels: `type:docs`, `type:feature`, `type:eval`, `type:infra`, `type:bug`, `good first issue`, `delegate:ai`, `delegate:human`, `delegate:pair`, `risk`, `blocked`.
+Labels to create: `type:docs`, `type:feature`, `type:eval`, `type:infra`, `type:bug`, `good first issue`, `delegate:ai`, `delegate:human`, `delegate:pair`, `risk`, `blocked`.
 
 Definition of done for any issue: acceptance criteria met, tests added, docs updated, eval subset not regressed, PR reviewed by you.
 
@@ -45,8 +44,8 @@ Tracking issue: *[M0] Foundations and docs*
 | Pydantic schema for Requirement Record | feature | human | Every field has value, evidence list (quote, passage_id, locator), status (present/absent/ambiguous/in_linked_document), verification (not_checked/verified/unverified), linked_url, notes, and advisory confidence; usable_for_logic only when present and verified (ADR 010) |
 | Deadline model: type, cycle/year, timezone, rolling flag, multiple per program | feature | human | Schema + tests for multiple deadlines, unknown timezone, and rolling programs |
 | Provider-agnostic LLM interface (Gemini, Groq, Ollama) | feature | pair | Swap by config; retries and caching |
-| Extractor v0 (field-group baseline) | feature | pair | Produces valid records on 10 pages |
-| Evidence verifier (exact + formatting normalization) | feature | human | Unit tests incl. adversarial quotes; failures are **retained and marked `unverified`**, never dropped; verifier checks quote presence only |
+| Extractor v0 (single prompt baseline) | feature | pair | Produces valid records on 10 pages |
+| Evidence verifier (exact + normalized fuzzy) | feature | human | Unit tests incl. adversarial quotes; failures are **retained and marked `unverified`**, never dropped; verifier checks quote presence only |
 | Prompt-injection hardening of extraction step | risk | human | Test pages with injected instructions do not change output |
 | Prompt/version registry | infra | ai | Each extraction stores model + prompt version |
 
