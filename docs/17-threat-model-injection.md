@@ -22,6 +22,18 @@ tool execution or rendering of active Markdown/HTML automatically.
 | Original source text | Immutable segmented text and offsets used by verifier | Escape only the provider message, never the source document |
 | Keys and private data | Credentials stay in adapter headers; private snapshots/cache remain private | No tools, browsing or image loading are exposed to extraction; do not interpret model text as actions |
 
+## Provider error diagnostics
+
+[ADR 020](adr/020-ephemeral-provider-failure-details.md) narrowly permits a failed
+call's structured `error.message` in memory and manual console output only.
+Known credentials, token-shaped strings and URL queries are redacted first;
+any 20-character request-text echo withholds the whole message. Whitespace is
+collapsed and the result capped at 300 characters. No raw response, request body,
+exception or stack trace is exposed. Messages are inert untrusted text, excluded
+from repr, cache, snapshots, reports, logs and record notes. Do not persist or
+redirect diagnostic console output. The literal echo guard does not detect
+paraphrases or shorter echoes; it is not a general semantic data-loss detector.
+
 ## Request fencing and cache identity
 
 The shared renderer in llm/base.py wraps one JSON array inside the exact fences

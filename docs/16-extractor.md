@@ -3,8 +3,9 @@
 The baseline makes five `generate_structured` calls, in fixed order: identity
 (program_name, institution, application_link, degree_levels), funding
 (funding_coverage), documents (required_documents, recommenders), deadlines, and
-conditions. Each group has one trusted v1 prompt. Provider retries and caching
-remain the LLM interface's responsibility; there is no additional retry loop.
+conditions. Identity/deadlines use v1; funding/documents/conditions use v2.
+Provider retries and caching remain the LLM interface's responsibility; there is
+no additional retry loop.
 Temperature is zero. Provider/model identity and all five prompt versions are
 recorded. Token totals sum the usage returned by the five calls; missing counts
 remain unknown, and provider-layer usage is not an aggregate bill for retries.
@@ -58,6 +59,21 @@ rejections use `EXTRACTION_REJECTED` notes and remain available in rejected_item
 a wholly rejected group additionally has an invalid_output failure marker.
 An intentionally empty, successfully extracted list is ok, not a failed group.
 
+`failure_details` maps every failed group to category, nullable `http_status` and
+nullable `message`. Categories are rate_limited, server_error, bad_request,
+timeout, schema_rejected and other. Invalid/over-complex provider schemas are
+schema_rejected, with no fallback. The message is only a structured provider
+`error.message` on HTTP 4xx/5xx or provider-reported errors, sanitized under
+[ADR 020](adr/020-ephemeral-provider-failure-details.md): redact credentials/tokens
+and URL queries, withhold any 20-character request-text echo, collapse whitespace,
+then cap at 300 characters. Missing messages remain null. Local failures expose
+no provider message. Messages live only in memory and script console output,
+never records, cache, snapshots, reports or logs; failure notes are unchanged.
+`group_latency_seconds` measures wall time around each group call (including
+client retries/cache lookup); skipped groups use zero. `group_usage` contains
+each returned nullable input/output token count, not aggregate retry billing;
+cached usage describes the original response, not new tokens spent.
+
 `pipeline.run_pipeline` accepts a FetchResult containing bytes; it does no
 fetching or writing. It cleans HTML or extracts PDF text, segments, extracts,
 and **always calls verify_record** before returning a final record. The separate
@@ -96,29 +112,64 @@ They use only the fictional Example Excellence Scholarship. Tests read gold
 files without writing them and prohibit page-derived values, quotes and source
 URLs in prompts; common schema vocabulary is necessarily shared.
 
+funding-v2 uses `other` for covered costs outside named categories and preserves
+exact wording in the note, rather than selecting the nearest category.
+documents-v2 splits distinct documents into separate entries using source wording,
+even when listed in a single sentence, without inventing documents. conditions-v2
+uses kind `other` and the requirement sentence when proficiency is required
+without a named test or score. Empty-options language conditions remain domain
+validation errors. Each changed task/version invalidates the corresponding cache
+key; v1 files remain available as historical baselines.
+
 ## Manual local extraction
 
 From the repository root, after configuring the LLM environment:
 
 ```sh
-python scripts/extract_snapshot.py --slug fictional-award --snapshots-dir /private/snapshots
+python scripts/extract_snapshot.py --slug fictional-award --snapshots-dir /private/snapshots --source-url https://example.invalid/award
 ```
 
 Exactly one `<slug>.html` or `<slug>.pdf` must exist. The script reads only that
 file, never gold labels or the network fetcher, and never writes a snapshot or
 label. It may call the configured LLM when manually run; read_only cache mode
-avoids provider calls. It prints record JSON and a short presence summary, never
-keys/headers. Its source URL is the local file URI and retrieved_on is the UTC
+avoids provider calls. It prints record JSON and a summary with verification,
+failed_groups/failure_details, group_status, group_latency_seconds, group_usage,
+truncated and passages_dropped. Rejections include group, index and reason;
+`--show-rejected` additionally includes the private raw item (off by default).
+Do not persist/redirect diagnostics: messages are console-only, and raw rejected
+items may contain page text. It never prints keys/headers.
+
+Without `--source-url`, its source URL is the local file URI and relative hrefs
+cannot resolve against an HTTP origin. With the flag, require HTTP(S) with a host
+and no embedded credentials; use it as SourceInfo.url and the cleaner's explicit
+base for relative targets. `source_url_user_supplied: true` records this user
+assertion, not verified retrieval provenance. No URL is fetched and the literal
+URL guard is unchanged. In both cases retrieved_on is the UTC
 date of this local read, **not** a claim about the original website retrieval.
 Applications needing original provenance must supply explicit Source metadata
-to run_pipeline. The script was not run as part of implementation.
+to run_pipeline; source.url also supplies its cleaner base. The implementation
+tests use only fictional local files and mocked/scripted providers.
+
+## First real run
+
+Owner-reported observations from one manual run (not accuracy measurements):
+
+- The deadline group reported provider_error without diagnostic detail.
+- A general language-proficiency condition with empty options was rejected.
+- An unlisted administrative cost was assigned to a named funding category.
+- Several required documents were returned as one compound list entry.
+- The application link was absent; using a file URI as the relative-link base
+  is a possible cause, not a measured attribution.
+
+These observations motivate the changes above. No source-page wording is copied
+here, no accuracy claim is made, and no live run was performed for these fixes.
 
 ## Deliberate limits
 
 This issue measures no accuracy and labels no real pages. Eleven synthetic page
 layouts exercise contracts, not product quality. Boundary defenses do not claim
 a hostile model obeys the prompt. Prompt registry
-and experiment management remain #22; version tags here identify fixed v1 files.
+and experiment management remain #22; version tags here identify fixed prompt files.
 No inference from country/year, currency conversion, OCR, link following,
 eligibility decisions, character-edit quote matching, or new dependencies.
 
@@ -144,4 +195,4 @@ labels suppress duplicate suffixes; a model-produced absolute URL absent from th
 text is still rejected, not repaired. Both scan and provenance rules are unchanged.
 Cleaner v2 changes derived text/maps and requires deliberate baseline review even
 when raw bytes are identical. No labels/snapshots were migrated. Existing prompts
-already ask for the page's actual target, so prompts/versions remain unchanged.
+already ask for the page's actual target; identity-v1 remains unchanged by these fixes.

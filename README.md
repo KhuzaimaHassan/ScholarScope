@@ -119,7 +119,7 @@ python scripts/extract_snapshot.py --slug my-local-page --snapshots-dir eval/sna
 
 This reads the local file and may send its passages to the configured LLM; it does not fetch the source page or write labels/snapshots. It prints the record plus verification/failure diagnostics. Read `failed_groups` and `rejected_items`: extraction-failure placeholders do not mean the page states nothing. A `read_only` cache avoids provider calls, but cache misses cannot produce an extraction.
 
-The script records a local file URI and local read date, not original website retrieval provenance. Relative links needing an original HTTP base can remain unavailable in this path. See [doc 16](docs/16-extractor.md) for the API path with explicit source metadata. Private caches and extraction output may contain page text; do not publish them as logs or metrics.
+Add `--source-url https://example.invalid/award` to supply the original HTTP(S) URL as source metadata and the base for relative links; output marks it as user-supplied, not verified retrieval provenance. Without it the source remains a local file URI. The date remains the local read date. Rejections show group/index/reason; `--show-rejected` opts into private raw items. Failure diagnostics include guarded provider messages for console use only: do not redirect or save this output to reports/logs. Private caches and raw extraction output may contain page text; see [doc 16](docs/16-extractor.md).
 
 ## Roadmap
 

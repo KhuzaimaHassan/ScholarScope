@@ -21,7 +21,8 @@ Callers must never interpolate page content into trusted system/task strings.
 
 `LLMClient.generate_structured(request)` returns a frozen
 `StructuredResponse[T]`: status, parsed or null, last raw_text or null, attempts,
-provider, configured model, prompt_version, usage, cached, sanitized error.
+provider, configured model, prompt_version, usage, cached, fixed error and optional
+ephemeral failure_detail (category, HTTP status, guarded message; see below).
 `close()` releases an internally owned HTTP client; injected clients stay owned
 by their caller. Responses omit raw_text/parsed from repr to avoid accidental
 logging. Valid model garbage and provider failures return statuses, not errors
@@ -76,8 +77,31 @@ does not discard an otherwise valid response (ok with a fixed warning).
 - off: no file reads, writes or directory creation.
 
 Config credentials are SecretStr, excluded from repr/str and model_dump (including
-JSON mode). Errors use fixed messages/status codes, never response bodies or
-exception strings. Known credential echoes in model output are rejected before
+JSON mode). The original error contract allowed fixed messages/status codes only,
+never response bodies or exception strings. [ADR 020](adr/020-ephemeral-provider-failure-details.md)
+adds a narrow exception for diagnosing schema/provider failures: on HTTP 4xx/5xx
+or a provider-reported structured error, `failure_detail` may carry only the
+provider's structured `error.message` field, sanitized in this order:
+
+1. Select that string field only; missing/non-string messages stay null. Never
+   fall back to a raw body, exception string, stack trace or request body.
+2. Redact known credentials, key/token-shaped strings and URL query strings.
+3. If any 20-character window from request system/task/passages or their sent
+   rendering occurs in the sanitized message, replace the entire message with
+   `[withheld: matched request text]`.
+4. Collapse whitespace, then truncate to 300 characters.
+
+Failure detail has category (`rate_limited`, `server_error`, `bad_request`,
+`timeout`, `schema_rejected`, `other`), nullable HTTP status and nullable message.
+Invalid/over-complex provider schemas are `schema_rejected`, terminal without
+fallback. Timeout/connection/envelope/local-validation failures have no provider
+message. The legacy `error` remains fixed text, never the provider message.
+Messages are excluded from repr and live only in memory and manual-script
+console output: never cache, snapshot store, reports, logs or Requirement Record.
+Do not redirect or persist this diagnostic console output. No request/passages,
+credentials, query-bearing URLs, raw responses or exceptions are permitted.
+
+Known credential echoes in model output are rejected before
 exposure or caching. Package code does not log keys, headers, requests or raw
 responses. Do not enable third-party wire logging that dumps headers yourself.
 
