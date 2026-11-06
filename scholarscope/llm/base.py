@@ -19,6 +19,8 @@ from typing import TYPE_CHECKING, Any, Generic, Literal, Protocol, TypedDict, Ty
 import httpx
 from pydantic import BaseModel, ConfigDict, SecretStr, ValidationError
 
+from scholarscope.llm.errors import FailureDetail, provider_failure
+
 if TYPE_CHECKING:
     from scholarscope.llm.cache import FileCache
 
@@ -94,6 +96,7 @@ class StructuredResponse(Generic[T]):
     usage: Usage = field(default_factory=Usage)
     cached: bool = False
     error: str | None = None
+    failure_detail: FailureDetail | None = field(default=None, repr=False)
 
 
 class LLMClient(Protocol):
@@ -172,6 +175,7 @@ class BaseClient:
     max_attempts counts model-output attempts (default 3); each may use at most
     3 transport tries. Response.attempts counts actual sends, including retries.
     No exception text/body/headers is copied into an error or validation prompt.
+    ADR 020 permits only a guarded structured message in ephemeral failure_detail.
     """
 
     provider = "base"
@@ -264,7 +268,7 @@ class BaseClient:
 
     def _send(
         self, request: StructuredRequest[Any], user: str
-    ) -> tuple[str | None, Usage, int, str | None]:
+    ) -> tuple[str | None, Usage, int, str | FailureDetail | None]:
         if self._http is None:
             self._http = httpx.Client(trust_env=False, follow_redirects=False)
         for attempt in range(3):
@@ -277,20 +281,36 @@ class BaseClient:
                     timeout=self.timeout_seconds,
                     follow_redirects=False,
                 )
-            except (httpx.TimeoutException, httpx.NetworkError):
-                error = "transport timeout or connection error"
+            except httpx.TimeoutException:
+                detail = FailureDetail("timeout")
+            except httpx.NetworkError:
+                detail = FailureDetail("other")
             except (httpx.HTTPError, httpx.InvalidURL, UnicodeError):
-                return None, Usage(), attempt + 1, "HTTP transport failure"
+                return None, Usage(), attempt + 1, FailureDetail("other")
             else:
                 status = response.status_code
+                try:
+                    data = response.json()
+                except (ValueError, UnicodeError):
+                    data = None
+                if 400 <= status <= 599 or (isinstance(data, dict) and "error" in data):
+                    detail = provider_failure(
+                        data,
+                        status,
+                        request_texts=(request.system, request.task, user)
+                        + tuple(text for _, text in request.untrusted_passages),
+                        secrets=(self._key.get_secret_value(),) if self._key else (),
+                    )
+                    if detail.category == "schema_rejected":
+                        return None, Usage(), attempt + 1, detail
+                    if status != 429 and not 500 <= status <= 599:
+                        return None, Usage(), attempt + 1, detail
                 if status == 429 or 500 <= status <= 599:
-                    error = f"HTTP {status}"
                     retry_after = response.headers.get("Retry-After")
                 elif not 200 <= status < 300:
-                    return None, Usage(), attempt + 1, f"HTTP {status} (request rejected)"
+                    return None, Usage(), attempt + 1, FailureDetail("other", status)
                 else:
                     try:
-                        data = response.json()
                         if not isinstance(data, dict):
                             raise TypeError
                         raw, usage = self._extract(data)
@@ -301,7 +321,7 @@ class BaseClient:
                     return raw, usage, attempt + 1, None
             if attempt < 2:
                 self.sleeper(self._delay(attempt, retry_after))
-        return None, Usage(), 3, error
+        return None, Usage(), 3, detail
 
     def generate_structured(self, request: StructuredRequest[T]) -> StructuredResponse[T]:
         # Recheck even if someone bypassed dataclass construction.
@@ -324,19 +344,39 @@ class BaseClient:
                     )
             if self.cache.mode == "read_only":
                 return StructuredResponse(
-                    "unavailable", error="cache miss or invalid cached output", **common
+                    "unavailable",
+                    error="cache miss or invalid cached output",
+                    failure_detail=FailureDetail("other"),
+                    **common,
                 )
         capability = self._capability_error(request)
         if capability:
-            return StructuredResponse("unavailable", error=capability, **common)
+            return StructuredResponse(
+                "unavailable",
+                error=capability,
+                failure_detail=FailureDetail(
+                    "schema_rejected" if "schema" in capability else "other"
+                ),
+                **common,
+            )
         user = render_user_message(request.task, request.untrusted_passages)
         attempts, raw, usage = 0, None, Usage()
         for _ in range(self.max_attempts):
             raw, usage, sends, error = self._send(request, user)
             attempts += sends
             if error:
+                detail = error if isinstance(error, FailureDetail) else FailureDetail("other")
+                fixed_error = (
+                    f"HTTP {detail.http_status} (provider call failed)"
+                    if detail.http_status is not None
+                    else "provider call failed"
+                )
                 return StructuredResponse(
-                    "provider_error", attempts=attempts, error=error, **common
+                    "provider_error",
+                    attempts=attempts,
+                    error=fixed_error,
+                    failure_detail=detail,
+                    **common,
                 )
             try:
                 if raw is None:
@@ -359,5 +399,6 @@ class BaseClient:
             attempts=attempts,
             usage=usage,
             error="JSON/Pydantic validation failed",
+            failure_detail=FailureDetail("other"),
             **common,
         )

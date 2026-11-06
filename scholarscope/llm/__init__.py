@@ -8,9 +8,12 @@ from scholarscope.llm.base import (
     render_user_message,
 )
 from scholarscope.llm.config import LLMConfig, build_client
+from scholarscope.llm.errors import FailureCategory, FailureDetail
 from scholarscope.llm.fake import FakeClient
 
 __all__ = [
+    "FailureCategory",
+    "FailureDetail",
     "FakeClient",
     "LLMClient",
     "LLMConfig",
