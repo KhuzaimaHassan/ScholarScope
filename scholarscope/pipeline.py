@@ -151,9 +151,14 @@ def run_pipeline(
     if media_type == "text/html":
         kind = "html"
         versions["cleaner"] = CLEANER_VERSION
-        cleaned = clean_html(
-            content, base_url=source.url if source else fetch_result.final_url or fetch_result.url
-        )
+        base_url = fetch_result.final_url or fetch_result.url
+        if (
+            not base_url.lower().startswith(("http://", "https://"))
+            and source
+            and source.url.lower().startswith(("http://", "https://"))
+        ):
+            base_url = source.url
+        cleaned = clean_html(content, base_url=base_url)
     elif media_type == "application/pdf":
         kind = "pdf"
         versions["pdf_extractor"] = PDF_EXTRACTOR_VERSION

@@ -14,6 +14,7 @@ import httpx
 import pytest
 from pydantic import SecretStr
 from test_extractor import content, fetch, field, payload, scripted
+from test_extractor import source as source_info
 from test_llm import client_for, request
 
 from scholarscope.cleaner import clean_html
@@ -282,6 +283,75 @@ def test_source_url_resolves_retained_relative_targets(
     assert set(summary["group_status"]) == set(GROUP_MODELS)
     assert set(summary["group_latency_seconds"]) == set(GROUP_MODELS)
     assert summary["group_usage"] == {g: Usage().model_dump() for g in GROUP_MODELS}
+
+
+@pytest.mark.parametrize(
+    "requested_url,final_url,supplied_source_url,target",
+    [
+        (
+            "https://example.invalid/requested/index.html",
+            "https://example.invalid/redirected/index.html",
+            "https://example.invalid/metadata/index.html",
+            "https://example.invalid/redirected/apply",
+        ),
+        (
+            "file:///private/fictional-award.html",
+            None,
+            "https://example.invalid/local/index.html",
+            "https://example.invalid/local/apply",
+        ),
+        ("file:///private/fictional-award.html", None, None, None),
+        (
+            "https://example.invalid/requested/index.html",
+            None,
+            "https://example.invalid/metadata/index.html",
+            "https://example.invalid/requested/apply",
+        ),
+        (
+            "file:///private/fictional-award.html",
+            None,
+            "file:///metadata/fictional-award.html",
+            None,
+        ),
+    ],
+    ids=[
+        "http-redirect",
+        "file-with-http-source",
+        "file-without-source",
+        "http-request-url",
+        "file-with-file-source",
+    ],
+)
+def test_pipeline_cleaner_base_precedence(
+    requested_url: str, final_url: str | None, supplied_source_url: str | None, target: str | None
+) -> None:
+    data = content("simple") + b'<main><a href="apply">Apply here</a></main>'
+    fetched = replace(fetch(data), url=requested_url, final_url=final_url)
+    supplied_source = (
+        source_info(data).model_copy(update={"url": supplied_source_url})
+        if supplied_source_url
+        else None
+    )
+
+    def respond(req: StructuredRequest[Any]) -> str:
+        answer = payload(req)
+        if target and req.prompt_version.startswith("identity-"):
+            pid = next(pid for pid, text in req.untrusted_passages if "Apply here" in text)
+            answer["application_link"] = field(target, "Apply here", pid)
+        return json.dumps(answer)
+
+    client = FakeClient(responses=[respond] * 5)
+    result = run_pipeline(fetched, client, source=supplied_source)
+    assert result.status == "ok" and result.record and result.extraction
+    sent = "\n".join(text for _, text in client.requests[0].untrusted_passages)
+    if target:
+        assert target in sent
+        assert result.record.fields.application_link.value == target
+        assert result.record.fields.application_link.verification == "verified"
+    else:
+        assert "https://" not in sent and "file://" not in sent
+    assert "https://example.invalid/metadata/apply" not in sent
+    assert not result.extraction.rejected_items
 
 
 @pytest.mark.parametrize(

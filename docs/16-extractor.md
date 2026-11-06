@@ -142,13 +142,16 @@ items may contain page text. It never prints keys/headers.
 Without `--source-url`, its source URL is the local file URI and relative hrefs
 cannot resolve against an HTTP origin. With the flag, require HTTP(S) with a host
 and no embedded credentials; use it as SourceInfo.url and the cleaner's explicit
-base for relative targets. `source_url_user_supplied: true` records this user
-assertion, not verified retrieval provenance. No URL is fetched and the literal
+base for relative targets. The cleaner preserves HTTP(S)
+`fetch_result.final_url or fetch_result.url` as its base, using an HTTP(S)
+`source.url` only when that fetch URL is non-HTTP(S).
+`source_url_user_supplied: true` records this user assertion, not verified
+retrieval provenance. No URL is fetched and the literal
 URL guard is unchanged. In both cases retrieved_on is the UTC
 date of this local read, **not** a claim about the original website retrieval.
 Applications needing original provenance must supply explicit Source metadata
-to run_pipeline; source.url also supplies its cleaner base. The implementation
-tests use only fictional local files and mocked/scripted providers.
+to run_pipeline. The implementation tests use only fictional local files and
+mocked/scripted providers.
 
 ## First real run
 
