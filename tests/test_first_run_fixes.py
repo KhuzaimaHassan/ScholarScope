@@ -410,7 +410,12 @@ def test_rejected_raw_item_is_opt_in_and_empty_language_stays_rejected(
 @pytest.mark.parametrize("group", ["funding", "documents", "conditions"])
 def test_v2_prompts_invalidate_cache_even_with_unchanged_task(group: str) -> None:
     req = request(prompt_version=f"{group}-v1")
-    assert PROMPT_VERSIONS[group] == f"{group}-v2"
+    assert (
+        PROMPT_VERSIONS[group]
+        == {"funding": "funding-v3", "documents": "documents-v2", "conditions": "conditions-v3"}[
+            group
+        ]
+    )
     assert cache_key("fake", "fictional", req) != cache_key(
         "fake", "fictional", replace(req, prompt_version=PROMPT_VERSIONS[group])
     )

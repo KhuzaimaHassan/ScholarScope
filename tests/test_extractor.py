@@ -281,7 +281,7 @@ def test_wire_schema_provider_safe(group: str) -> None:
 
 def test_prompt_files_contain_no_real_gold_content() -> None:
     prompts = list((ROOT / "scholarscope/extraction/prompts").glob("*.txt"))
-    assert len(prompts) == 8  # Five v1 baselines plus three independently versioned revisions.
+    assert len(prompts) == 11  # Include all historical baselines in the leak check.
 
     # Check page-derived values/evidence/URLs, not common contract vocabulary
     # (e.g. 'absent', 'en', schema version), which must appear in instructions.
@@ -640,7 +640,13 @@ def test_all_invalid_conditions_fail_explicitly() -> None:
 
 def test_prompt_normalization_and_versions() -> None:
     for group, version in PROMPT_VERSIONS.items():
-        revision = "v2" if group in {"funding", "documents", "conditions"} else "v1"
+        revision = {
+            "identity": "v2",
+            "funding": "v3",
+            "documents": "v2",
+            "deadlines": "v1",
+            "conditions": "v3",
+        }[group]
         assert version == f"{group}-{revision}"
         text = (ROOT / "scholarscope/extraction/prompts" / f"{group}.{revision}.txt").read_text()
         for required in (
