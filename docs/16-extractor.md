@@ -53,13 +53,15 @@ indexes refer to original funding_coverage.value entries before filtering.
 
 Tokens match `\d[\d.,]*`; strip trailing periods/commas. Parse both comma
 interpretations: remove commas as thousands separators, or treat commas as the
-decimal point and remove period grouping. Without commas, periods remain decimal
-points. Multiple grouping commas can parse under the thousands convention.
-Terminal currency punctuation such as a period followed by a dash adds no number.
-Values must equal a parsed finite float exactly, with no substring or tolerance
-matching. Ambiguous locale candidates are deliberately both accepted. This is
-numeric presence only, not units, role, association or support; quote presence is
-still checked separately by the unchanged verifier.
+decimal point and remove period grouping. Also, tokens matching
+`^\d{1,3}(\.\d{3})+(,\d+)?$` admit dot-thousands: remove dots and convert any comma
+to a decimal point. Thus `2.771` allows both 2.771 and 2771, `2.771,50` allows
+2771.5 without rounding to 2771, while `1.5` and `3.85` retain decimal meanings.
+Existing `1,234.56` and comma-grouped formats remain supported; terminal currency
+punctuation adds no digit. Use exact finite-float equality, without tolerance or
+substring matching. Number words and other notations remain out of scope. These
+are presence checks, not units, role, association or support proof; the unchanged
+verifier still checks quote presence separately.
 
 Domain language-option min_overall must be > 0; optional min_subscore must also
 be > 0. A zero missing from the quote fails numeric provenance first; a quoted

@@ -157,6 +157,50 @@ def test_numeric_matching_is_exact_and_not_substring_or_word_matching() -> None:
 
 
 @pytest.mark.parametrize(
+    "quote,amount,accepted",
+    [
+        ("Example allowance is €2.771,-", 2771.0, True),
+        ("Example allowance is €2.771,-", 2177.0, False),
+        ("Example allowance is €2.771,50", 2771.5, True),
+        ("Example allowance is €2.771,50", 2771.0, False),
+        ("Example allowance is 1.5 EUR.", 1.5, True),
+        ("Example allowance is 1.5 EUR.", 15.0, False),
+        ("Example allowance is 1.5 EUR.", 1500.0, False),
+        ("Example allowance is 2.771 EUR.", 2.771, True),
+        ("Example allowance is 2.771 EUR.", 2771.0, True),
+        ("Example allowance is 1,234.56 EUR.", 1234.56, True),
+    ],
+)
+def test_funding_dot_thousands_and_existing_formats(
+    quote: str, amount: float, accepted: bool
+) -> None:
+    assert (amount in numeric_candidates((quote,))) is accepted
+    result = pipeline(funded=[funding(amount)], funding_quotes=(quote,))
+    assert result.record and result.extraction
+    if accepted:
+        assert not result.extraction.rejected_items
+        kept = result.record.fields.funding_coverage.value
+        assert kept and kept[0].amount == amount
+    else:
+        assert [r.reason for r in result.extraction.rejected_items] == [
+            "NUMBER_NOT_IN_QUOTE:amount"
+        ]
+        assert result.record.fields.funding_coverage.value is None
+
+
+@pytest.mark.parametrize("value,accepted", [(3.85, True), (385.0, False)])
+def test_short_gpa_decimal_is_not_thousands(value: float, accepted: bool) -> None:
+    claim = condition("min_gpa", {"value": value, "scale": 4.0}, "Example GPA minimum is 3.85/4.0.")
+    result = pipeline(conditions=[claim])
+    assert result.record and result.extraction
+    if accepted:
+        assert not result.extraction.rejected_items and len(result.record.conditions) == 1
+    else:
+        assert [r.reason for r in result.extraction.rejected_items] == ["NUMBER_NOT_IN_QUOTE:value"]
+        assert not result.record.conditions
+
+
+@pytest.mark.parametrize(
     "quote,domain_failure",
     [
         ("Example candidates must satisfy language proficiency.", False),

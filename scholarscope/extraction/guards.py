@@ -6,13 +6,15 @@ from collections.abc import Mapping
 
 
 def numeric_candidates(quotes: tuple[str, ...]) -> set[float]:
-    """Keep both comma interpretations; strip terminal punctuation, not digits."""
+    """Keep comma and grouped-dot interpretations; strip terminal punctuation."""
     candidates: set[float] = set()
     for quote in quotes:
         for token in re.findall(r"\d[\d.,]*", quote):
             token = token.rstrip(".,")
             interpretations = [token.replace(",", "")]
             if "," in token:
+                interpretations.append(token.replace(".", "").replace(",", "."))
+            if re.fullmatch(r"\d{1,3}(\.\d{3})+(,\d+)?", token):
                 interpretations.append(token.replace(".", "").replace(",", "."))
             for interpretation in interpretations:
                 try:

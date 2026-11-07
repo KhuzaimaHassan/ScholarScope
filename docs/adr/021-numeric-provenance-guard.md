@@ -29,10 +29,14 @@ rejected, mark the funding group failed rather than successful absence.
 
 Extract tokens with `\d[\d.,]*`, strip trailing punctuation, and parse both comma
 interpretations: thousands separator (remove commas) or decimal point (remove
-period grouping and replace commas). Without commas, retain decimal periods.
-Use exact finite-float equality, without tolerance or substring matching.
-Currency suffix punctuation contributes no additional digit. Ambiguous numeric
-interpretations are deliberately retained, not resolved from context.
+period grouping and replace commas). Additionally, tokens matching
+`^\d{1,3}(\.\d{3})+(,\d+)?$` admit dot-thousands with dots removed and a comma, if
+present, converted to a decimal point. Preserve all existing interpretations:
+`2.771` admits both 2.771 and 2771, `2.771,50` admits 2771.5 without rounding to
+2771, `1.5`/`3.85` remain decimals, and `1,234.56` remains supported. Use exact
+finite-float equality, without tolerance or substring matching; currency suffix
+punctuation adds no digit. Number words and other notations remain out of scope.
+Ambiguous candidates are retained, not resolved from context.
 
 Canonical LanguageOption requires min_overall > 0 and optional min_subscore > 0.
 This narrowly tightens the domain schemas preserved by ADR 013/014; provider
