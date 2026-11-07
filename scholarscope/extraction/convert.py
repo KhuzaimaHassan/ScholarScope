@@ -6,7 +6,11 @@ from typing import Any
 
 from pydantic import TypeAdapter, ValidationError
 
-from scholarscope.extraction.guards import numeric_provenance_error, url_on_page
+from scholarscope.extraction.guards import (
+    funding_item_term_error,
+    numeric_provenance_error,
+    url_on_page,
+)
 from scholarscope.schema import Condition, Deadline, RequirementFields, RequirementRecord
 
 
@@ -72,7 +76,8 @@ def convert_group(
 ) -> list[RejectedItem]:
     """Populate a draft record, with no implicit claim of quote presence.
 
-    Numeric provenance, URL provenance, then domain validation: first failure wins.
+    Funding entries: numeric, item-term, then domain validation; no entry URLs.
+    Field URL metadata keeps its guard. First failing check wins.
     List members are validated individually. Duplicate deadlines are rejected at
     their original index, rather than losing the entire group or repairing them.
     ``data`` is the parsed wire model dump: extra provider keys were ignored.
@@ -96,6 +101,8 @@ def convert_group(
                     reason = numeric_provenance_error(
                         {key: item.get(key) for key in ("amount", "amount_max")}, _quotes(raw)
                     )
+                    if reason is None:
+                        reason = funding_item_term_error(item["item"], _quotes(raw))
                     if reason:
                         original_field = raw_item(name)
                         original_items = (

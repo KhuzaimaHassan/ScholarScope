@@ -3,7 +3,7 @@
 The baseline makes five `generate_structured` calls, in fixed order: identity
 (program_name, institution, application_link, degree_levels), funding
 (funding_coverage), documents (required_documents, recommenders), deadlines, and
-conditions. Identity uses v2, funding/conditions v3, documents v2 and deadlines v1.
+conditions. Identity uses v2, funding v4, conditions v3, documents v2 and deadlines v1.
 Provider retries and caching remain the LLM interface's responsibility; there is
 no additional retry loop.
 Temperature is zero. Provider/model identity and all five prompt versions are
@@ -28,8 +28,11 @@ implicitly present claims, with required flags preserved for the rule engine.
 Wire models ignore extra properties, including claimed verification. This is a
 data boundary, not an injection defense or a way to extend the canonical model.
 
-`convert.py` checks wire items in order: **numeric provenance, URL provenance,
-then canonical domain validation**. First failure wins: reasons are never merged
+`convert.py` checks funding entries in order: **numeric provenance, item-term
+provenance, then canonical domain validation**; entries have no URLs. Other items
+retain numeric provenance, URL provenance, then domain validation. Field-level
+linked_url metadata retains its URL guard before field domain validation.
+First failure wins: reasons are never merged
 and values are never repaired. Every accepted field, deadline and condition starts
 at verification `not_checked`.
 Conversion never promotes verification. Invalid fields/items and duplicate
@@ -75,6 +78,42 @@ Known gaps: number words (including spelled-out decimals) are not parsed; guarde
 values supported only by words will be rejected. Recommender counts, dates,
 times and age conditions are outside this guard. Unrelated numbers in the same
 quote can match a claim; locale ambiguity is not resolved.
+
+### Funding item-term provenance
+
+[ADR 022](adr/022-funding-item-term-guard.md) adds the English-only constant
+`FUNDING_ITEM_TERMS` in extraction/guards.py, covering every non-other item in the
+canonical FundingCoverage.item Literal:
+
+| Item | Terms |
+|---|---|
+| tuition | tuition, fee |
+| stipend | stipend, allowance, living, maintenance, salary, monthly |
+| travel | travel, flight, airfare, ticket, transport |
+| insurance | insurance |
+| housing | housing, accommodation, dormitor, lodging, rent, room and board |
+| visa | visa |
+
+For each non-other entry, at least one listed term must match a field evidence
+quote with case-insensitive `\bterm` word-start matching on the original quote.
+For example, rent matches rental but not current; phrases retain their literal
+spacing. No fuzzy matching, translation or quote normalization is used, and terms
+are not borrowed from uncited text or joined across quotes. All quotes of the
+funding field are eligible. The generic words residence, stay, permit and grant
+are deliberately excluded. Item other bypasses only this term guard, not numeric
+or domain checks.
+
+Missing terms reject the entry as `ITEM_TERM_NOT_IN_QUOTE:<item>`, preserving its
+original index/raw item and valid siblings without reclassification. When all
+entries fail, conversion leaves the field absent with its EXTRACTION_REJECTED
+note; group orchestration retains that note alongside the required
+EXTRACTION_FAILED marker and reports the group failed. Raw items remain opt-in
+console data under --show-rejected. Non-English quotes without English lexicon
+terms will have non-other funding entries rejected and reported, not silently
+dropped; other remains available. English loanwords/prefixes can also cause
+matches. This controls categories only: a matching term anywhere in the shared
+quotes does not prove support, amount/period/currency correctness, or that a cost
+is actually funded. The independent quote verifier still runs.
 
 The existing canonical `Source` is also exported as `SourceInfo`; no second source
 contract is introduced. The canonical record has no set-level deadline link/note
@@ -151,7 +190,7 @@ They use only the fictional Example Excellence Scholarship. Tests read gold
 files without writing them and prohibit page-derived values, quotes and source
 URLs in prompts; common schema vocabulary is necessarily shared.
 
-funding-v3 retains v2's `other` for costs outside named categories and preserves
+funding-v4 retains v2's `other` for costs outside named categories and preserves
 exact wording in the note, rather than selecting the nearest category.
 documents-v2 splits distinct documents into separate entries using source wording,
 even when listed in a single sentence, without inventing documents. conditions-v3
@@ -161,13 +200,16 @@ validation errors. Each changed task/version invalidates the corresponding cache
 key; historical prompt files remain available as baselines.
 
 identity-v2 separates the offered programme/award level from applicant prerequisites.
-funding-v3 reserves amount for what the funder pays/grants, leaves a reduced fee
+funding-v4 retains v3's amount semantics: what the funder pays/grants, leaving a reduced fee
 still paid by the student as null amount with its sentence in the note, and uses
 period only when explicitly present in the quote. conditions-v3 separates degrees
 held/expected by applicants from the funded programme, reserves residency for
 place-of-residence/stay requirements, uses other for tuition classification/visa
 rules, and avoids conditions restating the same quote. It prominently repeats the
 general language-requirement other-kind rule with a fictional example.
+funding-v4 additionally requires the quote to name each selected cost category,
+uses other for unnamed categories, and asks for the shortest cost-naming wording
+in each item's note rather than repeating an entire sentence across items.
 Prompt effects cannot be validated offline: these are instructions checked by
 manual real runs. Synthetic tests validate versions, cache invalidation and local
 contracts, not model compliance or accuracy; no live run was performed for this PR.

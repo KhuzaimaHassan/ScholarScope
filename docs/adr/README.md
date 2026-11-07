@@ -25,3 +25,4 @@ These records capture the accepted architecture and policy decisions for Scholar
 | [019](019-checklist-buffers-and-unknown-timezones.md) | Evidence-gated calendar planning, unknown-zone dates without buffers and cross-calendar safety |
 | [020](020-ephemeral-provider-failure-details.md) | Guarded provider failure messages in memory and console only, with explicit failure categories |
 | [021](021-numeric-provenance-guard.md) | Numeric then URL provenance before domain validation, with positive language-score backstops |
+| [022](022-funding-item-term-guard.md) | English funding-category term provenance after numeric checks, retaining rejected items and siblings |

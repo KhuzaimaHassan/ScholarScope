@@ -364,7 +364,7 @@ def test_numeric_then_url_then_domain_first_failure_only() -> None:
     before_domain = pipeline(identity_link=absent_url)
     assert before_domain.extraction
     assert [r.reason for r in before_domain.extraction.rejected_items] == ["URL_NOT_ON_PAGE"]
-    domain = pipeline(funded=[funding(None)])
+    domain = pipeline(funded=[{**funding(None), "item": "other"}])
     assert domain.extraction
     assert len(domain.extraction.rejected_items) == 1
     assert (
@@ -405,7 +405,7 @@ def test_numeric_presence_does_not_replace_quote_verification() -> None:
 
 
 @pytest.mark.parametrize(
-    "group,old,new", [("identity", "v1", "v2"), ("funding", "v2", "v3"), ("conditions", "v2", "v3")]
+    "group,old,new", [("identity", "v1", "v2"), ("funding", "v3", "v4"), ("conditions", "v2", "v3")]
 )
 def test_prompt_revisions_bump_versions_and_cache_keys(group: str, old: str, new: str) -> None:
     folder = Path(__file__).resolve().parents[1] / "scholarscope/extraction/prompts"
@@ -421,7 +421,7 @@ def test_prompt_revisions_bump_versions_and_cache_keys(group: str, old: str, new
 def test_new_prompt_policies_are_in_the_sent_tasks() -> None:
     folder = Path(__file__).resolve().parents[1] / "scholarscope/extraction/prompts"
     identity = (folder / "identity.v2.txt").read_text(encoding="utf-8")
-    funding_text = (folder / "funding.v3.txt").read_text(encoding="utf-8")
+    funding_text = (folder / "funding.v4.txt").read_text(encoding="utf-8")
     conditions = (folder / "conditions.v3.txt").read_text(encoding="utf-8")
     assert "never an applicant prerequisite" in identity
     assert "amount is what the funder pays or grants" in funding_text

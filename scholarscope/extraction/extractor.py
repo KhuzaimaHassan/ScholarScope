@@ -24,7 +24,7 @@ from scholarscope.segmenter import Passage, SegmentedDocument
 SourceInfo = Source  # Existing canonical source contract; no second metadata model.
 PROMPT_VERSIONS = {
     "identity": "identity-v2",
-    "funding": "funding-v3",
+    "funding": "funding-v4",
     "documents": "documents-v2",
     "deadlines": "deadlines-v1",
     "conditions": "conditions-v3",
@@ -106,7 +106,11 @@ def select_passages(
 def _failure(data: dict[str, Any], group: str, status: str) -> None:
     marker = f"EXTRACTION_FAILED:{group}:{status}"
     for name in _FIELDS[group]:
-        data["fields"][name] = absent(marker)
+        prior_note = data["fields"][name].get("notes")
+        note = marker
+        if prior_note and prior_note.startswith("EXTRACTION_REJECTED:"):
+            note += "\n" + prior_note
+        data["fields"][name] = absent(note)
     data["notes"] = "\n".join(filter(None, [data["notes"], marker]))
 
 

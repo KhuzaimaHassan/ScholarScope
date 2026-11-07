@@ -91,7 +91,7 @@ def deadline(quote: str, pid: str | None, **changes: Any) -> dict[str, Any]:
 
 def content(case: str) -> bytes:
     extras = {
-        "table": "<table><tr><td>Funding</td><td>500 USD each month</td></tr></table>",
+        "table": "<table><tr><td>Stipend</td><td>500 USD each month</td></tr></table>",
         "list": "<ul><li>A transcript is required.</li><li>A passport is required.</li></ul>",
         "headings": "<h2>Eligibility requirements</h2><h3>Degree route</h3><p>Master students only.</p>",
         "linked": "<p>See the linked application document: https://example.invalid/call.pdf</p>",
@@ -157,7 +157,7 @@ def payload(request: StructuredRequest[Any], case: str = "simple") -> dict[str, 
         return data
     if group == "funding":
         if case == "table":
-            quote = "Funding | 500 USD each month"
+            quote = "Stipend | 500 USD each month"
             return {
                 "funding_coverage": field(
                     [
@@ -281,7 +281,7 @@ def test_wire_schema_provider_safe(group: str) -> None:
 
 def test_prompt_files_contain_no_real_gold_content() -> None:
     prompts = list((ROOT / "scholarscope/extraction/prompts").glob("*.txt"))
-    assert len(prompts) == 11  # Include all historical baselines in the leak check.
+    assert len(prompts) == 12  # Include all historical baselines in the leak check.
 
     # Check page-derived values/evidence/URLs, not common contract vocabulary
     # (e.g. 'absent', 'en', schema version), which must appear in instructions.
@@ -642,7 +642,7 @@ def test_prompt_normalization_and_versions() -> None:
     for group, version in PROMPT_VERSIONS.items():
         revision = {
             "identity": "v2",
-            "funding": "v3",
+            "funding": "v4",
             "documents": "v2",
             "deadlines": "v1",
             "conditions": "v3",
