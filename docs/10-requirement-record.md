@@ -19,6 +19,9 @@ The Record keeps the gold label's nested `fields` structure, plus `source`, `dea
 
 Each generic `Field[T]` adds `status`, `verification`, `evidence`, `linked_url`, `notes`, and `confidence` to its nullable value. Evidence is a list of `{quote, passage_id?, locator?}`; quotes are 1–400 characters. Nullable passage IDs cite #13's document-local passages. Gold's optional `context_before`/`context_after` (at most 80 characters each) are preserved. There are no evidence offsets in the model; verifier report offsets refer to the original segmented document.
 
+Language-option min_overall must be > 0, and min_subscore must be > 0 when supplied
+(ADR 021); provider wire schemas and the structural gold JSON schema are unchanged.
+
 ## Two independent axes
 
 | Content status | Value | Evidence | Additional rule |

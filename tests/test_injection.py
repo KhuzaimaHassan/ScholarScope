@@ -344,7 +344,7 @@ def test_schema_violation_rejected_without_mutating_the_schema() -> None:
     def obey(req: StructuredRequest[Any]) -> str:
         return (
             '{"attacker_defined_schema": true}'
-            if req.prompt_version == "identity-v1"
+            if req.prompt_version == "identity-v2"
             else json.dumps(payload(req))
         )
 
@@ -377,7 +377,7 @@ def test_url_on_page_is_not_a_safety_or_authority_check() -> None:
 
     def obey(req: StructuredRequest[Any]) -> str:
         output = payload(req)
-        if req.prompt_version == "identity-v1":
+        if req.prompt_version == "identity-v2":
             pid = next(pid for pid, text in req.untrusted_passages if quote in text)
             output["application_link"] = field(BAD_URL, quote, pid)
         return json.dumps(output)
@@ -420,7 +420,7 @@ def test_url_in_omitted_passage_is_not_allowed_for_that_group(
 
     def obey(req: StructuredRequest[Any]) -> str:
         output = payload(req)
-        if req.prompt_version == "identity-v1":
+        if req.prompt_version == "identity-v2":
             output["application_link"] = field(GOOD_URL, TITLE, req.untrusted_passages[0][0])
         return json.dumps(output)
 

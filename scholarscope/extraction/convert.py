@@ -6,7 +6,7 @@ from typing import Any
 
 from pydantic import TypeAdapter, ValidationError
 
-from scholarscope.extraction.guards import url_on_page
+from scholarscope.extraction.guards import numeric_provenance_error, url_on_page
 from scholarscope.schema import Condition, Deadline, RequirementFields, RequirementRecord
 
 
@@ -38,6 +38,30 @@ def _reason(error: ValidationError) -> str:
     )
 
 
+def _quotes(raw: dict[str, Any]) -> tuple[str, ...]:
+    return tuple(e["quote"] for e in raw.get("evidence", []) if isinstance(e.get("quote"), str))
+
+
+def _condition_number_error(raw: dict[str, Any]) -> str | None:
+    value = raw.get("value")
+    if not isinstance(value, dict):
+        return None
+    if raw.get("kind") == "min_gpa":
+        return numeric_provenance_error(
+            {name: value.get(name) for name in ("value", "scale")}, _quotes(raw)
+        )
+    if raw.get("kind") == "language" and isinstance(value.get("options"), list):
+        for option in value["options"]:
+            if isinstance(option, dict):
+                reason = numeric_provenance_error(
+                    {name: option.get(name) for name in ("min_overall", "min_subscore")},
+                    _quotes(raw),
+                )
+                if reason:
+                    return reason
+    return None
+
+
 def convert_group(
     group: str,
     data: dict[str, Any],
@@ -48,6 +72,7 @@ def convert_group(
 ) -> list[RejectedItem]:
     """Populate a draft record, with no implicit claim of quote presence.
 
+    Numeric provenance, URL provenance, then domain validation: first failure wins.
     List members are validated individually. Duplicate deadlines are rejected at
     their original index, rather than losing the entire group or repairing them.
     ``data`` is the parsed wire model dump: extra provider keys were ignored.
@@ -65,6 +90,39 @@ def convert_group(
 
     if group in {"identity", "funding", "documents"}:
         for name, raw in data.items():
+            if name == "funding_coverage" and isinstance(raw.get("value"), list):
+                kept = []
+                for index, item in enumerate(raw["value"]):
+                    reason = numeric_provenance_error(
+                        {key: item.get(key) for key in ("amount", "amount_max")}, _quotes(raw)
+                    )
+                    if reason:
+                        original_field = raw_item(name)
+                        original_items = (
+                            original_field.get("value")
+                            if isinstance(original_field, dict)
+                            else None
+                        )
+                        original_item = (
+                            original_items[index]
+                            if isinstance(original_items, list) and index < len(original_items)
+                            else item
+                        )
+                        rejected.append(RejectedItem(group, index, reason, deepcopy(original_item)))
+                    else:
+                        kept.append(item)
+                if len(kept) != len(raw["value"]):
+                    if not kept:
+                        record_data["fields"][name] = absent(f"EXTRACTION_REJECTED:{group}:{name}")
+                        continue
+                    raw = {**raw, "value": kept}
+            urls = [raw["linked_url"]] if raw.get("linked_url") is not None else []
+            if name == "application_link" and raw.get("value") is not None:
+                urls.append(raw["value"])
+            if any(not url_on_page(url, sent_passages) for url in urls):
+                rejected.append(RejectedItem(group, name, "URL_NOT_ON_PAGE", raw_item(name)))
+                record_data["fields"][name] = absent(f"EXTRACTION_REJECTED:{group}:{name}")
+                continue
             annotation = RequirementFields.model_fields[name].annotation
             if annotation is None:
                 raise ValueError("canonical field must define a type annotation")
@@ -74,20 +132,17 @@ def convert_group(
                 rejected.append(RejectedItem(group, name, _reason(error), raw_item(name)))
                 record_data["fields"][name] = absent(f"EXTRACTION_REJECTED:{group}:{name}")
             else:
-                urls = [value.linked_url] if value.linked_url is not None else []
-                if name == "application_link" and value.value is not None:
-                    urls.append(value.value)
-                if any(not url_on_page(url, sent_passages) for url in urls):
-                    rejected.append(RejectedItem(group, name, "URL_NOT_ON_PAGE", raw_item(name)))
-                    record_data["fields"][name] = absent(f"EXTRACTION_REJECTED:{group}:{name}")
-                else:
-                    record_data["fields"][name] = value.model_dump()
+                record_data["fields"][name] = value.model_dump()
         return rejected
 
     items = data[group]
     accepted: list[Any] = []
     adapter: TypeAdapter[Any] = TypeAdapter(Deadline if group == "deadlines" else Condition)
     for index, raw in enumerate(items):
+        reason = _condition_number_error(raw) if group == "conditions" else None
+        if reason:
+            rejected.append(RejectedItem(group, index, reason, raw_item(index)))
+            continue
         try:
             value = adapter.validate_python(_unchecked(raw))
             if group == "deadlines":
