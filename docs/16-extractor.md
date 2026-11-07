@@ -3,7 +3,7 @@
 The baseline makes five `generate_structured` calls, in fixed order: identity
 (program_name, institution, application_link, degree_levels), funding
 (funding_coverage), documents (required_documents, recommenders), deadlines, and
-conditions. Identity/deadlines use v1; funding/documents/conditions use v2.
+conditions. Identity uses v2, funding/conditions v3, documents v2 and deadlines v1.
 Provider retries and caching remain the LLM interface's responsibility; there is
 no additional retry loop.
 Temperature is zero. Provider/model identity and all five prompt versions are
@@ -28,14 +28,51 @@ implicitly present claims, with required flags preserved for the rule engine.
 Wire models ignore extra properties, including claimed verification. This is a
 data boundary, not an injection defense or a way to extend the canonical model.
 
-`convert.py` then enforces **all** canonical domain constraints locally. Every
-accepted field, deadline and condition starts at verification `not_checked`.
+`convert.py` checks wire items in order: **numeric provenance, URL provenance,
+then canonical domain validation**. First failure wins: reasons are never merged
+and values are never repaired. Every accepted field, deadline and condition starts
+at verification `not_checked`.
 Conversion never promotes verification. Invalid fields/items and duplicate
 deadlines are reported in `rejected_items` with group, original index (or field
 name), reason and raw item; valid siblings remain. Do not publish rejected raw
 items without reviewing their untrusted contents. Structural wire failures are
 retried by the client and can fail the group; partial acceptance applies to
 domain validation after successful wire parsing, not malformed JSON.
+
+### Numeric provenance
+
+[ADR 021](adr/021-numeric-provenance-guard.md) requires GPA value/scale, language
+option min_overall/min_subscore, and funding amount/amount_max to occur numerically
+in the item's own evidence quotes. Funding entries share all quotes of their
+funding_coverage field; condition quotes are never borrowed from siblings or
+uncited passages. Null optional amounts/subscores require no match. Reject the
+offending condition or funding entry with `NUMBER_NOT_IN_QUOTE:<field>` (such as
+min_overall), original index and raw item; keep valid siblings. Rejected numeric
+values remain only in raw_item, not record values or diagnostic notes. Funding
+indexes refer to original funding_coverage.value entries before filtering.
+
+Tokens match `\d[\d.,]*`; strip trailing periods/commas. Parse both comma
+interpretations: remove commas as thousands separators, or treat commas as the
+decimal point and remove period grouping. Without commas, periods remain decimal
+points. Multiple grouping commas can parse under the thousands convention.
+Terminal currency punctuation such as a period followed by a dash adds no number.
+Values must equal a parsed finite float exactly, with no substring or tolerance
+matching. Ambiguous locale candidates are deliberately both accepted. This is
+numeric presence only, not units, role, association or support; quote presence is
+still checked separately by the unchanged verifier.
+
+Domain language-option min_overall must be > 0; optional min_subscore must also
+be > 0. A zero missing from the quote fails numeric provenance first; a quoted
+zero reaches domain validation and fails with its existing reason format.
+Provider wire schemas remain permissive. The fictional gold example still passes
+the gold validator and canonical parser. The standalone gold validator remains
+structural; canonical parsing now rejects nonpositive language scores without
+changing any label or the gold JSON schema.
+
+Known gaps: number words (including spelled-out decimals) are not parsed; guarded
+values supported only by words will be rejected. Recommender counts, dates,
+times and age conditions are outside this guard. Unrelated numbers in the same
+quote can match a claim; locale ambiguity is not resolved.
 
 The existing canonical `Source` is also exported as `SourceInfo`; no second source
 contract is introduced. The canonical record has no set-level deadline link/note
@@ -112,14 +149,26 @@ They use only the fictional Example Excellence Scholarship. Tests read gold
 files without writing them and prohibit page-derived values, quotes and source
 URLs in prompts; common schema vocabulary is necessarily shared.
 
-funding-v2 uses `other` for covered costs outside named categories and preserves
+funding-v3 retains v2's `other` for costs outside named categories and preserves
 exact wording in the note, rather than selecting the nearest category.
 documents-v2 splits distinct documents into separate entries using source wording,
-even when listed in a single sentence, without inventing documents. conditions-v2
+even when listed in a single sentence, without inventing documents. conditions-v3
 uses kind `other` and the requirement sentence when proficiency is required
 without a named test or score. Empty-options language conditions remain domain
 validation errors. Each changed task/version invalidates the corresponding cache
-key; v1 files remain available as historical baselines.
+key; historical prompt files remain available as baselines.
+
+identity-v2 separates the offered programme/award level from applicant prerequisites.
+funding-v3 reserves amount for what the funder pays/grants, leaves a reduced fee
+still paid by the student as null amount with its sentence in the note, and uses
+period only when explicitly present in the quote. conditions-v3 separates degrees
+held/expected by applicants from the funded programme, reserves residency for
+place-of-residence/stay requirements, uses other for tuition classification/visa
+rules, and avoids conditions restating the same quote. It prominently repeats the
+general language-requirement other-kind rule with a fictional example.
+Prompt effects cannot be validated offline: these are instructions checked by
+manual real runs. Synthetic tests validate versions, cache invalidation and local
+contracts, not model compliance or accuracy; no live run was performed for this PR.
 
 ## Manual local extraction
 
@@ -167,6 +216,20 @@ Owner-reported observations from one manual run (not accuracy measurements):
 These observations motivate the changes above. No source-page wording is copied
 here, no accuracy claim is made, and no live run was performed for these fixes.
 
+## Second real run
+
+Owner-reported observations from a second manual run, not accuracy measurements:
+
+- A language condition contained a fabricated min_overall of 0.0.
+- A tuition amount described a remaining student fee rather than a funder payment.
+- Offered degree levels and applicant prerequisites were mixed.
+- Condition kinds were misused for programme, residence and fee/visa concepts.
+- Deadline-type choices require review; no deterministic deadline-type fix is
+  implemented in this change.
+
+These observations motivate the guard and prompt revisions. No real-page wording
+is reproduced, and passing local checks makes no accuracy claim.
+
 ## Deliberate limits
 
 This issue measures no accuracy and labels no real pages. Eleven synthetic page
@@ -195,7 +258,7 @@ made; the owner-approved interpretation is recorded in issue #21's comment.
 relative targets without enabled/usable base context, and URLs in omitted passages
 are still absent from the group's text and rejected as URL_NOT_ON_PAGE. Scheme-less
 labels suppress duplicate suffixes; a model-produced absolute URL absent from that
-text is still rejected, not repaired. Both scan and provenance rules are unchanged.
+text is still rejected, not repaired. URL matching and scan rules are unchanged.
 Cleaner v2 changes derived text/maps and requires deliberate baseline review even
 when raw bytes are identical. No labels/snapshots were migrated. Existing prompts
-already ask for the page's actual target; identity-v1 remains unchanged by these fixes.
+already ask for the page's actual target; identity-v2 retains that URL requirement.

@@ -60,8 +60,9 @@ an example, not a general bound for delimiter-heavy or control-heavy payloads.
 
 ## URL provenance and advisory findings
 
-After local canonical validation, application_link and field-level linked_url
-must occur verbatim within one passage sent to that field's group. The deadline
+After numeric provenance and before local canonical validation, application_link
+and field-level linked_url must occur verbatim within one passage sent to that
+field's group. The deadline
 set's linked_url is checked against the deadline group's passages before metadata
 is retained. Cleaner v2 now appends retained HTTP(S) link targets to cleaned text,
 including deterministic relative resolution with explicit base context. Synthetic
@@ -89,6 +90,26 @@ PipelineResult.suspicious_passages and in the manual extract_snapshot summary.
 **The scan is advisory and bypassable:** it never removes/rewrites passages,
 changes claims, or changes verification. Obfuscation, other languages, split
 instructions and novel patterns evade it; benign policy text may trigger it.
+
+## Numeric provenance control
+
+[ADR 021](adr/021-numeric-provenance-guard.md) adds a numeric presence control,
+analogous to URL provenance. Wire-item checks run numeric provenance, URL
+provenance, then domain validation; first failure wins, with no merged reasons
+or repaired values. GPA value/scale, language-option min_overall/min_subscore and
+funding amount/amount_max must match numeric tokens in the item's own evidence
+quotes (all funding-field quotes for its entries). Missing numbers reject the
+item with NUMBER_NOT_IN_QUOTE:<field>, retaining its raw input and valid siblings.
+Nonpositive language scores fail domain validation when numeric presence passes.
+Quote verification remains unchanged and mandatory.
+
+This is still **presence-only, not support proof**. Both comma-as-grouping and
+comma-as-decimal candidates can match exactly; an unrelated number in the same
+quote can pass, and a fabricated quote containing the number can pass the guard
+but fail the verifier. The guard does not establish currency, units, correct cost
+semantics, authority, truth or eligibility. Number words are unsupported, and
+recommender counts, dates, times and age conditions remain unguarded. Prompt
+revisions are instructions, not evidence that real models comply.
 
 ## Hidden-text audit: current behavior, unchanged
 

@@ -24,3 +24,4 @@ These records capture the accepted architecture and policy decisions for Scholar
 | [018](018-profile-schema-and-no-gpa-conversion.md) | Private profile data, shared vocabularies and exact-scale GPA comparison without conversion |
 | [019](019-checklist-buffers-and-unknown-timezones.md) | Evidence-gated calendar planning, unknown-zone dates without buffers and cross-calendar safety |
 | [020](020-ephemeral-provider-failure-details.md) | Guarded provider failure messages in memory and console only, with explicit failure categories |
+| [021](021-numeric-provenance-guard.md) | Numeric then URL provenance before domain validation, with positive language-score backstops |

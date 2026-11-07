@@ -177,8 +177,8 @@ class GPAValue(RecordModel):
 
 class LanguageOption(RecordModel):
     test: NonEmptyString
-    min_overall: float
-    min_subscore: float | None = None
+    min_overall: Annotated[float, PydanticField(gt=0)]
+    min_subscore: Annotated[float, PydanticField(gt=0)] | None = None
 
 
 class LanguageValue(RecordModel):

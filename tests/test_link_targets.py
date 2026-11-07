@@ -242,7 +242,7 @@ def test_full_pipeline_link_only_url_and_anchor_provenance() -> None:
 
     def scripted(req: StructuredRequest[Any]) -> str:
         output = payload(req)
-        if req.prompt_version == "identity-v1":
+        if req.prompt_version == "identity-v2":
             pid = next(pid for pid, text in req.untrusted_passages if quote in text)
             output["application_link"] = field(target, quote, pid)
         return json.dumps(output)
@@ -273,7 +273,7 @@ def test_quote_across_passages_retains_anchor_locator_and_exact_offsets() -> Non
 
     def scripted(req: StructuredRequest[Any]) -> str:
         output = payload(req)
-        if req.prompt_version == "identity-v1":
+        if req.prompt_version == "identity-v2":
             output["application_link"] = field(URL, quote, cited)
         return json.dumps(output)
 
@@ -311,7 +311,7 @@ def test_hidden_injected_link_is_still_rejected_by_unchanged_guard() -> None:
     def scripted(req: StructuredRequest[Any]) -> str:
         assert all(URL not in text for _, text in req.untrusted_passages)
         output = payload(req)
-        if req.prompt_version == "identity-v1":
+        if req.prompt_version == "identity-v2":
             output["application_link"] = field(URL, TITLE, req.untrusted_passages[0][0])
         return json.dumps(output)
 

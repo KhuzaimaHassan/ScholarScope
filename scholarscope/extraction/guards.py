@@ -1,4 +1,42 @@
-"""Literal URL provenance over selected original passage text; never fetch/repair."""
+"""URL and numeric presence controls; never fetch, repair or establish support."""
+
+import math
+import re
+from collections.abc import Mapping
+
+
+def numeric_candidates(quotes: tuple[str, ...]) -> set[float]:
+    """Keep both comma interpretations; strip terminal punctuation, not digits."""
+    candidates: set[float] = set()
+    for quote in quotes:
+        for token in re.findall(r"\d[\d.,]*", quote):
+            token = token.rstrip(".,")
+            interpretations = [token.replace(",", "")]
+            if "," in token:
+                interpretations.append(token.replace(".", "").replace(",", "."))
+            for interpretation in interpretations:
+                try:
+                    value = float(interpretation)
+                except ValueError:
+                    continue
+                if math.isfinite(value):
+                    candidates.add(value)
+    return candidates
+
+
+def numeric_provenance_error(values: Mapping[str, object], quotes: tuple[str, ...]) -> str | None:
+    """First missing numeric value only; malformed shapes go to domain validation."""
+    candidates = numeric_candidates(quotes)
+    for name, value in values.items():
+        if not isinstance(value, (int, float)) or isinstance(value, bool):
+            continue
+        try:
+            present = float(value) in candidates
+        except OverflowError:
+            present = False
+        if not present:
+            return f"NUMBER_NOT_IN_QUOTE:{name}"
+    return None
 
 
 def url_on_page(url: str, sent_passages: tuple[tuple[str, str], ...]) -> bool:
