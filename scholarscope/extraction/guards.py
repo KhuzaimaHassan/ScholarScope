@@ -4,6 +4,31 @@ import math
 import re
 from collections.abc import Mapping
 
+# English-only category provenance, covering every non-"other" FundingCoverage item.
+# Match on original quotes at word starts; this is not semantic support or translation.
+FUNDING_ITEM_TERMS: dict[str, tuple[str, ...]] = {
+    "tuition": ("tuition", "fee"),
+    "stipend": ("stipend", "allowance", "living", "maintenance", "salary", "monthly"),
+    "travel": ("travel", "flight", "airfare", "ticket", "transport"),
+    "insurance": ("insurance",),
+    "housing": ("housing", "accommodation", "dormitor", "lodging", "rent", "room and board"),
+    "visa": ("visa",),
+}
+
+
+def funding_item_term_error(item: str, quotes: tuple[str, ...]) -> str | None:
+    """English word-start presence only; other/malformed categories go to domain checks."""
+    terms = FUNDING_ITEM_TERMS.get(item)
+    if terms is None:
+        return None
+    if any(
+        re.search(r"\b" + re.escape(term), quote, re.IGNORECASE)
+        for quote in quotes
+        for term in terms
+    ):
+        return None
+    return f"ITEM_TERM_NOT_IN_QUOTE:{item}"
+
 
 def numeric_candidates(quotes: tuple[str, ...]) -> set[float]:
     """Keep comma and grouped-dot interpretations; strip terminal punctuation."""

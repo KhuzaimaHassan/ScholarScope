@@ -94,8 +94,9 @@ instructions and novel patterns evade it; benign policy text may trigger it.
 ## Numeric provenance control
 
 [ADR 021](adr/021-numeric-provenance-guard.md) adds a numeric presence control,
-analogous to URL provenance. Wire-item checks run numeric provenance, URL
-provenance, then domain validation; first failure wins, with no merged reasons
+analogous to URL provenance. Non-funding wire-item checks run numeric provenance,
+URL provenance, then domain validation; funding entry checks add the category
+control described below after numeric provenance. First failure wins, with no merged reasons
 or repaired values. GPA value/scale, language-option min_overall/min_subscore and
 funding amount/amount_max must match numeric tokens in the item's own evidence
 quotes (all funding-field quotes for its entries). Missing numbers reject the
@@ -110,6 +111,26 @@ but fail the verifier. The guard does not establish currency, units, correct cos
 semantics, authority, truth or eligibility. Number words are unsupported, and
 recommender counts, dates, times and age conditions remain unguarded. Prompt
 revisions are instructions, not evidence that real models comply.
+
+## Funding category-term provenance control
+
+[ADR 022](adr/022-funding-item-term-guard.md) requires a non-other funding entry's
+category to match an English lexicon term in the field's own evidence quotes.
+Checks run numeric provenance, item-term provenance, then domain validation;
+funding entries have no URLs, while field-level linked URL metadata retains its
+existing provenance guard. Match original quote text case-insensitively with a
+word-start boundary only, without fuzzy matching or translation. Missing terms
+produce ITEM_TERM_NOT_IN_QUOTE:<item>, preserve raw input/original index and valid
+siblings, and are reported even for non-English quotes. Other bypasses only the
+term control. All-rejected groups retain rejection and failure diagnostics.
+
+This remains **presence-only**, limited to item categories. A term elsewhere in
+the shared field quotes, an irrelevant word prefix or a negated claim can pass.
+No cost-category repair, semantic-support proof, note/amount/currency/period
+validation or translation is supplied by this guard. English-only terms can
+reject legitimate non-English claims; loanwords can also match. See doc 16 for
+the complete lexicon. Quote presence remains the verifier's responsibility;
+funding-v4 prompt effects require manual real-model runs, not offline claims.
 
 ## Hidden-text audit: current behavior, unchanged
 

@@ -412,7 +412,7 @@ def test_v2_prompts_invalidate_cache_even_with_unchanged_task(group: str) -> Non
     req = request(prompt_version=f"{group}-v1")
     assert (
         PROMPT_VERSIONS[group]
-        == {"funding": "funding-v3", "documents": "documents-v2", "conditions": "conditions-v3"}[
+        == {"funding": "funding-v4", "documents": "documents-v2", "conditions": "conditions-v3"}[
             group
         ]
     )
