@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import hashlib
 from collections.abc import Mapping
-from dataclasses import dataclass, replace
+from dataclasses import dataclass, field, replace
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Literal
 
@@ -23,7 +23,7 @@ from scholarscope.fetcher import FetchResult
 from scholarscope.llm.base import LLMClient
 from scholarscope.pdf_text import PDF_EXTRACTOR_VERSION, ExtractedPDF, extract_pdf_text
 from scholarscope.schema import RequirementRecord, Source
-from scholarscope.segmenter import SEGMENTER_VERSION, segment
+from scholarscope.segmenter import SEGMENTER_VERSION, SegmentedDocument, segment
 from scholarscope.verifier import VERIFIER_VERSION, VerificationReport, verify_record
 
 
@@ -114,6 +114,7 @@ class PipelineResult:
     versions: dict[str, object]
     error: str | None = None
     suspicious_passages: tuple[SuspiciousPassage, ...] = ()
+    document: SegmentedDocument | None = field(default=None, repr=False)
 
 
 def run_pipeline(
@@ -185,7 +186,9 @@ def run_pipeline(
     doc = segment(cleaned, max_chars=max_chars)
     suspicious = scan_passages(doc.passages)
     if not doc.passages:
-        return unavailable("empty_text", doc.unsupported_reason or "no cleaned text")
+        return replace(
+            unavailable("empty_text", doc.unsupported_reason or "no cleaned text"), document=doc
+        )
     extraction = extract_record(
         doc, client, source=source, max_input_chars=max_input_chars, prompt_versions=prompts
     )
@@ -197,5 +200,5 @@ def run_pipeline(
         else ("partial" if extraction.failed_groups or extraction.rejected_items else "ok")
     )
     return PipelineResult(
-        status, final, extraction, report, versions, suspicious_passages=suspicious
+        status, final, extraction, report, versions, suspicious_passages=suspicious, document=doc
     )
