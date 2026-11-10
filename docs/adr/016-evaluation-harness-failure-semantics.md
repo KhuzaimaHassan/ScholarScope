@@ -15,6 +15,12 @@ page context remain private under ADR 007/015.
 ## Decision
 
 Use schema-validated, hand-written labels and exact-hash local bytes only.
+Owner-authorized amendment (2026-11-10): diagnostic comparisons may also use
+explicitly AI-assisted labels. Record every used label's ID/pass, and when any
+ID contains ai-assisted, mark console and JSON/Markdown report headers with
+"LABELS NOT INDEPENDENT (AI-assisted): results are provisional, not a baseline".
+This does not turn an AI-assisted label into an independent hand label. Never
+use labeling minutes as a metric, weight or substitute for pipeline latency.
 Skip any label with a SKELETON note or zero labeling minutes, with explicit
 reasons. Never fetch, rewrite labels, save snapshots or adopt a new baseline.
 Force read_only cache replay by default, including on a missing cache directory;

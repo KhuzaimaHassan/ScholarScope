@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import socket
 from collections.abc import Callable
 from copy import deepcopy
@@ -279,6 +280,19 @@ def test_wire_schema_provider_safe(group: str) -> None:
     assert not unsupported_keywords(GROUP_MODELS[group].model_json_schema())
 
 
+def assert_no_page_strings(text: str, candidates: list[str], vocabulary: set[str]) -> None:
+    # Whole contract tokens are shared instructions, not page-specific content.
+    # A sentence containing such a token remains forbidden in its entirety.
+    forbidden = [
+        value
+        for value in candidates
+        if len(value) >= 6
+        and value not in vocabulary
+        and not re.fullmatch(r"UTC[+-]\d{2}:\d{2}", value)
+    ]
+    assert all(value not in text for value in forbidden)
+
+
 def test_prompt_files_contain_no_real_gold_content() -> None:
     prompts = list((ROOT / "scholarscope/extraction/prompts").glob("*.txt"))
     assert len(prompts) == 12  # Include all historical baselines in the leak check.
@@ -297,7 +311,8 @@ def test_prompt_files_contain_no_real_gold_content() -> None:
     gold_schema = json.loads((ROOT / "eval/schema/gold-label.schema.json").read_text())
     vocabulary = {
         word
-        for node in schema_nodes(gold_schema)
+        for schema in (gold_schema, RequirementRecord.model_json_schema())
+        for node in schema_nodes(schema)
         for word in node.get("enum", [])
         if isinstance(word, str)
     }
@@ -317,7 +332,61 @@ def test_prompt_files_contain_no_real_gold_content() -> None:
         )
         for prompt in prompts:
             text = prompt.read_text(encoding="utf-8")
-            assert all(s not in text for s in forbidden if len(s) >= 6 and s not in vocabulary)
+            assert_no_page_strings(text, forbidden, vocabulary)
+
+
+def test_leak_check_allows_schema_enums_and_standalone_offsets() -> None:
+    vocabulary = {
+        word
+        for node in schema_nodes(RequirementRecord.model_json_schema())
+        for word in node.get("enum", [])
+        if isinstance(word, str)
+    }
+    assert "master" in vocabulary
+    assert_no_page_strings("master at UTC+05:30", ["master", "UTC+05:30"], vocabulary)
+
+
+@pytest.mark.parametrize(
+    "page_text",
+    [
+        "Example Harbour award funds master study with a UTC+05:30 cutoff.",
+        "https://example.invalid/fictional-harbour-award",
+    ],
+)
+def test_leak_check_still_rejects_fictional_quotes_and_urls(page_text: str) -> None:
+    with pytest.raises(AssertionError):
+        assert_no_page_strings("trusted instructions " + page_text, [page_text], {"master"})
+
+
+def test_leak_check_rejects_quote_copied_from_fictional_gold_file(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    source_root = ROOT
+    prompts = tmp_path / "scholarscope/extraction/prompts"
+    gold_dir = tmp_path / "eval/gold"
+    schema_dir = tmp_path / "eval/schema"
+    for directory in (prompts, gold_dir, schema_dir):
+        directory.mkdir(parents=True)
+    (schema_dir / "gold-label.schema.json").write_bytes(
+        (source_root / "eval/schema/gold-label.schema.json").read_bytes()
+    )
+    label = json.loads(
+        (source_root / "eval/gold/_example-fictional.json").read_text(encoding="utf-8")
+    )
+    label["program_slug"] = "fictional-leak-canary"
+    quote = "Fictional Harbour Fellowship funds master study with a UTC+05:30 cutoff."
+    label["fields"]["program_name"]["value"] = "Fictional Harbour Fellowship"
+    label["fields"]["program_name"]["evidence"] = [{"quote": quote}]
+    (gold_dir / "fictional-leak-canary.json").write_text(json.dumps(label), encoding="utf-8")
+    for index in range(12):
+        (prompts / f"fictional-{index}.txt").write_text(
+            "Shared contract tokens: master UTC+05:30", encoding="utf-8"
+        )
+    monkeypatch.setitem(globals(), "ROOT", tmp_path)
+    test_prompt_files_contain_no_real_gold_content()  # Contract tokens alone pass.
+    (prompts / "fictional-0.txt").write_text(quote, encoding="utf-8")
+    with pytest.raises(AssertionError):
+        test_prompt_files_contain_no_real_gold_content()
 
 
 @pytest.mark.parametrize("status", ["invalid_output", "provider_error", "unavailable"])

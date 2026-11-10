@@ -11,56 +11,346 @@
     "content_sha256": "8f7fa0da8416942a97ee1db662353b05e5824e61b4648ad511f065c52f0a1ea2",
     "format": "html",
     "language": "en",
-    "cycle_label": null,
+    "cycle_label": "2027/2028",
     "page_state": "unknown",
     "is_mirror": false,
     "owner_org": "Radboud University"
   },
   "labeler": {
-    "id": "owner",
+    "id": "codex-ai-assisted",
     "pass": 1,
-    "labeled_on": "2026-10-18",
-    "minutes_spent": 0
+    "labeled_on": "2026-11-10",
+    "minutes_spent": 4.62
   },
   "fields": {
     "program_name": {
-      "status": "absent",
-      "value": null,
-      "evidence": []
+      "status": "present",
+      "value": "Radboud Scholarship Programme",
+      "evidence": [
+        {
+          "quote": "Radboud Scholarship Programme",
+          "locator": "page title"
+        }
+      ]
     },
     "institution": {
-      "status": "absent",
-      "value": null,
-      "evidence": []
+      "status": "present",
+      "value": "Radboud University",
+      "evidence": [
+        {
+          "quote": "This scholarship is funded by the Profiling Fund of Radboud University.",
+          "locator": "More information and contact"
+        }
+      ]
     },
     "degree_levels": {
-      "status": "absent",
-      "value": null,
-      "evidence": []
+      "status": "present",
+      "value": [
+        "master"
+      ],
+      "evidence": [
+        {
+          "quote": "It offers talented, highly motivated, non-EEA students with outstanding study results the opportunity to be awarded a scholarship for a complete English-taught Radboud University Master’s programme.",
+          "locator": "About the scholarship"
+        }
+      ],
+      "notes": "Awarded programme level, not the applicant prerequisite degree."
     },
     "funding_coverage": {
-      "status": "absent",
-      "value": null,
-      "evidence": []
+      "status": "present",
+      "value": [
+        {
+          "item": "tuition",
+          "amount": null,
+          "amount_max": null,
+          "currency": null,
+          "period": null,
+          "note": "A Radboud Scholarship will reduce your tuition fee to €2,771.- (amount to be confirmed)."
+        },
+        {
+          "item": "visa",
+          "amount": null,
+          "amount_max": null,
+          "currency": null,
+          "period": null,
+          "note": "visa"
+        },
+        {
+          "item": "other",
+          "amount": null,
+          "amount_max": null,
+          "currency": null,
+          "period": null,
+          "note": "residence permit"
+        },
+        {
+          "item": "insurance",
+          "amount": null,
+          "amount_max": null,
+          "currency": null,
+          "period": null,
+          "note": "health insurance and liability insurance"
+        }
+      ],
+      "evidence": [
+        {
+          "quote": "A Radboud Scholarship will reduce your tuition fee to €2,771.- (amount to be confirmed).",
+          "locator": "Scope of the programme"
+        },
+        {
+          "quote": "The scholarship also covers costs for visa, residence permit, health insurance and liability insurance for your stay in the Netherlands (Aon Student Insurance).",
+          "locator": "Scope of the programme"
+        },
+        {
+          "quote": "Nominal duration of Master's programme",
+          "locator": "Duration of scholarship"
+        },
+        {
+          "quote": "The costs of living and studying in the Netherlands are not covered by the scholarship.",
+          "locator": "Scope of the programme"
+        }
+      ],
+      "notes": "The quoted fee is the provisional residual fee paid by the student, not the funder payment. No monetary award amount or per-cost payment period is stated. Nominal programme duration is stated separately; it is not inferred as a payment period. Living/study costs are explicitly excluded. No housing or stipend is stated."
     },
     "required_documents": {
-      "status": "absent",
-      "value": null,
-      "evidence": []
+      "status": "present",
+      "value": [
+        "two reference letters",
+        "a curriculum vitae"
+      ],
+      "evidence": [
+        {
+          "quote": "You will then be requested to upload three additional documents: two reference letters and a curriculum vitae.",
+          "locator": "How to apply"
+        }
+      ],
+      "notes": "Two document types, with the exact letter count represented separately under recommenders. This is the additional scholarship document list, not an inferred full admission checklist. The English-proof timing recommendation and motivation-letter selection criterion do not add mandatory document entries."
     },
     "recommenders": {
-      "status": "absent",
-      "value": null,
-      "evidence": []
+      "status": "present",
+      "value": {
+        "count_min": 2,
+        "count_max": 2,
+        "type": "academic (preferred)"
+      },
+      "evidence": [
+        {
+          "quote": "You will then be requested to upload three additional documents: two reference letters and a curriculum vitae.",
+          "locator": "How to apply"
+        },
+        {
+          "quote": "Quality of the recommendations in the two reference letters, preferably two academic references, please see these reference guidelines.",
+          "locator": "Selection procedure / References"
+        }
+      ],
+      "notes": "Two letters are requested; academic references are preferred, not an exclusive mandatory referee category. Linked reference guidelines were not followed."
     },
     "application_link": {
-      "status": "absent",
-      "value": null,
-      "evidence": []
+      "status": "present",
+      "value": "https://www.ru.nl/en/education/application-and-admission/application-procedure-masters",
+      "evidence": [
+        {
+          "quote": "application for admission",
+          "locator": "How to apply, application-for-admission anchor href"
+        }
+      ],
+      "notes": "The explicitly linked application/admission procedure page is used. It is not a direct OSIRIS portal endpoint; no endpoint was invented and the link was not followed."
     }
   },
-  "deadlines_status": "absent",
-  "deadlines": [],
-  "conditions": [],
-  "notes": "SKELETON: not yet labeled by hand."
+  "deadlines_status": "present",
+  "deadlines": [
+    {
+      "label": "Initial OSIRIS application submission",
+      "type": "application",
+      "cycle_year": 2027,
+      "date": "2027-01-31",
+      "time": "23:59",
+      "timezone": "UTC+01:00",
+      "rolling": false,
+      "status": "present",
+      "evidence": [
+        {
+          "quote": "You must have submitted your application in the online OSIRIS Application system on 31 January 2027 23:59 CET at the latest.",
+          "locator": "Deadline"
+        }
+      ],
+      "notes": "Type follows the required action in the combined admission/scholarship application workflow. Submission and completion are separate application steps; the latter is not restricted to documents. CET is the explicitly stated fixed UTC+01:00 offset."
+    },
+    {
+      "label": "Complete OSIRIS application",
+      "type": "application",
+      "cycle_year": 2027,
+      "date": "2027-02-14",
+      "time": "23:59",
+      "timezone": "UTC+01:00",
+      "rolling": false,
+      "status": "present",
+      "evidence": [
+        {
+          "quote": "Then, your application needs to be complete by 14 February 2027 23:59 CET at the latest.",
+          "locator": "Deadline"
+        }
+      ],
+      "notes": "Type follows the required action in the combined admission/scholarship application workflow. Submission and completion are separate application steps; the latter is not restricted to documents. CET is the explicitly stated fixed UTC+01:00 offset."
+    }
+  ],
+  "conditions": [
+    {
+      "kind": "other",
+      "value": "All English-taught Master’s programmes are eligible for the Radboud Scholarship (with the exception of Erasmus Mundus Master's programmes and joint-degree Master's programmes).",
+      "required": true,
+      "applies_to": null,
+      "evidence": [
+        {
+          "quote": "All English-taught Master’s programmes are eligible for the Radboud Scholarship (with the exception of Erasmus Mundus Master's programmes and joint-degree Master's programmes).",
+          "locator": "Conditions / eligible programmes"
+        }
+      ],
+      "notes": "Programme eligibility and exclusions, not a prerequisite degree or subject-specific test."
+    },
+    {
+      "kind": "nationality_allowed",
+      "value": "non-EU/non-EEA passport",
+      "required": true,
+      "applies_to": null,
+      "evidence": [
+        {
+          "quote": "hold a non-EU/non-EEA passport.",
+          "locator": "Conditions"
+        }
+      ],
+      "notes": "Retain the source group wording; no inferred country list. Fee classification is a separate condition."
+    },
+    {
+      "kind": "other",
+      "value": "are not eligible for the lower EU/EEA tuition fee for other reasons.",
+      "required": true,
+      "applies_to": null,
+      "evidence": [
+        {
+          "quote": "are not eligible for the lower EU/EEA tuition fee for other reasons.",
+          "locator": "Conditions"
+        }
+      ],
+      "notes": "Tuition-fee eligibility, not a place-of-residence condition."
+    },
+    {
+      "kind": "degree_held",
+      "value": "have (will obtain) a Bachelor's degree achieved outside the Netherlands",
+      "required": true,
+      "applies_to": null,
+      "evidence": [
+        {
+          "quote": "have (will obtain) a Bachelor's degree achieved outside the Netherlands",
+          "locator": "Conditions"
+        }
+      ],
+      "notes": "A prerequisite degree held or to be obtained; not the funded programme level."
+    },
+    {
+      "kind": "other",
+      "value": "have no degrees achieved in the Netherlands and did not receive any previous education in the Netherlands (exchange programmes excluded, provided that they are part of the Bachelor's degree achieved outside the Netherlands).",
+      "required": true,
+      "applies_to": null,
+      "evidence": [
+        {
+          "quote": "have no degrees achieved in the Netherlands and did not receive any previous education in the Netherlands (exchange programmes excluded, provided that they are part of the Bachelor's degree achieved outside the Netherlands).",
+          "locator": "Conditions"
+        }
+      ],
+      "notes": "Prior education location restriction, retaining the exchange-programme exception; not current residence."
+    },
+    {
+      "kind": "other",
+      "value": "meet the English language proficiency requirement for the Master's programme of your choice.",
+      "required": true,
+      "applies_to": null,
+      "evidence": [
+        {
+          "quote": "meet the English language proficiency requirement for the Master's programme of your choice.",
+          "locator": "Conditions"
+        }
+      ],
+      "notes": "No named language test or numerical score appears on this page. No language options or zero-score placeholders are invented; linked programme requirements are not fetched."
+    },
+    {
+      "kind": "enrollment_status",
+      "value": "have been fully admitted to the English-taught Master's programme starting 1 September 2027 as stated in the formal letter of admission.",
+      "required": true,
+      "applies_to": null,
+      "evidence": [
+        {
+          "quote": "have been fully admitted to the English-taught Master's programme starting 1 September 2027 as stated in the formal letter of admission.",
+          "locator": "Conditions"
+        }
+      ],
+      "notes": "Formal admission for the explicitly stated programme start is distinct from full-time enrollment."
+    },
+    {
+      "kind": "other",
+      "value": "are able to comply with the conditions for obtaining a visa for the Netherlands.",
+      "required": true,
+      "applies_to": null,
+      "evidence": [
+        {
+          "quote": "are able to comply with the conditions for obtaining a visa for the Netherlands.",
+          "locator": "Conditions"
+        }
+      ],
+      "notes": "Visa compliance, not residency or a nationality list."
+    },
+    {
+      "kind": "enrollment_status",
+      "value": "are enrolled at Radboud University as a full-time student for the academic year and Master's programme for which the scholarship will be awarded.",
+      "required": true,
+      "applies_to": null,
+      "evidence": [
+        {
+          "quote": "are enrolled at Radboud University as a full-time student for the academic year and Master's programme for which the scholarship will be awarded.",
+          "locator": "Conditions"
+        }
+      ],
+      "notes": "Actual full-time enrollment requirement, separate from the formal-admission condition."
+    },
+    {
+      "kind": "other",
+      "value": "Pass all first-year courses to qualify for the second-year grant.",
+      "required": true,
+      "applies_to": "Scholarship recipients in a two-year Master's programme seeking second-year renewal",
+      "evidence": [
+        {
+          "quote": "In case you are selected as a scholarship recipient and you are admitted to a two-year Master's programme: to qualify for the grant again for the second year, you need to have passed all courses in the first year.",
+          "locator": "Additional information"
+        }
+      ],
+      "notes": "Conditional renewal requirement, not an unconditional first-time application requirement."
+    },
+    {
+      "kind": "other",
+      "value": "Faculty of Arts, Faculty of Law, Nijmegen School of Management, Faculty of Philosophy, Theology and Religious Studies, Faculty of Social Sciences, Faculty of Science",
+      "required": true,
+      "applies_to": null,
+      "evidence": [
+        {
+          "quote": "Faculty of Arts, Faculty of Law, Nijmegen School of Management, Faculty of Philosophy, Theology and Religious Studies, Faculty of Social Sciences, Faculty of Science",
+          "locator": "Faculty involved"
+        }
+      ],
+      "notes": "Listed faculty scope is preserved as text, without inventing discipline equivalence or additional programme eligibility."
+    },
+    {
+      "kind": "other",
+      "value": "We recommend you hand in your proof of English proficiency before the deadline of 14 February 2027 as well.",
+      "required": false,
+      "applies_to": null,
+      "evidence": [
+        {
+          "quote": "We recommend you hand in your proof of English proficiency before the deadline of 14 February 2027 as well.",
+          "locator": "Deadline"
+        }
+      ],
+      "notes": "Recommended submission timing, not a separately mandatory document or an additional hard deadline."
+    }
+  ],
+  "notes": "AI-ASSISTED LABEL: explicitly authorized by the owner on 2026-11-10; authored by Codex from the frozen source HTML/text before inspecting the cached extraction report. Not an independently human-written gold label or a blind human relabel. Human review is still required before treating this as an independent extraction-quality baseline. minutes_spent measures elapsed agent source-labeling work from first source inspection to this save, not human labor. Original snapshot retrieval date/hash are preserved; no live page or linked document was fetched. Page state remains unknown without an explicit open/closed statement. No numeric GPA/language threshold is stated. Qualitative selection factors are not invented eligibility cutoffs; a mentioned motivation letter does not establish another mandatory upload on this page. The approximate result-announcement window is not an applicant-action deadline, and no precise day is inferred. The full scholarship duration is stated but does not establish per-cost payment frequency. Judgement calls are recorded in docs/labeling-decisions.md."
 }

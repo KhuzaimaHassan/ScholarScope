@@ -43,6 +43,8 @@ No accuracy numbers are published yet. The 36-program gold set is being hand-lab
 
 **SYNTHETIC Example report:** [fictional, scripted HTML sample](docs/examples/sample-report.html), not a real model run. [Generate a local report](docs/22-evidence-report.md) from cached extraction without provider calls.
 
+![SYNTHETIC evidence report: fictional source and scripted extraction](docs/examples/sample-report.png)
+
 ```text
 Official URL -> Fetcher -> HTML cleaner / PDF text -> Segmenter
              -> Field-group extractor -> Evidence verifier -> Requirement Record

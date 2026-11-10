@@ -129,6 +129,54 @@ def test_hostile_strings_are_inert_and_long_text_has_visible_truncation() -> Non
     )
 
 
+@pytest.mark.parametrize(
+    "group,name",
+    [
+        ("identity", "program_name"),
+        ("funding", "funding_coverage"),
+        ("documents", "required_documents"),
+    ],
+)
+def test_failed_group_placeholder_status_is_unknown_not_absent(group: str, name: str) -> None:
+    result = synthetic_result()
+    assert result.record and result.extraction
+    record = result.record.model_copy(deep=True)
+    item = getattr(record.fields, name)
+    item.status, item.value, item.evidence, item.verification = "absent", None, [], "not_checked"
+    before = record.model_dump_json()
+    extraction = replace(result.extraction, failed_groups=(group,))
+    soup = BeautifulSoup(
+        rendered(replace(result, record=record, extraction=extraction)), "html.parser"
+    )
+    heading = soup.find("th", string=name)
+    assert isinstance(heading, Tag)
+    row = heading.find_parent("tr")
+    assert isinstance(row, Tag)
+    cells = row.find_all("td")
+    assert cells[0].get_text() == "unknown (group failed)"
+    assert "NOT EXTRACTED (group failed)" in cells[1].get_text()
+    assert record.model_dump_json() == before  # Presentation only; placeholders remain unchanged.
+    if group != "identity":
+        healthy = soup.find("th", string="degree_levels")
+        assert isinstance(healthy, Tag)
+        healthy_row = healthy.find_parent("tr")
+        assert isinstance(healthy_row, Tag)
+        assert healthy_row.find_all("td")[0].get_text() == "absent"
+
+
+def test_failed_deadline_set_status_is_unknown_not_absent() -> None:
+    result = synthetic_result()
+    assert result.record and result.extraction
+    record = result.record.model_copy(deep=True)
+    record.deadlines, record.deadlines_status = [], "absent"
+    extraction = replace(result.extraction, failed_groups=("deadlines",))
+    text = BeautifulSoup(
+        rendered(replace(result, record=record, extraction=extraction)), "html.parser"
+    ).get_text()
+    assert "Set status: unknown (group failed)" in text
+    assert "Set status: absent" not in text
+
+
 @pytest.mark.parametrize("supplied", [True, False])
 def test_only_explicit_user_source_url_is_an_external_href(supplied: bool) -> None:
     result = synthetic_result()

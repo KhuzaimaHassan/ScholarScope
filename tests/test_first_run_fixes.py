@@ -29,6 +29,7 @@ from scholarscope.llm.errors import FailureCategory, FailureDetail
 from scholarscope.llm.fake import FakeClient
 from scholarscope.llm.gemini import GeminiClient
 from scholarscope.pipeline import run_pipeline
+from scholarscope.schema import Labeler
 from scholarscope.segmenter import segment
 
 spec = importlib.util.spec_from_file_location(
@@ -220,7 +221,14 @@ def test_diagnostics_are_console_only_and_never_persisted(
     assert sentinel not in caplog.text + repr(result) + result.record.model_dump_json()
     assert {p.name: p.read_bytes() for p in cache.directory.iterdir()} == cache_before
     assert list(snapshots.iterdir()) == [snapshot] and snapshot.read_bytes() == data
-    label = GoldLabel("fictional-award", result.record, {})
+    gold_record = result.record.model_copy(
+        update={
+            "labeler": Labeler.model_validate(
+                {"id": "fictional-owner", "pass": 1, "labeled_on": "2026-11-06", "minutes_spent": 5}
+            )
+        }
+    )
+    label = GoldLabel("fictional-award", gold_record, {})
     program = ProgramEvaluation(label, result, segment(clean_html(data)), "fictional", 0.0)
     report = build_report([program], [], date="2026-11-06", git_commit="fictional")
     out = tmp_path / "reports" / "fictional.json"

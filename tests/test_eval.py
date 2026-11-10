@@ -19,7 +19,13 @@ from reportlab.pdfgen.canvas import Canvas
 from scholarscope.eval.loader import GoldLabel, SkippedLabel, load_labels, local_input
 from scholarscope.eval.metrics import ProgramEvaluation, aggregate, score_program
 from scholarscope.eval.normalize import canonical, normalize_value
-from scholarscope.eval.report import audit_sample, build_report, markdown, write_report
+from scholarscope.eval.report import (
+    AI_ASSISTED_LABEL_WARNING,
+    audit_sample,
+    build_report,
+    markdown,
+    write_report,
+)
 from scholarscope.eval.runner import evaluate
 from scholarscope.llm.base import StructuredRequest, Usage
 from scholarscope.llm.cache import FileCache
@@ -429,6 +435,10 @@ def test_report_provenance_and_artifacts(tmp_path: Path) -> None:
         [p], [SkippedLabel("unfinished", "SKELETON")], date="2026-10-30", git_commit="a" * 40
     )
     assert report["labels_used"] == [p.gold.slug]
+    assert report["header"] == "Evaluation results"
+    assert report["label_provenance"] == [
+        {"slug": p.gold.slug, "labeler_id": "fictional-test-owner", "pass": 1}
+    ]
     assert report["labels_skipped"][0]["reason"] == "SKELETON"
     assert set(report["tool_versions"]) == {
         "cleaner",
@@ -452,7 +462,13 @@ def test_report_provenance_and_artifacts(tmp_path: Path) -> None:
     assert rows and rows[0]["supports_value (y/n)"] == ""
 
 
-def test_cli_read_only_without_cache(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+@pytest.mark.parametrize("labeler_id", ["fictional-test-owner", "Fictional-AI-Assisted-owner"])
+def test_cli_read_only_without_cache(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+    labeler_id: str,
+) -> None:
     def no_send(*args: Any, **kwargs: Any) -> Any:
         pytest.fail("offline cache miss attempted model generation")
 
@@ -461,7 +477,9 @@ def test_cli_read_only_without_cache(tmp_path: Path, monkeypatch: pytest.MonkeyP
     gold_dir, snapshots = tmp_path / "gold", tmp_path / "snapshots"
     gold_dir.mkdir()
     snapshots.mkdir()
-    (gold_dir / "fictional-aurora.json").write_text(json.dumps(gold_data(data)), encoding="utf-8")
+    label = gold_data(data)
+    label["labeler"].update(id=labeler_id, **{"pass": 2})
+    (gold_dir / "fictional-aurora.json").write_text(json.dumps(label), encoding="utf-8")
     (snapshots / "fictional-aurora.html").write_bytes(data)
     monkeypatch.setenv("LLM_PROVIDER", "fake")
     monkeypatch.setenv("LLM_MODEL", "fake-v1")
@@ -495,6 +513,68 @@ def test_cli_read_only_without_cache(tmp_path: Path, monkeypatch: pytest.MonkeyP
     assert report["overall"]["fields"]["excluded"] == 8
     assert report["overall"]["fields"]["recall"] is None
     assert not cache.exists()
+    output = capsys.readouterr().out
+    provenance_lines = [
+        line for line in output.splitlines() if line.startswith("Label provenance: ")
+    ]
+    assert len(provenance_lines) == 1
+    assert json.loads(provenance_lines[0].removeprefix("Label provenance: ")) == {
+        "slug": "fictional-aurora",
+        "labeler_id": labeler_id,
+        "pass": 2,
+    }
+    assert report["label_provenance"][0]["labeler_id"] == labeler_id
+    assert report["label_provenance"][0]["pass"] == 2
+    expected_header = (
+        AI_ASSISTED_LABEL_WARNING
+        if "ai-assisted" in labeler_id.casefold()
+        else "Evaluation results"
+    )
+    assert output.splitlines()[0] == expected_header
+    assert out.with_suffix(".md").read_text(encoding="utf-8").startswith("# " + expected_header)
+
+
+@pytest.mark.parametrize(
+    "labeler_id", ["fictional-ai-assisted-author", "Fictional-AI-Assisted-author"]
+)
+def test_mixed_label_provenance_is_written_and_marks_provisional(
+    tmp_path: Path, labeler_id: str
+) -> None:
+    human = program(tmp_path)
+    raw = deepcopy(human.gold.raw)
+    raw["program_slug"] = "fictional-zeta"
+    raw["labeler"].update(id=labeler_id, **{"pass": 2})
+    assisted = replace(human, gold=GoldLabel("fictional-zeta", from_gold_label(raw), raw))
+    programs = [assisted, human]  # Sorting puts the human label first; any AI label must warn.
+    report = build_report(programs, [], date="2026-11-10", git_commit="f" * 40)
+    assert report["header"] == AI_ASSISTED_LABEL_WARNING
+    assert report["label_provenance"] == [
+        {"slug": human.gold.slug, "labeler_id": "fictional-test-owner", "pass": 1},
+        {"slug": "fictional-zeta", "labeler_id": labeler_id, "pass": 2},
+    ]
+    out = tmp_path / "reports/fictional-provenance.json"
+    write_report(report, programs, out)
+    saved = json.loads(out.read_text(encoding="utf-8"))
+    assert saved["header"] == AI_ASSISTED_LABEL_WARNING
+    assert saved["label_provenance"] == report["label_provenance"]
+    rendered = out.with_suffix(".md").read_text(encoding="utf-8")
+    assert rendered.startswith("# " + AI_ASSISTED_LABEL_WARNING)
+    assert f"| {human.gold.slug} | fictional-test-owner | 1 |" in rendered
+    assert f"| fictional-zeta | {labeler_id} | 2 |" in rendered
+    assert "minutes_spent" not in rendered and "minutes_spent" not in json.dumps(saved)
+
+
+def test_labeling_minutes_never_change_metrics_or_report(tmp_path: Path) -> None:
+    original = program(tmp_path)
+    expected = build_report([original], [], date="2026-11-10", git_commit="f" * 40)
+    for minutes in (0, 1, 1234.5):
+        raw = deepcopy(original.gold.raw)
+        raw["labeler"]["minutes_spent"] = minutes
+        changed = replace(
+            original, gold=replace(original.gold, raw=raw, record=from_gold_label(raw))
+        )
+        assert score_program(changed) == score_program(original)
+        assert build_report([changed], [], date="2026-11-10", git_commit="f" * 40) == expected
 
 
 def test_cache_replay_identical_metrics(tmp_path: Path) -> None:

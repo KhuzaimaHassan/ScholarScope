@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import subprocess
 import sys
 from datetime import UTC, datetime
@@ -89,6 +90,10 @@ def main(argv: list[str] | None = None) -> int:
             file=sys.stderr,
         )
         return 1
+    print(report["header"])
+    for provenance in report["label_provenance"]:
+        # Escape control characters in untrusted IDs rather than creating lines.
+        print("Label provenance: " + json.dumps(provenance, ensure_ascii=True, sort_keys=True))
     print(
         f"Labels used: {len(programs)}; skipped: {len(skipped)}; "
         f"failed groups: {len(report['overall']['failed_groups'])}; "
