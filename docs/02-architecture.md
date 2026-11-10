@@ -40,6 +40,7 @@ This is the intended integration: the current checklist runs directly from a Req
 | **API** | FastAPI: `POST /programs` (URL), `GET /programs/{id}`, `POST /profile`, `GET /programs/{id}/eligibility` | Planned; async job for slow fetches |
 | **Storage** | PostgreSQL (programs, passages, extractions, profiles, runs) | Planned; free-tier hosted Postgres |
 | **Frontend** | Next.js: paste URL, result view with click-to-source highlight, checklist, compare view | Planned; evidence side-panel is the signature UI |
+| **Static evidence report** | Local standalone HTML from a pipeline result, verified quote offsets and existing checklist | Implemented first UI slice; no server, editing or profile eligibility ([contract](22-evidence-report.md)) |
 | **Eval harness** | Runs pipeline over local gold snapshots, computes metrics and outputs reports; CI gate remains planned | See [implemented harness](18-evaluation-harness.md) and `03-evaluation-plan.md` |
 
 ## 3. Data model (core)

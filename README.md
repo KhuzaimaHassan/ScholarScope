@@ -31,6 +31,7 @@ No accuracy numbers are published yet. The 36-program gold set is being hand-lab
 | Evaluation harness | [eval/](scholarscope/eval) and [run_eval.py](scripts/run_eval.py): failure-aware metrics, provenance and human audit export; [doc 18](docs/18-evaluation-harness.md) | built and unit-tested |
 | Profile schema | [profile.py](scholarscope/profile.py): private typed inputs and exact-scale GPA lookup, no conversion; [doc 20](docs/20-profile.md) | built and unit-tested |
 | Checklist generator | [checklist.py](scholarscope/checklist.py): verified-only dates, explicit buffer policy and timezone warnings; [doc 21](docs/21-checklist.md) | built and unit-tested |
+| Static evidence report | [report.py](scholarscope/report.py): inert local HTML, source highlights and checklist; [doc 22](docs/22-evidence-report.md) | built and unit-tested |
 | Eligibility rule engine | Design only: [architecture](docs/02-architecture.md), [ADR 004](docs/adr/004-deterministic-eligibility-engine.md) | not started |
 | Missing-document detector | Planned in [M4](docs/05-milestones-and-issues.md); checklist preparation items do not compare profile holdings | not started |
 | API | Planned in [M5](docs/05-milestones-and-issues.md) | not started |
@@ -39,6 +40,8 @@ No accuracy numbers are published yet. The 36-program gold set is being hand-lab
 | Deployment | Planned in [M6](docs/05-milestones-and-issues.md); no hosted product is supplied | not started |
 
 ## How it works
+
+**SYNTHETIC Example report:** [fictional, scripted HTML sample](docs/examples/sample-report.html), not a real model run. [Generate a local report](docs/22-evidence-report.md) from cached extraction without provider calls.
 
 ```text
 Official URL -> Fetcher -> HTML cleaner / PDF text -> Segmenter

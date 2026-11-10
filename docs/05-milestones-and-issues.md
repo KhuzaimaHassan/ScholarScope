@@ -86,6 +86,8 @@ The retained profile criterion's "GPA scale normalization" means numeric represe
 ## M5 — API and UI
 **Goal:** Usable end-to-end product.
 
+The [static evidence report](22-evidence-report.md) is implemented as the first local UI slice; the API, database and Next.js product below remain planned.
+
 | Issue | Type | Delegation | Acceptance criteria |
 |---|---|---|---|
 | FastAPI endpoints + async jobs | feature | pair | OpenAPI docs; job status polling |
