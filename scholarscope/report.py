@@ -233,6 +233,7 @@ def render_report(
         for name in type(record.fields).model_fields:
             item = getattr(record.fields, name)
             data = item.model_dump(mode="json")
+            status = "unknown (group failed)" if _FIELD_GROUP[name] in failed else item.status
             caution = (
                 "<p>check the official page</p>"
                 if item.status == "ambiguous"
@@ -241,14 +242,17 @@ def render_report(
                 else ""
             )
             parts.append(
-                f'<tr><th>{name}</th><td><span class="badge">{_display(item.status)}</span></td><td>{_badge(item.verification, _FIELD_GROUP[name] in failed)}{caution}</td><td class="value">{_display(data["value"])}<p>Notes: {_display(item.notes)}</p><p>Linked URL (plain text): {_display(item.linked_url)}</p></td><td>{evidence(item.evidence, "fields." + name)}</td></tr>'
+                f'<tr><th>{name}</th><td><span class="badge">{_display(status)}</span></td><td>{_badge(item.verification, _FIELD_GROUP[name] in failed)}{caution}</td><td class="value">{_display(data["value"])}<p>Notes: {_display(item.notes)}</p><p>Linked URL (plain text): {_display(item.linked_url)}</p></td><td>{evidence(item.evidence, "fields." + name)}</td></tr>'
             )
         parts.append("</tbody></table></div>")
         checklist = build_checklist(record, now, reference_tz=reference_tz)
         parts.append("<h2>Deadlines</h2>")
         parts.append(_badge("not_checked", "deadlines" in failed) if "deadlines" in failed else "")
+        deadlines_status = (
+            "unknown (group failed)" if "deadlines" in failed else record.deadlines_status
+        )
         parts.append(
-            f'<p>Set status: {_display(record.deadlines_status)}</p><div class="table-scroll"><table><thead><tr><th>Label / type</th><th>Date / time / timezone</th><th>Verification / warnings</th><th>Evidence</th></tr></thead><tbody>'
+            f'<p>Set status: {_display(deadlines_status)}</p><div class="table-scroll"><table><thead><tr><th>Label / type</th><th>Date / time / timezone</th><th>Verification / warnings</th><th>Evidence</th></tr></thead><tbody>'
         )
         for index, deadline in enumerate(record.deadlines):
             owner = f"deadlines[{index}]"

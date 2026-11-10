@@ -50,7 +50,9 @@ also refused.
   items and free-form pipeline errors are never included, even when the result
   contains them in memory. This preserves ADR 020's persistence boundary.
 - Fields with separate content-status and verification badges; failed groups
-  read **NOT EXTRACTED (group failed)** rather than implying successful absence.
+  read **NOT EXTRACTED (group failed)** with status **unknown (group failed)**
+  rather than implying successful absence. The deadline-set status follows the
+  same rule. Stored Requirement Record placeholders are not changed.
   Unverified claims remain visible and excluded from checklist logic.
 - Deadlines with date, time, timezone, type, comparison/resolution and checklist
   warnings; conditions with kind, value, required flag and evidence.

@@ -18,6 +18,10 @@ from scholarscope.pdf_text import PDF_EXTRACTOR_VERSION
 from scholarscope.segmenter import SEGMENTER_VERSION
 from scholarscope.verifier import VERIFIER_VERSION
 
+AI_ASSISTED_LABEL_WARNING = (
+    "LABELS NOT INDEPENDENT (AI-assisted): results are provisional, not a baseline"
+)
+
 
 def audit_sample(
     programs: list[ProgramEvaluation], *, seed: int, limit: int = 50
@@ -69,8 +73,19 @@ def build_report(
 ) -> dict[str, Any]:
     scores = [score_program(p) for p in sorted(programs, key=lambda p: p.gold.slug)]
     audit = audit_sample(programs, seed=seed)
+    provenance: list[dict[str, Any]] = []
+    for program in sorted(programs, key=lambda p: p.gold.slug):
+        labeler = program.gold.record.labeler
+        if labeler is None:
+            raise ValueError("evaluation labels require labeler provenance")
+        # Never export or use labeling minutes as pipeline latency/cost/weight.
+        provenance.append(
+            {"slug": program.gold.slug, "labeler_id": labeler.id, "pass": labeler.pass_}
+        )
+    ai_assisted = any("ai-assisted" in item["labeler_id"].casefold() for item in provenance)
     return {
-        "report_version": "1",
+        "report_version": "2",
+        "header": AI_ASSISTED_LABEL_WARNING if ai_assisted else "Evaluation results",
         "date": date,
         "git_commit": git_commit,
         "mode": mode,
@@ -98,6 +113,7 @@ def build_report(
             }
         ),
         "labels_used": [p.gold.slug for p in sorted(programs, key=lambda p: p.gold.slug)],
+        "label_provenance": provenance,
         "labels_skipped": [asdict(p) for p in sorted(skipped, key=lambda p: p.slug)],
         "programs": scores,
         "overall": aggregate(scores),
@@ -138,7 +154,7 @@ def _cell(value: Any) -> str:
 
 def markdown(report: dict[str, Any]) -> str:
     lines = [
-        "# Evaluation results",
+        "# " + report["header"],
         "",
         f"Date (UTC): {report['date']}; commit: {report['git_commit']}",
         f"Dirty worktree: {report.get('git_dirty', 'not recorded by caller')}; mode: {_cell(report['mode'])}",
@@ -149,6 +165,13 @@ def markdown(report: dict[str, Any]) -> str:
         "Configured model/provider: "
         + _cell(json.dumps([report.get("configured_model"), report.get("configured_provider")])),
         "Labels used: " + _cell(", ".join(report["labels_used"]) or "none"),
+        "",
+        "| Label | Labeler ID | Pass |",
+        "|---|---|---:|",
+        *[
+            f"| {_cell(item['slug'])} | {_cell(item['labeler_id'])} | {item['pass']} |"
+            for item in report["label_provenance"]
+        ],
         "",
         "Presence is not support. n/a means an empty denominator, never a perfect score.",
         "Reports and audit context are private/ignored until owner approval to publish.",

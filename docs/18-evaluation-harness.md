@@ -1,10 +1,13 @@
-# Evaluation harness (report version 1)
+# Evaluation harness (report version 2)
 
-The harness evaluates extractor content against independently hand-written labels.
+The harness evaluates extractor content against explicitly attributed labels;
+an independent baseline requires independently hand-written labels.
 It never writes labels, saves/refetches snapshots, judges support or calls a model
 by default. See [ADR 016](adr/016-evaluation-harness-failure-semantics.md).
 Fictional FakeClient tests establish software contracts, not scholarship accuracy.
-The three committed SKELETON files are unfinished and produce no benchmark scores.
+The two remaining SKELETON files are unfinished and produce no benchmark scores.
+The owner-authorized AI-assisted pilot label is pending human review pass 2.
+It can produce diagnostic comparisons, not an independent baseline.
 
 ## Inputs and execution
 
@@ -33,6 +36,16 @@ It refuses any nested note/notes containing SKELETON (case-insensitive), or
 minutes_spent == 0. Underscore examples, malformed labels, filename/slug mismatches
 and inconsistent deadline sets are skipped with reasons. Skips are not successes
 or absent predictions. Missing requested slugs appear in labels_skipped too.
+
+Report version 2 prints each used label's slug, labeler ID and pass in the
+console, and persists them in JSON `label_provenance` and a Markdown table.
+If any ID contains `ai-assisted` (case-insensitive), the console and report
+header say **LABELS NOT INDEPENDENT (AI-assisted): results are provisional, not
+a baseline**. JSON stores the same text in `header`. Skipped labels are not
+claimed as used. The ID is attribution, not proof of human independence.
+`labeler.minutes_spent` is never exported as a metric, used as a weight, or
+substituted for measured pipeline latency; the existing zero-minute readiness
+skip remains separate from scoring.
 
 Snapshots are read-only from `--snapshots-dir` (default eval/snapshots), either
 `<slug>.html|pdf` or `fetched/<content_sha256>.html|pdf`. At least one must match
