@@ -17,13 +17,14 @@ from scholarscope.eval.evidence_matched import (
     IndexedItem,
     aggregate_evidence_matched,
     normalize_document,
+    pair_funding_items,
     pair_items,
     score_evidence_matched,
 )
 from scholarscope.eval.metrics import ProgramEvaluation, aggregate, score_program
 from scholarscope.eval.report import build_report, markdown
 from scholarscope.extraction.convert import RejectedItem
-from scholarscope.schema import Evidence, OtherCondition
+from scholarscope.schema import Evidence, FundingCoverage, OtherCondition
 
 ROOT = Path(__file__).resolve().parents[1]
 QUOTE = "Example applicants must register for full-time study."
@@ -251,7 +252,6 @@ def test_named_field_notes_are_advisory_not_errors(tmp_path: Path) -> None:
         {"amount_max": 600},
         {"currency": "EUR"},
         {"period": "year"},
-        {"item": "housing"},
     ],
 )
 def test_funding_structured_fields_remain_exact(tmp_path: Path, changes: dict[str, Any]) -> None:
@@ -402,3 +402,92 @@ def test_verified_duplicate_cannot_reuse_a_gold_item(tmp_path: Path) -> None:
     assert (counts["tp"], counts["fp"], counts["fn"]) == (1, 1, 0)
     assert result["unpaired_verified_items"][0]["predicted_index"] == 1
     assert result["error_counts"]["unpaired_verified"] == 1
+
+
+def test_reordered_funding_items_with_shared_evidence_pair_correctly(tmp_path: Path) -> None:
+    p = program(tmp_path)
+    assert p.pipeline.record
+    gold = p.gold.record.model_copy(deep=True)
+    prediction = p.pipeline.record.model_copy(deep=True)
+    values = [FundingCoverage(item=item) for item in ("tuition", "visa", "other", "insurance")]
+    gold.fields.funding_coverage.value = values
+    prediction.fields.funding_coverage.value = [values[i].model_copy() for i in (0, 1, 3, 2)]
+    # Existing field-level quotes are the same for every item on each side.
+    p = replace(
+        p, gold=replace(p.gold, record=gold), pipeline=replace(p.pipeline, record=prediction)
+    )
+    scored = score_evidence_matched(p)
+    assert [
+        (pair["gold_index"], pair["predicted_index"])
+        for pair in scored["pairings"]["funding_coverage"]
+    ] == [(0, 0), (1, 1), (2, 3), (3, 2)]
+    assert scored["fields"]["funding_coverage"]["tp"] == 4
+    assert not scored["dangerous_errors"]
+    assert all(
+        pair["pairing_rule"] == "exact_normalized_item" and "exact_quote" not in pair
+        for pair in scored["pairings"]["funding_coverage"]
+    )
+
+
+def test_funding_duplicates_pair_in_index_order_without_reading_quotes(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def forbidden(*args: Any) -> Any:
+        pytest.fail("funding pairing must not normalize or compare quotes")
+
+    monkeypatch.setattr("scholarscope.eval.evidence_matched.quote_normalize", forbidden)
+    a = FundingCoverage(item="other", amount=1)
+    b = FundingCoverage(item="other", amount=2)
+    gold = [IndexedItem(8, a, ("Shared example evidence",)), IndexedItem(2, b, ())]
+    predicted = [IndexedItem(9, b, ("Unrelated example",)), IndexedItem(3, a, ())]
+    expected = pair_funding_items(gold, predicted)
+    assert [(pair.gold_index, pair.predicted_index) for pair in expected] == [(2, 3), (8, 9)]
+    assert pair_funding_items(list(reversed(gold)), list(reversed(predicted))) == expected
+
+
+@pytest.mark.parametrize("verified", [False, True])
+def test_funding_item_absent_from_gold_is_unpaired(tmp_path: Path, verified: bool) -> None:
+    p = program(tmp_path)
+    assert p.pipeline.record and p.pipeline.record.fields.funding_coverage.value
+    value = p.pipeline.record.fields.funding_coverage.value[0]
+    p.pipeline.record.fields.funding_coverage.value[0] = value.model_copy(
+        update={"item": "housing"}
+    )
+    p.pipeline.record.fields.funding_coverage.verification = (
+        "verified" if verified else "unverified"
+    )
+    result = summary(p)
+    counts = result["per_field"]["funding_coverage"]
+    assert (counts["tp"], counts["fp"], counts["fn"]) == (0, 1, 1)
+    assert len(result["unpaired_verified_items"]) == int(verified)
+    assert not result["other_structured_disagreements"]
+    if verified:
+        assert result["unpaired_verified_items"][0]["gold_index"] is None
+
+
+def test_funding_item_normalization_is_exact_without_case_folding() -> None:
+    gold = IndexedItem(0, FundingCoverage(item="other"), ())
+    value = FundingCoverage(item="other")
+    assert pair_funding_items(
+        [gold], [IndexedItem(0, value.model_copy(update={"item": "  other  "}), ())]
+    )
+    assert not pair_funding_items(
+        [gold], [IndexedItem(0, value.model_copy(update={"item": "Other"}), ())]
+    )
+
+
+def test_right_quote_wrong_free_text_value_is_a_documented_limit(tmp_path: Path) -> None:
+    p = with_conditions(
+        program(tmp_path),
+        [condition(value="Full-time registration")],
+        [condition(value="An unrelated fictional assertion")],
+    )
+    result = summary(p)
+    assert result["per_field"]["conditions"]["tp"] == 1
+    assert not result["dangerous_errors"]
+    assert result["per_field"]["conditions"]["advisory_text_agreement"]["different"] == 1
+
+
+def test_nonempty_containment_has_no_minimum_quote_length() -> None:
+    pairs = pair_items([indexed(0, "A")], [indexed(0, "An unrelated example sentence.")])
+    assert len(pairs) == 1 and pairs[0].overlap_length == 1

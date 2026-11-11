@@ -1,4 +1,4 @@
-"""ADR 024: a parallel containment-only diagnostic; strict metrics stay untouched."""
+"""ADR 024: parallel item/containment pairing; strict metrics stay untouched."""
 
 from __future__ import annotations
 
@@ -39,6 +39,35 @@ class EvidencePair:
     predicted_index: int
     exact_quote: bool
     overlap_length: int
+
+
+@dataclass(frozen=True)
+class FundingPair:
+    gold_index: int
+    predicted_index: int
+    item: str
+    pairing_rule: str = "exact_normalized_item"
+
+
+def pair_funding_items(
+    gold: list[IndexedItem], predicted: list[IndexedItem]
+) -> tuple[FundingPair, ...]:
+    """Match category alone, pairing duplicates by index; evidence is never read."""
+    groups: list[dict[str, list[IndexedItem]]] = []
+    for items in (gold, predicted):
+        if len({item.index for item in items}) != len(items):
+            raise ValueError("pairing requires unique stable indices")
+        by_item: dict[str, list[IndexedItem]] = {}
+        for item in sorted(items, key=lambda entry: entry.index):
+            key = canonical(item.value.item, field="item")
+            by_item.setdefault(key, []).append(item)
+        groups.append(by_item)
+    pairs = [
+        FundingPair(g.index, p.index, normalize_value(g.value.item, field="item"))
+        for key in sorted(groups[0].keys() & groups[1].keys())
+        for g, p in zip(groups[0][key], groups[1][key])
+    ]
+    return tuple(sorted(pairs, key=lambda pair: (pair.gold_index, pair.predicted_index)))
 
 
 def pair_items(gold: list[IndexedItem], predicted: list[IndexedItem]) -> tuple[EvidencePair, ...]:
@@ -163,7 +192,11 @@ def _collection(
     audit_retained: bool = True,
     status_equal: bool = True,
 ) -> dict[str, Any]:
-    pairs = pair_items(gold, predicted)
+    pairs = (
+        pair_funding_items(gold, predicted)
+        if family == "funding_coverage"
+        else pair_items(gold, predicted)
+    )
     g_items, p_items = {g.index: g for g in gold}, {p.index: p for p in predicted}
     paired_pred = {pair.predicted_index: pair.gold_index for pair in pairs}
     counts, advisory = _counts(), _advisory()

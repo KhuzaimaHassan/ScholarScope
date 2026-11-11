@@ -2,6 +2,14 @@
 
 **Status:** Accepted · **Date:** 2026-11-11
 
+**Owner-authorized amendment — 2026-11-11 (same day):** shared field-level
+funding quotes make evidence pairing uninformative: each cost entry can overlap
+every entry on the other side. For funding_coverage only, replace evidence
+pairing with exact normalized `item` pairing, one-to-one, with duplicates paired
+in ascending original index order. Funding pairing uses no evidence overlap.
+Conditions and deadlines retain the containment rules below. Strict scoring
+and its frozen results are unchanged.
+
 ## Context and scope
 
 The owner fixed these rules before the next cached comparison, for all labels.
@@ -44,7 +52,7 @@ numbers or any of those sentences.
 
 ## Evidence-matched mode
 
-1. Pair conditions, funding_coverage entries and deadlines using evidence only.
+1. Pair conditions and deadlines using evidence only.
    Reuse the presence oracle's `quote_normalize` exactly, including NFKC,
    whitespace collapse, soft/zero-width removal, literal line-break hyphen
    joining and its existing smart-punctuation mapping. Ignore empty normalized
@@ -56,13 +64,18 @@ numbers or any of those sentences.
    output. Reassigning indices changes the specified input and its tie-breaks.
    Sort candidate edges by exact-quote equality first, then descending maximum
    contained-quote length, then equal `kind`, then ascending gold index, then
-   ascending predicted index. `kind` is the literal condition property; funding
-   and deadline items have no such property and receive no category/type bonus.
+   ascending predicted index. `kind` is the literal condition property;
+   deadline items have no such property and receive no category/type bonus.
    Greedily accept an edge only if both endpoints are unused. One prediction
    containing two gold quotes gets only one pair; length/kind/index priorities
    choose it, and the unpaired gold is FN. This is deterministic, not an optimal
-   bipartite assignment or a proof of support. Shared field-level funding quotes
-   are used for every funding entry; ambiguity remains visible.
+   bipartite assignment or a proof of support.
+   Funding_coverage instead groups entries by exact `item` after the existing
+   guide 07 §5 value normalization, without case folding or category inference.
+   Within each item group, pair ascending gold indices with ascending predicted
+   indices up to the smaller group size. Surplus entries remain unpaired. Do
+   not inspect quotes, amounts, currency, period or note to choose funding pairs.
+   Paired amounts, currency and period are still compared under rule 3.
 3. Compare paired structured projections exactly after existing guide 07 §5
    normalization. Conditions compare kind, required, applies_to presence
    (nonempty after whitespace normalization), numeric/boolean JSON leaves and
@@ -92,7 +105,7 @@ numbers or any of those sentences.
    structured disagreement, or a VERIFIED unpaired prediction, is an
    evidence-matched dangerous error. Separate condition `kind` disagreements
    into their own count/list (label-judgement cases); count other structured
-   disagreements separately, including funding item and deadline type. An item
+   disagreements separately, including funding values and deadline type. An item
    can appear in both lists if both classes disagree; the combined error count
    counts the item once. Unpaired verified errors have their own reason.
 7. Inherit strict exclusion flags unchanged: failed groups and rejected named
@@ -101,6 +114,14 @@ numbers or any of those sentences.
    No rejected index is aligned to a gold index or repaired. Rejected funding
    entries retain strict's existing named-field/list distinction. Empty
    denominators stay null. Neither mode changes extraction or verification.
+
+## Limitations
+
+Free-text condition values are not checked for correctness in this mode. A
+right-quote, wrong-value free-text condition therefore scores correct when its
+structured properties agree; the text difference is advisory only. Quote
+containment has no minimum quote length: any nonempty normalized quote can
+participate, even a very short one. Neither pairing rule proves semantic support.
 
 ## Reporting and validation
 
