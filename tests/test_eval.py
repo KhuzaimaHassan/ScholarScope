@@ -531,6 +531,8 @@ def test_cli_read_only_without_cache(
         else "Evaluation results"
     )
     assert output.splitlines()[0] == expected_header
+    assert "strict / evidence-matched comparison" in output
+    assert "evidence-matched dangerous:" in output
     assert out.with_suffix(".md").read_text(encoding="utf-8").startswith("# " + expected_header)
 
 

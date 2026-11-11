@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any
 
 from scholarscope.cleaner import CLEANER_VERSION
+from scholarscope.eval.evidence_matched import aggregate_evidence_matched, score_evidence_matched
 from scholarscope.eval.loader import ROOT, SkippedLabel
 from scholarscope.eval.metrics import ProgramEvaluation, aggregate, owners, score_program
 from scholarscope.extraction import PROMPT_VERSIONS
@@ -72,6 +73,15 @@ def build_report(
     cache_exists: bool = False,
 ) -> dict[str, Any]:
     scores = [score_program(p) for p in sorted(programs, key=lambda p: p.gold.slug)]
+    matched_scores = [
+        score_evidence_matched(program, strict)
+        for program, strict in zip(sorted(programs, key=lambda p: p.gold.slug), scores, strict=True)
+    ]
+    strict_overall = aggregate(scores)
+    strict_layouts = {
+        layout: aggregate([p for p in scores if p["layout"] == layout])
+        for layout in sorted({p["layout"] for p in scores})
+    }
     audit = audit_sample(programs, seed=seed)
     provenance: list[dict[str, Any]] = []
     for program in sorted(programs, key=lambda p: p.gold.slug):
@@ -84,7 +94,7 @@ def build_report(
         )
     ai_assisted = any("ai-assisted" in item["labeler_id"].casefold() for item in provenance)
     return {
-        "report_version": "2",
+        "report_version": "3",
         "header": AI_ASSISTED_LABEL_WARNING if ai_assisted else "Evaluation results",
         "date": date,
         "git_commit": git_commit,
@@ -116,10 +126,21 @@ def build_report(
         "label_provenance": provenance,
         "labels_skipped": [asdict(p) for p in sorted(skipped, key=lambda p: p.slug)],
         "programs": scores,
-        "overall": aggregate(scores),
-        "per_layout": {
-            layout: aggregate([p for p in scores if p["layout"] == layout])
-            for layout in sorted({p["layout"] for p in scores})
+        # Legacy keys remain the untouched strict results for existing consumers.
+        "overall": strict_overall,
+        "per_layout": strict_layouts,
+        "scoring_modes": {
+            "strict": {"programs": scores, "overall": strict_overall, "per_layout": strict_layouts},
+            "evidence-matched": {
+                "programs": matched_scores,
+                "overall": aggregate_evidence_matched(matched_scores),
+                "per_layout": {
+                    layout: aggregate_evidence_matched(
+                        [p for p in matched_scores if p["layout"] == layout]
+                    )
+                    for layout in sorted({p["layout"] for p in matched_scores})
+                },
+            },
         },
         "audit": {
             "seed": seed,
@@ -152,6 +173,77 @@ def _cell(value: Any) -> str:
     return text
 
 
+def comparison_lines(report: dict[str, Any]) -> list[str]:
+    """Side-by-side counts; field units differ for funding, never conceal n."""
+    strict = report["scoring_modes"]["strict"]["overall"]
+    matched = report["scoring_modes"]["evidence-matched"]["overall"]
+    lines = [
+        "## strict / evidence-matched comparison",
+        "",
+        "Funding: strict counts a whole field; evidence-matched counts entries. Overall fields exclude deadlines.",
+        "",
+        "| Field | strict TP/FP/FN | strict P/R/F1 | evidence-matched TP/FP/FN | evidence-matched P/R/F1 | strict dangerous | evidence-matched dangerous |",
+        "|---|---:|---|---:|---|---:|---:|",
+    ]
+    rows = [
+        (
+            "overall fields",
+            strict["fields"],
+            matched["fields"],
+            [e for e in strict["dangerous_errors"] if not e["field"].startswith("deadlines[")],
+            [e for e in matched["dangerous_errors"] if not e["field"].startswith("deadlines[")],
+        )
+    ]
+    rows += [
+        (
+            name,
+            strict["per_field"][name],
+            matched["per_field"][name],
+            strict["per_field"][name]["dangerous_errors"],
+            matched["per_field"][name]["dangerous_errors"],
+        )
+        for name in strict["per_field"]
+    ]
+    for name, old, new, old_errors, new_errors in rows:
+        counts = lambda value: "/".join(str(value[key]) for key in ("tp", "fp", "fn"))
+        rates = lambda value: " / ".join(_pct(value[key]) for key in ("precision", "recall", "f1"))
+        lines.append(
+            f"| {_cell(name)} | {counts(old)} | {rates(old)} | {counts(new)} | {rates(new)} | {len(old_errors)} | {len(new_errors)} |"
+        )
+    return lines
+
+
+def _matched_markdown(report: dict[str, Any]) -> list[str]:
+    matched = report["scoring_modes"]["evidence-matched"]["overall"]
+    lines = [
+        "",
+        "## evidence-matched diagnostics",
+        "",
+        "Advisory text agreement does not affect correctness, pairing or verification.",
+        "",
+        "| Field | Advisory text equal/compared | Different | Excluded sets/fields |",
+        "|---|---:|---:|---:|",
+    ]
+    for name, data in matched["per_field"].items():
+        text = data["advisory_text_agreement"]
+        lines.append(
+            f"| {_cell(name)} | {text['equal']}/{text['compared']} | {text['different']} | {data['excluded']} |"
+        )
+    for key, title in (
+        ("dangerous_errors", "Evidence-matched dangerous errors (all)"),
+        ("kind_disagreements", "Kind disagreements (label-judgement cases)"),
+        ("other_structured_disagreements", "Other structured disagreements"),
+        ("unpaired_verified_items", "Unpaired verified predictions"),
+    ):
+        entries = matched[key]
+        lines += ["", f"## {title} — {len(entries)}", "", "| Details |", "|---|"]
+        lines += [
+            f"| {_cell(json.dumps(entry, ensure_ascii=False, sort_keys=True))} |"
+            for entry in entries
+        ] or ["| None |"]
+    return lines
+
+
 def markdown(report: dict[str, Any]) -> str:
     lines = [
         "# " + report["header"],
@@ -175,6 +267,10 @@ def markdown(report: dict[str, Any]) -> str:
         "",
         "Presence is not support. n/a means an empty denominator, never a perfect score.",
         "Reports and audit context are private/ignored until owner approval to publish.",
+        "",
+        *comparison_lines(report),
+        "",
+        "## strict — existing results and diagnostics",
         "",
         "| Layout | Programs | Field P | Field R | Field F1 | Decisions correct/n | Excluded field/set decisions | Deadline exact programs/n | Excluded deadline sets | Presence found/n | Verifier bugs | Dangerous errors |",
         "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
@@ -232,6 +328,7 @@ def markdown(report: dict[str, Any]) -> str:
         f"- {_cell(item['slug'])}: {_cell(item['reason'])}" for item in report["labels_skipped"]
     ]
     lines += ["", "Not measured: " + "; ".join(report["not_measured"]), ""]
+    lines += _matched_markdown(report)
     return "\n".join(lines)
 
 
