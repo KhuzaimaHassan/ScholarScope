@@ -1,0 +1,2309 @@
+{
+  "baseline_commit": "3855e343b2346150b24a9f3b902f4460872d95ec",
+  "cases": {
+    "failed_funding": {
+      "abstentions": {
+        "agrees": 0,
+        "by_reason": {},
+        "count": 0,
+        "excluded": 1,
+        "rate": null,
+        "retained_value_correct": 0
+      },
+      "confidence_diagnostic": {
+        "accuracy": null,
+        "count": 0,
+        "mean_confidence": null,
+        "pearson_correctness": null
+      },
+      "dangerous_error_rate": {
+        "errors": 0,
+        "excluded": 1,
+        "rate": 0.0,
+        "verified_claims": 8
+      },
+      "deadline_set_status": {
+        "checked": 1,
+        "confusion": {
+          "present->present": 1
+        },
+        "excluded": 0,
+        "matches": 1,
+        "rate": 1.0
+      },
+      "deadlines": {
+        "confusion": {},
+        "decision_accuracy": 1.0,
+        "decisions": 1,
+        "exact": 1,
+        "excluded": 0,
+        "excluded_gold_items": 0,
+        "excluded_predicted_items": 0,
+        "f1": 1.0,
+        "fn": 0,
+        "fp": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "tp": 1
+      },
+      "evidence_presence": {
+        "checked": 9,
+        "excluded": 0,
+        "found": 9,
+        "rate": 1.0
+      },
+      "fields": {
+        "confusion": {
+          "present->present": 6
+        },
+        "decision_accuracy": 1.0,
+        "decisions": 7,
+        "exact": 7,
+        "excluded": 1,
+        "excluded_gold_items": 0,
+        "excluded_predicted_items": 0,
+        "f1": 1.0,
+        "fn": 0,
+        "fp": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "tp": 7
+      },
+      "median_seconds": 0.25,
+      "per_field": {
+        "application_link": {
+          "abstentions": {
+            "agrees": 0,
+            "count": 0,
+            "excluded": 0,
+            "rate": null,
+            "retained_value_correct": 0
+          },
+          "confidence_diagnostic": {
+            "accuracy": null,
+            "count": 0,
+            "mean_confidence": null,
+            "pearson_correctness": null
+          },
+          "confusion": {
+            "present->present": 1
+          },
+          "dangerous_error_rate": {
+            "errors": 0,
+            "excluded": 0,
+            "rate": 0.0,
+            "verified_claims": 1
+          },
+          "decision_accuracy": 1.0,
+          "decisions": 1,
+          "evidence_presence": {
+            "checked": 1,
+            "excluded": 0,
+            "found": 1,
+            "rate": 1.0
+          },
+          "exact": 1,
+          "excluded": 0,
+          "excluded_gold_items": 0,
+          "excluded_predicted_items": 0,
+          "f1": 1.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        },
+        "conditions": {
+          "abstentions": {
+            "agrees": 0,
+            "count": 0,
+            "excluded": 0,
+            "rate": null,
+            "retained_value_correct": 0
+          },
+          "confidence_diagnostic": {
+            "accuracy": null,
+            "count": 0,
+            "mean_confidence": null,
+            "pearson_correctness": null
+          },
+          "confusion": {},
+          "dangerous_error_rate": {
+            "errors": 0,
+            "excluded": 0,
+            "rate": 0.0,
+            "verified_claims": 1
+          },
+          "decision_accuracy": 1.0,
+          "decisions": 1,
+          "evidence_presence": {
+            "checked": 1,
+            "excluded": 0,
+            "found": 1,
+            "rate": 1.0
+          },
+          "exact": 1,
+          "excluded": 0,
+          "excluded_gold_items": 0,
+          "excluded_predicted_items": 0,
+          "f1": 1.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        },
+        "deadlines": {
+          "abstentions": {
+            "agrees": 0,
+            "count": 0,
+            "excluded": 0,
+            "rate": null,
+            "retained_value_correct": 0
+          },
+          "confidence_diagnostic": {
+            "accuracy": null,
+            "count": 0,
+            "mean_confidence": null,
+            "pearson_correctness": null
+          },
+          "confusion": {},
+          "dangerous_error_rate": {
+            "errors": 0,
+            "excluded": 0,
+            "rate": 0.0,
+            "verified_claims": 1
+          },
+          "decision_accuracy": 1.0,
+          "decisions": 1,
+          "evidence_presence": {
+            "checked": 1,
+            "excluded": 0,
+            "found": 1,
+            "rate": 1.0
+          },
+          "exact": 1,
+          "excluded": 0,
+          "excluded_gold_items": 0,
+          "excluded_predicted_items": 0,
+          "f1": 1.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        },
+        "degree_levels": {
+          "abstentions": {
+            "agrees": 0,
+            "count": 0,
+            "excluded": 0,
+            "rate": null,
+            "retained_value_correct": 0
+          },
+          "confidence_diagnostic": {
+            "accuracy": null,
+            "count": 0,
+            "mean_confidence": null,
+            "pearson_correctness": null
+          },
+          "confusion": {
+            "present->present": 1
+          },
+          "dangerous_error_rate": {
+            "errors": 0,
+            "excluded": 0,
+            "rate": 0.0,
+            "verified_claims": 1
+          },
+          "decision_accuracy": 1.0,
+          "decisions": 1,
+          "evidence_presence": {
+            "checked": 1,
+            "excluded": 0,
+            "found": 1,
+            "rate": 1.0
+          },
+          "exact": 1,
+          "excluded": 0,
+          "excluded_gold_items": 0,
+          "excluded_predicted_items": 0,
+          "f1": 1.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        },
+        "funding_coverage": {
+          "abstentions": {
+            "agrees": 0,
+            "count": 0,
+            "excluded": 1,
+            "rate": null,
+            "retained_value_correct": 0
+          },
+          "confidence_diagnostic": {
+            "accuracy": null,
+            "count": 0,
+            "mean_confidence": null,
+            "pearson_correctness": null
+          },
+          "confusion": {},
+          "dangerous_error_rate": {
+            "errors": 0,
+            "excluded": 1,
+            "rate": null,
+            "verified_claims": 0
+          },
+          "decision_accuracy": null,
+          "decisions": 0,
+          "evidence_presence": {
+            "checked": 1,
+            "excluded": 0,
+            "found": 1,
+            "rate": 1.0
+          },
+          "exact": 0,
+          "excluded": 1,
+          "excluded_gold_items": 0,
+          "excluded_predicted_items": 0,
+          "f1": null,
+          "fn": 0,
+          "fp": 0,
+          "precision": null,
+          "recall": null,
+          "tp": 0
+        },
+        "institution": {
+          "abstentions": {
+            "agrees": 0,
+            "count": 0,
+            "excluded": 0,
+            "rate": null,
+            "retained_value_correct": 0
+          },
+          "confidence_diagnostic": {
+            "accuracy": null,
+            "count": 0,
+            "mean_confidence": null,
+            "pearson_correctness": null
+          },
+          "confusion": {
+            "present->present": 1
+          },
+          "dangerous_error_rate": {
+            "errors": 0,
+            "excluded": 0,
+            "rate": 0.0,
+            "verified_claims": 1
+          },
+          "decision_accuracy": 1.0,
+          "decisions": 1,
+          "evidence_presence": {
+            "checked": 1,
+            "excluded": 0,
+            "found": 1,
+            "rate": 1.0
+          },
+          "exact": 1,
+          "excluded": 0,
+          "excluded_gold_items": 0,
+          "excluded_predicted_items": 0,
+          "f1": 1.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        },
+        "program_name": {
+          "abstentions": {
+            "agrees": 0,
+            "count": 0,
+            "excluded": 0,
+            "rate": null,
+            "retained_value_correct": 0
+          },
+          "confidence_diagnostic": {
+            "accuracy": null,
+            "count": 0,
+            "mean_confidence": null,
+            "pearson_correctness": null
+          },
+          "confusion": {
+            "present->present": 1
+          },
+          "dangerous_error_rate": {
+            "errors": 0,
+            "excluded": 0,
+            "rate": 0.0,
+            "verified_claims": 1
+          },
+          "decision_accuracy": 1.0,
+          "decisions": 1,
+          "evidence_presence": {
+            "checked": 1,
+            "excluded": 0,
+            "found": 1,
+            "rate": 1.0
+          },
+          "exact": 1,
+          "excluded": 0,
+          "excluded_gold_items": 0,
+          "excluded_predicted_items": 0,
+          "f1": 1.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        },
+        "recommenders": {
+          "abstentions": {
+            "agrees": 0,
+            "count": 0,
+            "excluded": 0,
+            "rate": null,
+            "retained_value_correct": 0
+          },
+          "confidence_diagnostic": {
+            "accuracy": null,
+            "count": 0,
+            "mean_confidence": null,
+            "pearson_correctness": null
+          },
+          "confusion": {
+            "present->present": 1
+          },
+          "dangerous_error_rate": {
+            "errors": 0,
+            "excluded": 0,
+            "rate": 0.0,
+            "verified_claims": 1
+          },
+          "decision_accuracy": 1.0,
+          "decisions": 1,
+          "evidence_presence": {
+            "checked": 1,
+            "excluded": 0,
+            "found": 1,
+            "rate": 1.0
+          },
+          "exact": 1,
+          "excluded": 0,
+          "excluded_gold_items": 0,
+          "excluded_predicted_items": 0,
+          "f1": 1.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        },
+        "required_documents": {
+          "abstentions": {
+            "agrees": 0,
+            "count": 0,
+            "excluded": 0,
+            "rate": null,
+            "retained_value_correct": 0
+          },
+          "confidence_diagnostic": {
+            "accuracy": null,
+            "count": 0,
+            "mean_confidence": null,
+            "pearson_correctness": null
+          },
+          "confusion": {
+            "present->present": 1
+          },
+          "dangerous_error_rate": {
+            "errors": 0,
+            "excluded": 0,
+            "rate": 0.0,
+            "verified_claims": 1
+          },
+          "decision_accuracy": 1.0,
+          "decisions": 1,
+          "evidence_presence": {
+            "checked": 1,
+            "excluded": 0,
+            "found": 1,
+            "rate": 1.0
+          },
+          "exact": 1,
+          "excluded": 0,
+          "excluded_gold_items": 0,
+          "excluded_predicted_items": 0,
+          "f1": 1.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        }
+      },
+      "programs": 1,
+      "usage": {
+        "input_tokens": {
+          "known_programs": 0,
+          "median_known": null,
+          "sum_known": 0,
+          "unknown_programs": 1
+        },
+        "output_tokens": {
+          "known_programs": 0,
+          "median_known": null,
+          "sum_known": 0,
+          "unknown_programs": 1
+        }
+      }
+    },
+    "perfect": {
+      "abstentions": {
+        "agrees": 0,
+        "by_reason": {},
+        "count": 0,
+        "excluded": 0,
+        "rate": null,
+        "retained_value_correct": 0
+      },
+      "confidence_diagnostic": {
+        "accuracy": null,
+        "count": 0,
+        "mean_confidence": null,
+        "pearson_correctness": null
+      },
+      "dangerous_error_rate": {
+        "errors": 0,
+        "excluded": 0,
+        "rate": 0.0,
+        "verified_claims": 9
+      },
+      "deadline_set_status": {
+        "checked": 1,
+        "confusion": {
+          "present->present": 1
+        },
+        "excluded": 0,
+        "matches": 1,
+        "rate": 1.0
+      },
+      "deadlines": {
+        "confusion": {},
+        "decision_accuracy": 1.0,
+        "decisions": 1,
+        "exact": 1,
+        "excluded": 0,
+        "excluded_gold_items": 0,
+        "excluded_predicted_items": 0,
+        "f1": 1.0,
+        "fn": 0,
+        "fp": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "tp": 1
+      },
+      "evidence_presence": {
+        "checked": 9,
+        "excluded": 0,
+        "found": 9,
+        "rate": 1.0
+      },
+      "fields": {
+        "confusion": {
+          "present->present": 7
+        },
+        "decision_accuracy": 1.0,
+        "decisions": 8,
+        "exact": 8,
+        "excluded": 0,
+        "excluded_gold_items": 0,
+        "excluded_predicted_items": 0,
+        "f1": 1.0,
+        "fn": 0,
+        "fp": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "tp": 8
+      },
+      "median_seconds": 0.25,
+      "per_field": {
+        "application_link": {
+          "abstentions": {
+            "agrees": 0,
+            "count": 0,
+            "excluded": 0,
+            "rate": null,
+            "retained_value_correct": 0
+          },
+          "confidence_diagnostic": {
+            "accuracy": null,
+            "count": 0,
+            "mean_confidence": null,
+            "pearson_correctness": null
+          },
+          "confusion": {
+            "present->present": 1
+          },
+          "dangerous_error_rate": {
+            "errors": 0,
+            "excluded": 0,
+            "rate": 0.0,
+            "verified_claims": 1
+          },
+          "decision_accuracy": 1.0,
+          "decisions": 1,
+          "evidence_presence": {
+            "checked": 1,
+            "excluded": 0,
+            "found": 1,
+            "rate": 1.0
+          },
+          "exact": 1,
+          "excluded": 0,
+          "excluded_gold_items": 0,
+          "excluded_predicted_items": 0,
+          "f1": 1.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        },
+        "conditions": {
+          "abstentions": {
+            "agrees": 0,
+            "count": 0,
+            "excluded": 0,
+            "rate": null,
+            "retained_value_correct": 0
+          },
+          "confidence_diagnostic": {
+            "accuracy": null,
+            "count": 0,
+            "mean_confidence": null,
+            "pearson_correctness": null
+          },
+          "confusion": {},
+          "dangerous_error_rate": {
+            "errors": 0,
+            "excluded": 0,
+            "rate": 0.0,
+            "verified_claims": 1
+          },
+          "decision_accuracy": 1.0,
+          "decisions": 1,
+          "evidence_presence": {
+            "checked": 1,
+            "excluded": 0,
+            "found": 1,
+            "rate": 1.0
+          },
+          "exact": 1,
+          "excluded": 0,
+          "excluded_gold_items": 0,
+          "excluded_predicted_items": 0,
+          "f1": 1.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        },
+        "deadlines": {
+          "abstentions": {
+            "agrees": 0,
+            "count": 0,
+            "excluded": 0,
+            "rate": null,
+            "retained_value_correct": 0
+          },
+          "confidence_diagnostic": {
+            "accuracy": null,
+            "count": 0,
+            "mean_confidence": null,
+            "pearson_correctness": null
+          },
+          "confusion": {},
+          "dangerous_error_rate": {
+            "errors": 0,
+            "excluded": 0,
+            "rate": 0.0,
+            "verified_claims": 1
+          },
+          "decision_accuracy": 1.0,
+          "decisions": 1,
+          "evidence_presence": {
+            "checked": 1,
+            "excluded": 0,
+            "found": 1,
+            "rate": 1.0
+          },
+          "exact": 1,
+          "excluded": 0,
+          "excluded_gold_items": 0,
+          "excluded_predicted_items": 0,
+          "f1": 1.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        },
+        "degree_levels": {
+          "abstentions": {
+            "agrees": 0,
+            "count": 0,
+            "excluded": 0,
+            "rate": null,
+            "retained_value_correct": 0
+          },
+          "confidence_diagnostic": {
+            "accuracy": null,
+            "count": 0,
+            "mean_confidence": null,
+            "pearson_correctness": null
+          },
+          "confusion": {
+            "present->present": 1
+          },
+          "dangerous_error_rate": {
+            "errors": 0,
+            "excluded": 0,
+            "rate": 0.0,
+            "verified_claims": 1
+          },
+          "decision_accuracy": 1.0,
+          "decisions": 1,
+          "evidence_presence": {
+            "checked": 1,
+            "excluded": 0,
+            "found": 1,
+            "rate": 1.0
+          },
+          "exact": 1,
+          "excluded": 0,
+          "excluded_gold_items": 0,
+          "excluded_predicted_items": 0,
+          "f1": 1.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        },
+        "funding_coverage": {
+          "abstentions": {
+            "agrees": 0,
+            "count": 0,
+            "excluded": 0,
+            "rate": null,
+            "retained_value_correct": 0
+          },
+          "confidence_diagnostic": {
+            "accuracy": null,
+            "count": 0,
+            "mean_confidence": null,
+            "pearson_correctness": null
+          },
+          "confusion": {
+            "present->present": 1
+          },
+          "dangerous_error_rate": {
+            "errors": 0,
+            "excluded": 0,
+            "rate": 0.0,
+            "verified_claims": 1
+          },
+          "decision_accuracy": 1.0,
+          "decisions": 1,
+          "evidence_presence": {
+            "checked": 1,
+            "excluded": 0,
+            "found": 1,
+            "rate": 1.0
+          },
+          "exact": 1,
+          "excluded": 0,
+          "excluded_gold_items": 0,
+          "excluded_predicted_items": 0,
+          "f1": 1.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        },
+        "institution": {
+          "abstentions": {
+            "agrees": 0,
+            "count": 0,
+            "excluded": 0,
+            "rate": null,
+            "retained_value_correct": 0
+          },
+          "confidence_diagnostic": {
+            "accuracy": null,
+            "count": 0,
+            "mean_confidence": null,
+            "pearson_correctness": null
+          },
+          "confusion": {
+            "present->present": 1
+          },
+          "dangerous_error_rate": {
+            "errors": 0,
+            "excluded": 0,
+            "rate": 0.0,
+            "verified_claims": 1
+          },
+          "decision_accuracy": 1.0,
+          "decisions": 1,
+          "evidence_presence": {
+            "checked": 1,
+            "excluded": 0,
+            "found": 1,
+            "rate": 1.0
+          },
+          "exact": 1,
+          "excluded": 0,
+          "excluded_gold_items": 0,
+          "excluded_predicted_items": 0,
+          "f1": 1.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        },
+        "program_name": {
+          "abstentions": {
+            "agrees": 0,
+            "count": 0,
+            "excluded": 0,
+            "rate": null,
+            "retained_value_correct": 0
+          },
+          "confidence_diagnostic": {
+            "accuracy": null,
+            "count": 0,
+            "mean_confidence": null,
+            "pearson_correctness": null
+          },
+          "confusion": {
+            "present->present": 1
+          },
+          "dangerous_error_rate": {
+            "errors": 0,
+            "excluded": 0,
+            "rate": 0.0,
+            "verified_claims": 1
+          },
+          "decision_accuracy": 1.0,
+          "decisions": 1,
+          "evidence_presence": {
+            "checked": 1,
+            "excluded": 0,
+            "found": 1,
+            "rate": 1.0
+          },
+          "exact": 1,
+          "excluded": 0,
+          "excluded_gold_items": 0,
+          "excluded_predicted_items": 0,
+          "f1": 1.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        },
+        "recommenders": {
+          "abstentions": {
+            "agrees": 0,
+            "count": 0,
+            "excluded": 0,
+            "rate": null,
+            "retained_value_correct": 0
+          },
+          "confidence_diagnostic": {
+            "accuracy": null,
+            "count": 0,
+            "mean_confidence": null,
+            "pearson_correctness": null
+          },
+          "confusion": {
+            "present->present": 1
+          },
+          "dangerous_error_rate": {
+            "errors": 0,
+            "excluded": 0,
+            "rate": 0.0,
+            "verified_claims": 1
+          },
+          "decision_accuracy": 1.0,
+          "decisions": 1,
+          "evidence_presence": {
+            "checked": 1,
+            "excluded": 0,
+            "found": 1,
+            "rate": 1.0
+          },
+          "exact": 1,
+          "excluded": 0,
+          "excluded_gold_items": 0,
+          "excluded_predicted_items": 0,
+          "f1": 1.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        },
+        "required_documents": {
+          "abstentions": {
+            "agrees": 0,
+            "count": 0,
+            "excluded": 0,
+            "rate": null,
+            "retained_value_correct": 0
+          },
+          "confidence_diagnostic": {
+            "accuracy": null,
+            "count": 0,
+            "mean_confidence": null,
+            "pearson_correctness": null
+          },
+          "confusion": {
+            "present->present": 1
+          },
+          "dangerous_error_rate": {
+            "errors": 0,
+            "excluded": 0,
+            "rate": 0.0,
+            "verified_claims": 1
+          },
+          "decision_accuracy": 1.0,
+          "decisions": 1,
+          "evidence_presence": {
+            "checked": 1,
+            "excluded": 0,
+            "found": 1,
+            "rate": 1.0
+          },
+          "exact": 1,
+          "excluded": 0,
+          "excluded_gold_items": 0,
+          "excluded_predicted_items": 0,
+          "f1": 1.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        }
+      },
+      "programs": 1,
+      "usage": {
+        "input_tokens": {
+          "known_programs": 0,
+          "median_known": null,
+          "sum_known": 0,
+          "unknown_programs": 1
+        },
+        "output_tokens": {
+          "known_programs": 0,
+          "median_known": null,
+          "sum_known": 0,
+          "unknown_programs": 1
+        }
+      }
+    },
+    "rejected_conditions": {
+      "abstentions": {
+        "agrees": 0,
+        "by_reason": {},
+        "count": 0,
+        "excluded": 1,
+        "rate": null,
+        "retained_value_correct": 0
+      },
+      "confidence_diagnostic": {
+        "accuracy": null,
+        "count": 0,
+        "mean_confidence": null,
+        "pearson_correctness": null
+      },
+      "dangerous_error_rate": {
+        "errors": 0,
+        "excluded": 0,
+        "rate": 0.0,
+        "verified_claims": 9
+      },
+      "deadline_set_status": {
+        "checked": 1,
+        "confusion": {
+          "present->present": 1
+        },
+        "excluded": 0,
+        "matches": 1,
+        "rate": 1.0
+      },
+      "deadlines": {
+        "confusion": {},
+        "decision_accuracy": 1.0,
+        "decisions": 1,
+        "exact": 1,
+        "excluded": 0,
+        "excluded_gold_items": 0,
+        "excluded_predicted_items": 0,
+        "f1": 1.0,
+        "fn": 0,
+        "fp": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "tp": 1
+      },
+      "evidence_presence": {
+        "checked": 9,
+        "excluded": 0,
+        "found": 9,
+        "rate": 1.0
+      },
+      "fields": {
+        "confusion": {
+          "present->present": 7
+        },
+        "decision_accuracy": 1.0,
+        "decisions": 7,
+        "exact": 7,
+        "excluded": 1,
+        "excluded_gold_items": 1,
+        "excluded_predicted_items": 1,
+        "f1": 1.0,
+        "fn": 0,
+        "fp": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "tp": 7
+      },
+      "median_seconds": 0.25,
+      "per_field": {
+        "application_link": {
+          "abstentions": {
+            "agrees": 0,
+            "count": 0,
+            "excluded": 0,
+            "rate": null,
+            "retained_value_correct": 0
+          },
+          "confidence_diagnostic": {
+            "accuracy": null,
+            "count": 0,
+            "mean_confidence": null,
+            "pearson_correctness": null
+          },
+          "confusion": {
+            "present->present": 1
+          },
+          "dangerous_error_rate": {
+            "errors": 0,
+            "excluded": 0,
+            "rate": 0.0,
+            "verified_claims": 1
+          },
+          "decision_accuracy": 1.0,
+          "decisions": 1,
+          "evidence_presence": {
+            "checked": 1,
+            "excluded": 0,
+            "found": 1,
+            "rate": 1.0
+          },
+          "exact": 1,
+          "excluded": 0,
+          "excluded_gold_items": 0,
+          "excluded_predicted_items": 0,
+          "f1": 1.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        },
+        "conditions": {
+          "abstentions": {
+            "agrees": 0,
+            "count": 0,
+            "excluded": 1,
+            "rate": null,
+            "retained_value_correct": 0
+          },
+          "confidence_diagnostic": {
+            "accuracy": null,
+            "count": 0,
+            "mean_confidence": null,
+            "pearson_correctness": null
+          },
+          "confusion": {},
+          "dangerous_error_rate": {
+            "errors": 0,
+            "excluded": 1,
+            "rate": 0.0,
+            "verified_claims": 1
+          },
+          "decision_accuracy": null,
+          "decisions": 0,
+          "evidence_presence": {
+            "checked": 1,
+            "excluded": 0,
+            "found": 1,
+            "rate": 1.0
+          },
+          "exact": 0,
+          "excluded": 1,
+          "excluded_gold_items": 1,
+          "excluded_predicted_items": 1,
+          "f1": null,
+          "fn": 0,
+          "fp": 0,
+          "precision": null,
+          "recall": null,
+          "tp": 0
+        },
+        "deadlines": {
+          "abstentions": {
+            "agrees": 0,
+            "count": 0,
+            "excluded": 0,
+            "rate": null,
+            "retained_value_correct": 0
+          },
+          "confidence_diagnostic": {
+            "accuracy": null,
+            "count": 0,
+            "mean_confidence": null,
+            "pearson_correctness": null
+          },
+          "confusion": {},
+          "dangerous_error_rate": {
+            "errors": 0,
+            "excluded": 0,
+            "rate": 0.0,
+            "verified_claims": 1
+          },
+          "decision_accuracy": 1.0,
+          "decisions": 1,
+          "evidence_presence": {
+            "checked": 1,
+            "excluded": 0,
+            "found": 1,
+            "rate": 1.0
+          },
+          "exact": 1,
+          "excluded": 0,
+          "excluded_gold_items": 0,
+          "excluded_predicted_items": 0,
+          "f1": 1.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        },
+        "degree_levels": {
+          "abstentions": {
+            "agrees": 0,
+            "count": 0,
+            "excluded": 0,
+            "rate": null,
+            "retained_value_correct": 0
+          },
+          "confidence_diagnostic": {
+            "accuracy": null,
+            "count": 0,
+            "mean_confidence": null,
+            "pearson_correctness": null
+          },
+          "confusion": {
+            "present->present": 1
+          },
+          "dangerous_error_rate": {
+            "errors": 0,
+            "excluded": 0,
+            "rate": 0.0,
+            "verified_claims": 1
+          },
+          "decision_accuracy": 1.0,
+          "decisions": 1,
+          "evidence_presence": {
+            "checked": 1,
+            "excluded": 0,
+            "found": 1,
+            "rate": 1.0
+          },
+          "exact": 1,
+          "excluded": 0,
+          "excluded_gold_items": 0,
+          "excluded_predicted_items": 0,
+          "f1": 1.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        },
+        "funding_coverage": {
+          "abstentions": {
+            "agrees": 0,
+            "count": 0,
+            "excluded": 0,
+            "rate": null,
+            "retained_value_correct": 0
+          },
+          "confidence_diagnostic": {
+            "accuracy": null,
+            "count": 0,
+            "mean_confidence": null,
+            "pearson_correctness": null
+          },
+          "confusion": {
+            "present->present": 1
+          },
+          "dangerous_error_rate": {
+            "errors": 0,
+            "excluded": 0,
+            "rate": 0.0,
+            "verified_claims": 1
+          },
+          "decision_accuracy": 1.0,
+          "decisions": 1,
+          "evidence_presence": {
+            "checked": 1,
+            "excluded": 0,
+            "found": 1,
+            "rate": 1.0
+          },
+          "exact": 1,
+          "excluded": 0,
+          "excluded_gold_items": 0,
+          "excluded_predicted_items": 0,
+          "f1": 1.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        },
+        "institution": {
+          "abstentions": {
+            "agrees": 0,
+            "count": 0,
+            "excluded": 0,
+            "rate": null,
+            "retained_value_correct": 0
+          },
+          "confidence_diagnostic": {
+            "accuracy": null,
+            "count": 0,
+            "mean_confidence": null,
+            "pearson_correctness": null
+          },
+          "confusion": {
+            "present->present": 1
+          },
+          "dangerous_error_rate": {
+            "errors": 0,
+            "excluded": 0,
+            "rate": 0.0,
+            "verified_claims": 1
+          },
+          "decision_accuracy": 1.0,
+          "decisions": 1,
+          "evidence_presence": {
+            "checked": 1,
+            "excluded": 0,
+            "found": 1,
+            "rate": 1.0
+          },
+          "exact": 1,
+          "excluded": 0,
+          "excluded_gold_items": 0,
+          "excluded_predicted_items": 0,
+          "f1": 1.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        },
+        "program_name": {
+          "abstentions": {
+            "agrees": 0,
+            "count": 0,
+            "excluded": 0,
+            "rate": null,
+            "retained_value_correct": 0
+          },
+          "confidence_diagnostic": {
+            "accuracy": null,
+            "count": 0,
+            "mean_confidence": null,
+            "pearson_correctness": null
+          },
+          "confusion": {
+            "present->present": 1
+          },
+          "dangerous_error_rate": {
+            "errors": 0,
+            "excluded": 0,
+            "rate": 0.0,
+            "verified_claims": 1
+          },
+          "decision_accuracy": 1.0,
+          "decisions": 1,
+          "evidence_presence": {
+            "checked": 1,
+            "excluded": 0,
+            "found": 1,
+            "rate": 1.0
+          },
+          "exact": 1,
+          "excluded": 0,
+          "excluded_gold_items": 0,
+          "excluded_predicted_items": 0,
+          "f1": 1.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        },
+        "recommenders": {
+          "abstentions": {
+            "agrees": 0,
+            "count": 0,
+            "excluded": 0,
+            "rate": null,
+            "retained_value_correct": 0
+          },
+          "confidence_diagnostic": {
+            "accuracy": null,
+            "count": 0,
+            "mean_confidence": null,
+            "pearson_correctness": null
+          },
+          "confusion": {
+            "present->present": 1
+          },
+          "dangerous_error_rate": {
+            "errors": 0,
+            "excluded": 0,
+            "rate": 0.0,
+            "verified_claims": 1
+          },
+          "decision_accuracy": 1.0,
+          "decisions": 1,
+          "evidence_presence": {
+            "checked": 1,
+            "excluded": 0,
+            "found": 1,
+            "rate": 1.0
+          },
+          "exact": 1,
+          "excluded": 0,
+          "excluded_gold_items": 0,
+          "excluded_predicted_items": 0,
+          "f1": 1.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        },
+        "required_documents": {
+          "abstentions": {
+            "agrees": 0,
+            "count": 0,
+            "excluded": 0,
+            "rate": null,
+            "retained_value_correct": 0
+          },
+          "confidence_diagnostic": {
+            "accuracy": null,
+            "count": 0,
+            "mean_confidence": null,
+            "pearson_correctness": null
+          },
+          "confusion": {
+            "present->present": 1
+          },
+          "dangerous_error_rate": {
+            "errors": 0,
+            "excluded": 0,
+            "rate": 0.0,
+            "verified_claims": 1
+          },
+          "decision_accuracy": 1.0,
+          "decisions": 1,
+          "evidence_presence": {
+            "checked": 1,
+            "excluded": 0,
+            "found": 1,
+            "rate": 1.0
+          },
+          "exact": 1,
+          "excluded": 0,
+          "excluded_gold_items": 0,
+          "excluded_predicted_items": 0,
+          "f1": 1.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        }
+      },
+      "programs": 1,
+      "usage": {
+        "input_tokens": {
+          "known_programs": 0,
+          "median_known": null,
+          "sum_known": 0,
+          "unknown_programs": 1
+        },
+        "output_tokens": {
+          "known_programs": 0,
+          "median_known": null,
+          "sum_known": 0,
+          "unknown_programs": 1
+        }
+      }
+    },
+    "text_differences": {
+      "abstentions": {
+        "agrees": 0,
+        "by_reason": {},
+        "count": 0,
+        "excluded": 0,
+        "rate": null,
+        "retained_value_correct": 0
+      },
+      "confidence_diagnostic": {
+        "accuracy": null,
+        "count": 0,
+        "mean_confidence": null,
+        "pearson_correctness": null
+      },
+      "dangerous_error_rate": {
+        "errors": 2,
+        "excluded": 0,
+        "rate": 0.2222222222222222,
+        "verified_claims": 9
+      },
+      "deadline_set_status": {
+        "checked": 1,
+        "confusion": {
+          "present->present": 1
+        },
+        "excluded": 0,
+        "matches": 1,
+        "rate": 1.0
+      },
+      "deadlines": {
+        "confusion": {},
+        "decision_accuracy": 1.0,
+        "decisions": 1,
+        "exact": 1,
+        "excluded": 0,
+        "excluded_gold_items": 0,
+        "excluded_predicted_items": 0,
+        "f1": 1.0,
+        "fn": 0,
+        "fp": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "tp": 1
+      },
+      "evidence_presence": {
+        "checked": 9,
+        "excluded": 0,
+        "found": 9,
+        "rate": 1.0
+      },
+      "fields": {
+        "confusion": {
+          "present->present": 7
+        },
+        "decision_accuracy": 0.75,
+        "decisions": 8,
+        "exact": 6,
+        "excluded": 0,
+        "excluded_gold_items": 0,
+        "excluded_predicted_items": 0,
+        "f1": 0.75,
+        "fn": 2,
+        "fp": 2,
+        "precision": 0.75,
+        "recall": 0.75,
+        "tp": 6
+      },
+      "median_seconds": 0.25,
+      "per_field": {
+        "application_link": {
+          "abstentions": {
+            "agrees": 0,
+            "count": 0,
+            "excluded": 0,
+            "rate": null,
+            "retained_value_correct": 0
+          },
+          "confidence_diagnostic": {
+            "accuracy": null,
+            "count": 0,
+            "mean_confidence": null,
+            "pearson_correctness": null
+          },
+          "confusion": {
+            "present->present": 1
+          },
+          "dangerous_error_rate": {
+            "errors": 0,
+            "excluded": 0,
+            "rate": 0.0,
+            "verified_claims": 1
+          },
+          "decision_accuracy": 1.0,
+          "decisions": 1,
+          "evidence_presence": {
+            "checked": 1,
+            "excluded": 0,
+            "found": 1,
+            "rate": 1.0
+          },
+          "exact": 1,
+          "excluded": 0,
+          "excluded_gold_items": 0,
+          "excluded_predicted_items": 0,
+          "f1": 1.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        },
+        "conditions": {
+          "abstentions": {
+            "agrees": 0,
+            "count": 0,
+            "excluded": 0,
+            "rate": null,
+            "retained_value_correct": 0
+          },
+          "confidence_diagnostic": {
+            "accuracy": null,
+            "count": 0,
+            "mean_confidence": null,
+            "pearson_correctness": null
+          },
+          "confusion": {},
+          "dangerous_error_rate": {
+            "errors": 0,
+            "excluded": 0,
+            "rate": 0.0,
+            "verified_claims": 1
+          },
+          "decision_accuracy": 1.0,
+          "decisions": 1,
+          "evidence_presence": {
+            "checked": 1,
+            "excluded": 0,
+            "found": 1,
+            "rate": 1.0
+          },
+          "exact": 1,
+          "excluded": 0,
+          "excluded_gold_items": 0,
+          "excluded_predicted_items": 0,
+          "f1": 1.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        },
+        "deadlines": {
+          "abstentions": {
+            "agrees": 0,
+            "count": 0,
+            "excluded": 0,
+            "rate": null,
+            "retained_value_correct": 0
+          },
+          "confidence_diagnostic": {
+            "accuracy": null,
+            "count": 0,
+            "mean_confidence": null,
+            "pearson_correctness": null
+          },
+          "confusion": {},
+          "dangerous_error_rate": {
+            "errors": 0,
+            "excluded": 0,
+            "rate": 0.0,
+            "verified_claims": 1
+          },
+          "decision_accuracy": 1.0,
+          "decisions": 1,
+          "evidence_presence": {
+            "checked": 1,
+            "excluded": 0,
+            "found": 1,
+            "rate": 1.0
+          },
+          "exact": 1,
+          "excluded": 0,
+          "excluded_gold_items": 0,
+          "excluded_predicted_items": 0,
+          "f1": 1.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        },
+        "degree_levels": {
+          "abstentions": {
+            "agrees": 0,
+            "count": 0,
+            "excluded": 0,
+            "rate": null,
+            "retained_value_correct": 0
+          },
+          "confidence_diagnostic": {
+            "accuracy": null,
+            "count": 0,
+            "mean_confidence": null,
+            "pearson_correctness": null
+          },
+          "confusion": {
+            "present->present": 1
+          },
+          "dangerous_error_rate": {
+            "errors": 0,
+            "excluded": 0,
+            "rate": 0.0,
+            "verified_claims": 1
+          },
+          "decision_accuracy": 1.0,
+          "decisions": 1,
+          "evidence_presence": {
+            "checked": 1,
+            "excluded": 0,
+            "found": 1,
+            "rate": 1.0
+          },
+          "exact": 1,
+          "excluded": 0,
+          "excluded_gold_items": 0,
+          "excluded_predicted_items": 0,
+          "f1": 1.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        },
+        "funding_coverage": {
+          "abstentions": {
+            "agrees": 0,
+            "count": 0,
+            "excluded": 0,
+            "rate": null,
+            "retained_value_correct": 0
+          },
+          "confidence_diagnostic": {
+            "accuracy": null,
+            "count": 0,
+            "mean_confidence": null,
+            "pearson_correctness": null
+          },
+          "confusion": {
+            "present->present": 1
+          },
+          "dangerous_error_rate": {
+            "errors": 1,
+            "excluded": 0,
+            "rate": 1.0,
+            "verified_claims": 1
+          },
+          "decision_accuracy": 0.0,
+          "decisions": 1,
+          "evidence_presence": {
+            "checked": 1,
+            "excluded": 0,
+            "found": 1,
+            "rate": 1.0
+          },
+          "exact": 0,
+          "excluded": 0,
+          "excluded_gold_items": 0,
+          "excluded_predicted_items": 0,
+          "f1": 0.0,
+          "fn": 1,
+          "fp": 1,
+          "precision": 0.0,
+          "recall": 0.0,
+          "tp": 0
+        },
+        "institution": {
+          "abstentions": {
+            "agrees": 0,
+            "count": 0,
+            "excluded": 0,
+            "rate": null,
+            "retained_value_correct": 0
+          },
+          "confidence_diagnostic": {
+            "accuracy": null,
+            "count": 0,
+            "mean_confidence": null,
+            "pearson_correctness": null
+          },
+          "confusion": {
+            "present->present": 1
+          },
+          "dangerous_error_rate": {
+            "errors": 0,
+            "excluded": 0,
+            "rate": 0.0,
+            "verified_claims": 1
+          },
+          "decision_accuracy": 1.0,
+          "decisions": 1,
+          "evidence_presence": {
+            "checked": 1,
+            "excluded": 0,
+            "found": 1,
+            "rate": 1.0
+          },
+          "exact": 1,
+          "excluded": 0,
+          "excluded_gold_items": 0,
+          "excluded_predicted_items": 0,
+          "f1": 1.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        },
+        "program_name": {
+          "abstentions": {
+            "agrees": 0,
+            "count": 0,
+            "excluded": 0,
+            "rate": null,
+            "retained_value_correct": 0
+          },
+          "confidence_diagnostic": {
+            "accuracy": null,
+            "count": 0,
+            "mean_confidence": null,
+            "pearson_correctness": null
+          },
+          "confusion": {
+            "present->present": 1
+          },
+          "dangerous_error_rate": {
+            "errors": 0,
+            "excluded": 0,
+            "rate": 0.0,
+            "verified_claims": 1
+          },
+          "decision_accuracy": 1.0,
+          "decisions": 1,
+          "evidence_presence": {
+            "checked": 1,
+            "excluded": 0,
+            "found": 1,
+            "rate": 1.0
+          },
+          "exact": 1,
+          "excluded": 0,
+          "excluded_gold_items": 0,
+          "excluded_predicted_items": 0,
+          "f1": 1.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        },
+        "recommenders": {
+          "abstentions": {
+            "agrees": 0,
+            "count": 0,
+            "excluded": 0,
+            "rate": null,
+            "retained_value_correct": 0
+          },
+          "confidence_diagnostic": {
+            "accuracy": null,
+            "count": 0,
+            "mean_confidence": null,
+            "pearson_correctness": null
+          },
+          "confusion": {
+            "present->present": 1
+          },
+          "dangerous_error_rate": {
+            "errors": 0,
+            "excluded": 0,
+            "rate": 0.0,
+            "verified_claims": 1
+          },
+          "decision_accuracy": 1.0,
+          "decisions": 1,
+          "evidence_presence": {
+            "checked": 1,
+            "excluded": 0,
+            "found": 1,
+            "rate": 1.0
+          },
+          "exact": 1,
+          "excluded": 0,
+          "excluded_gold_items": 0,
+          "excluded_predicted_items": 0,
+          "f1": 1.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        },
+        "required_documents": {
+          "abstentions": {
+            "agrees": 0,
+            "count": 0,
+            "excluded": 0,
+            "rate": null,
+            "retained_value_correct": 0
+          },
+          "confidence_diagnostic": {
+            "accuracy": null,
+            "count": 0,
+            "mean_confidence": null,
+            "pearson_correctness": null
+          },
+          "confusion": {
+            "present->present": 1
+          },
+          "dangerous_error_rate": {
+            "errors": 1,
+            "excluded": 0,
+            "rate": 1.0,
+            "verified_claims": 1
+          },
+          "decision_accuracy": 0.0,
+          "decisions": 1,
+          "evidence_presence": {
+            "checked": 1,
+            "excluded": 0,
+            "found": 1,
+            "rate": 1.0
+          },
+          "exact": 0,
+          "excluded": 0,
+          "excluded_gold_items": 0,
+          "excluded_predicted_items": 0,
+          "f1": 0.0,
+          "fn": 1,
+          "fp": 1,
+          "precision": 0.0,
+          "recall": 0.0,
+          "tp": 0
+        }
+      },
+      "programs": 1,
+      "usage": {
+        "input_tokens": {
+          "known_programs": 0,
+          "median_known": null,
+          "sum_known": 0,
+          "unknown_programs": 1
+        },
+        "output_tokens": {
+          "known_programs": 0,
+          "median_known": null,
+          "sum_known": 0,
+          "unknown_programs": 1
+        }
+      }
+    },
+    "wrong_name": {
+      "abstentions": {
+        "agrees": 0,
+        "by_reason": {},
+        "count": 0,
+        "excluded": 0,
+        "rate": null,
+        "retained_value_correct": 0
+      },
+      "confidence_diagnostic": {
+        "accuracy": null,
+        "count": 0,
+        "mean_confidence": null,
+        "pearson_correctness": null
+      },
+      "dangerous_error_rate": {
+        "errors": 1,
+        "excluded": 0,
+        "rate": 0.1111111111111111,
+        "verified_claims": 9
+      },
+      "deadline_set_status": {
+        "checked": 1,
+        "confusion": {
+          "present->present": 1
+        },
+        "excluded": 0,
+        "matches": 1,
+        "rate": 1.0
+      },
+      "deadlines": {
+        "confusion": {},
+        "decision_accuracy": 1.0,
+        "decisions": 1,
+        "exact": 1,
+        "excluded": 0,
+        "excluded_gold_items": 0,
+        "excluded_predicted_items": 0,
+        "f1": 1.0,
+        "fn": 0,
+        "fp": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "tp": 1
+      },
+      "evidence_presence": {
+        "checked": 9,
+        "excluded": 0,
+        "found": 9,
+        "rate": 1.0
+      },
+      "fields": {
+        "confusion": {
+          "present->present": 7
+        },
+        "decision_accuracy": 0.875,
+        "decisions": 8,
+        "exact": 7,
+        "excluded": 0,
+        "excluded_gold_items": 0,
+        "excluded_predicted_items": 0,
+        "f1": 0.875,
+        "fn": 1,
+        "fp": 1,
+        "precision": 0.875,
+        "recall": 0.875,
+        "tp": 7
+      },
+      "median_seconds": 0.25,
+      "per_field": {
+        "application_link": {
+          "abstentions": {
+            "agrees": 0,
+            "count": 0,
+            "excluded": 0,
+            "rate": null,
+            "retained_value_correct": 0
+          },
+          "confidence_diagnostic": {
+            "accuracy": null,
+            "count": 0,
+            "mean_confidence": null,
+            "pearson_correctness": null
+          },
+          "confusion": {
+            "present->present": 1
+          },
+          "dangerous_error_rate": {
+            "errors": 0,
+            "excluded": 0,
+            "rate": 0.0,
+            "verified_claims": 1
+          },
+          "decision_accuracy": 1.0,
+          "decisions": 1,
+          "evidence_presence": {
+            "checked": 1,
+            "excluded": 0,
+            "found": 1,
+            "rate": 1.0
+          },
+          "exact": 1,
+          "excluded": 0,
+          "excluded_gold_items": 0,
+          "excluded_predicted_items": 0,
+          "f1": 1.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        },
+        "conditions": {
+          "abstentions": {
+            "agrees": 0,
+            "count": 0,
+            "excluded": 0,
+            "rate": null,
+            "retained_value_correct": 0
+          },
+          "confidence_diagnostic": {
+            "accuracy": null,
+            "count": 0,
+            "mean_confidence": null,
+            "pearson_correctness": null
+          },
+          "confusion": {},
+          "dangerous_error_rate": {
+            "errors": 0,
+            "excluded": 0,
+            "rate": 0.0,
+            "verified_claims": 1
+          },
+          "decision_accuracy": 1.0,
+          "decisions": 1,
+          "evidence_presence": {
+            "checked": 1,
+            "excluded": 0,
+            "found": 1,
+            "rate": 1.0
+          },
+          "exact": 1,
+          "excluded": 0,
+          "excluded_gold_items": 0,
+          "excluded_predicted_items": 0,
+          "f1": 1.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        },
+        "deadlines": {
+          "abstentions": {
+            "agrees": 0,
+            "count": 0,
+            "excluded": 0,
+            "rate": null,
+            "retained_value_correct": 0
+          },
+          "confidence_diagnostic": {
+            "accuracy": null,
+            "count": 0,
+            "mean_confidence": null,
+            "pearson_correctness": null
+          },
+          "confusion": {},
+          "dangerous_error_rate": {
+            "errors": 0,
+            "excluded": 0,
+            "rate": 0.0,
+            "verified_claims": 1
+          },
+          "decision_accuracy": 1.0,
+          "decisions": 1,
+          "evidence_presence": {
+            "checked": 1,
+            "excluded": 0,
+            "found": 1,
+            "rate": 1.0
+          },
+          "exact": 1,
+          "excluded": 0,
+          "excluded_gold_items": 0,
+          "excluded_predicted_items": 0,
+          "f1": 1.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        },
+        "degree_levels": {
+          "abstentions": {
+            "agrees": 0,
+            "count": 0,
+            "excluded": 0,
+            "rate": null,
+            "retained_value_correct": 0
+          },
+          "confidence_diagnostic": {
+            "accuracy": null,
+            "count": 0,
+            "mean_confidence": null,
+            "pearson_correctness": null
+          },
+          "confusion": {
+            "present->present": 1
+          },
+          "dangerous_error_rate": {
+            "errors": 0,
+            "excluded": 0,
+            "rate": 0.0,
+            "verified_claims": 1
+          },
+          "decision_accuracy": 1.0,
+          "decisions": 1,
+          "evidence_presence": {
+            "checked": 1,
+            "excluded": 0,
+            "found": 1,
+            "rate": 1.0
+          },
+          "exact": 1,
+          "excluded": 0,
+          "excluded_gold_items": 0,
+          "excluded_predicted_items": 0,
+          "f1": 1.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        },
+        "funding_coverage": {
+          "abstentions": {
+            "agrees": 0,
+            "count": 0,
+            "excluded": 0,
+            "rate": null,
+            "retained_value_correct": 0
+          },
+          "confidence_diagnostic": {
+            "accuracy": null,
+            "count": 0,
+            "mean_confidence": null,
+            "pearson_correctness": null
+          },
+          "confusion": {
+            "present->present": 1
+          },
+          "dangerous_error_rate": {
+            "errors": 0,
+            "excluded": 0,
+            "rate": 0.0,
+            "verified_claims": 1
+          },
+          "decision_accuracy": 1.0,
+          "decisions": 1,
+          "evidence_presence": {
+            "checked": 1,
+            "excluded": 0,
+            "found": 1,
+            "rate": 1.0
+          },
+          "exact": 1,
+          "excluded": 0,
+          "excluded_gold_items": 0,
+          "excluded_predicted_items": 0,
+          "f1": 1.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        },
+        "institution": {
+          "abstentions": {
+            "agrees": 0,
+            "count": 0,
+            "excluded": 0,
+            "rate": null,
+            "retained_value_correct": 0
+          },
+          "confidence_diagnostic": {
+            "accuracy": null,
+            "count": 0,
+            "mean_confidence": null,
+            "pearson_correctness": null
+          },
+          "confusion": {
+            "present->present": 1
+          },
+          "dangerous_error_rate": {
+            "errors": 0,
+            "excluded": 0,
+            "rate": 0.0,
+            "verified_claims": 1
+          },
+          "decision_accuracy": 1.0,
+          "decisions": 1,
+          "evidence_presence": {
+            "checked": 1,
+            "excluded": 0,
+            "found": 1,
+            "rate": 1.0
+          },
+          "exact": 1,
+          "excluded": 0,
+          "excluded_gold_items": 0,
+          "excluded_predicted_items": 0,
+          "f1": 1.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        },
+        "program_name": {
+          "abstentions": {
+            "agrees": 0,
+            "count": 0,
+            "excluded": 0,
+            "rate": null,
+            "retained_value_correct": 0
+          },
+          "confidence_diagnostic": {
+            "accuracy": null,
+            "count": 0,
+            "mean_confidence": null,
+            "pearson_correctness": null
+          },
+          "confusion": {
+            "present->present": 1
+          },
+          "dangerous_error_rate": {
+            "errors": 1,
+            "excluded": 0,
+            "rate": 1.0,
+            "verified_claims": 1
+          },
+          "decision_accuracy": 0.0,
+          "decisions": 1,
+          "evidence_presence": {
+            "checked": 1,
+            "excluded": 0,
+            "found": 1,
+            "rate": 1.0
+          },
+          "exact": 0,
+          "excluded": 0,
+          "excluded_gold_items": 0,
+          "excluded_predicted_items": 0,
+          "f1": 0.0,
+          "fn": 1,
+          "fp": 1,
+          "precision": 0.0,
+          "recall": 0.0,
+          "tp": 0
+        },
+        "recommenders": {
+          "abstentions": {
+            "agrees": 0,
+            "count": 0,
+            "excluded": 0,
+            "rate": null,
+            "retained_value_correct": 0
+          },
+          "confidence_diagnostic": {
+            "accuracy": null,
+            "count": 0,
+            "mean_confidence": null,
+            "pearson_correctness": null
+          },
+          "confusion": {
+            "present->present": 1
+          },
+          "dangerous_error_rate": {
+            "errors": 0,
+            "excluded": 0,
+            "rate": 0.0,
+            "verified_claims": 1
+          },
+          "decision_accuracy": 1.0,
+          "decisions": 1,
+          "evidence_presence": {
+            "checked": 1,
+            "excluded": 0,
+            "found": 1,
+            "rate": 1.0
+          },
+          "exact": 1,
+          "excluded": 0,
+          "excluded_gold_items": 0,
+          "excluded_predicted_items": 0,
+          "f1": 1.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        },
+        "required_documents": {
+          "abstentions": {
+            "agrees": 0,
+            "count": 0,
+            "excluded": 0,
+            "rate": null,
+            "retained_value_correct": 0
+          },
+          "confidence_diagnostic": {
+            "accuracy": null,
+            "count": 0,
+            "mean_confidence": null,
+            "pearson_correctness": null
+          },
+          "confusion": {
+            "present->present": 1
+          },
+          "dangerous_error_rate": {
+            "errors": 0,
+            "excluded": 0,
+            "rate": 0.0,
+            "verified_claims": 1
+          },
+          "decision_accuracy": 1.0,
+          "decisions": 1,
+          "evidence_presence": {
+            "checked": 1,
+            "excluded": 0,
+            "found": 1,
+            "rate": 1.0
+          },
+          "exact": 1,
+          "excluded": 0,
+          "excluded_gold_items": 0,
+          "excluded_predicted_items": 0,
+          "f1": 1.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tp": 1
+        }
+      },
+      "programs": 1,
+      "usage": {
+        "input_tokens": {
+          "known_programs": 0,
+          "median_known": null,
+          "sum_known": 0,
+          "unknown_programs": 1
+        },
+        "output_tokens": {
+          "known_programs": 0,
+          "median_known": null,
+          "sum_known": 0,
+          "unknown_programs": 1
+        }
+      }
+    }
+  },
+  "strict_source_sha256": "d7c4cf3b08623303648ba1e1a0dfe99de2a93cdda6ca195e3d70981da1e12df7"
+}

@@ -1,4 +1,4 @@
-# Evaluation harness (report version 2)
+# Evaluation harness (report version 3)
 
 The existing scoring contract below remains **strict**, unchanged.
 [ADR 024](adr/024-evidence-matched-scoring.md) adds a parallel **evidence-matched**
@@ -42,7 +42,7 @@ minutes_spent == 0. Underscore examples, malformed labels, filename/slug mismatc
 and inconsistent deadline sets are skipped with reasons. Skips are not successes
 or absent predictions. Missing requested slugs appear in labels_skipped too.
 
-Report version 2 prints each used label's slug, labeler ID and pass in the
+Reports print each used label's slug, labeler ID and pass in the
 console, and persists them in JSON `label_provenance` and a Markdown table.
 If any ID contains `ai-assisted` (case-insensitive), the console and report
 header say **LABELS NOT INDEPENDENT (AI-assisted): results are provisional, not

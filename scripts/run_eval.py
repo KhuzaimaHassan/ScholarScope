@@ -13,7 +13,7 @@ if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from scholarscope.eval.loader import ROOT
-from scholarscope.eval.report import build_report, write_report
+from scholarscope.eval.report import build_report, comparison_lines, write_report
 from scholarscope.eval.runner import evaluate
 from scholarscope.llm.config import LLMConfig, build_client
 
@@ -98,6 +98,15 @@ def main(argv: list[str] | None = None) -> int:
         f"Labels used: {len(programs)}; skipped: {len(skipped)}; "
         f"failed groups: {len(report['overall']['failed_groups'])}; "
         f"verifier bugs: {len(report['overall']['verifier_bugs'])}"
+    )
+    print("\n".join(comparison_lines(report)))
+    matched = report["scoring_modes"]["evidence-matched"]["overall"]
+    print(
+        f"evidence-matched dangerous: {len(matched['dangerous_errors'])}; "
+        f"kind disagreements: {len(matched['kind_disagreements'])}; "
+        f"other structured disagreements: {len(matched['other_structured_disagreements'])}; "
+        f"unpaired verified: {len(matched['unpaired_verified_items'])}; "
+        f"advisory text agreement: {matched['advisory_text_agreement']}"
     )
     print(
         "Wrote JSON, Markdown and audit CSV. Reports are private/ignored; review before publishing."

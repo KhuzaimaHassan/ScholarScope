@@ -11,21 +11,36 @@ AI-assisted labels remain provisional and cannot establish an independent baseli
 
 ## Strict contract retained verbatim
 
-ADR 016's sentences beginning "Apply guide 07 §5 normalization symmetrically,
-without fuzzy matching", "Compare retained content independently of
-verification", "Count exact positive claims and explicit status confusion",
-"Match list items as multisets, preserve multiplicity", and "List verified claim
-disagreements with gold as dangerous errors" remain binding for **strict**.
-The failed/rejected exclusions and independent presence oracle also remain.
+These exact sentences in [ADR 016](016-evaluation-harness-failure-semantics.md)
+remain binding for **strict**:
 
-Doc 18's statements "Other text only collapses whitespace, preserving case,
-wording and nationality phrases", "A present collection value
-(documents/funding/degrees) is one atomic value, not token overlap", "For
-conditions, score multiset membership by kind/value/required/applies_to, ignoring
-evidence and notes", "Labels/notes/evidence are not matching keys", and
-"Dangerous errors list each verified field/deadline/condition whose normalized
-claim disagrees with gold" continue to describe **strict**, unchanged. ADR 024
-adds the following separately named mode; it does not revise those numbers.
+- "Apply guide 07 §5 normalization symmetrically, without fuzzy matching,
+  year/zone guessing or money/GPA conversion."
+- "Compare retained content independently of verification."
+- "Count exact positive claims and explicit status confusion; wrong present
+  values count FP+FN."
+- "Match list items as multisets, preserve multiplicity, and show exact
+  set/program decisions as well as item counts."
+- "List verified claim disagreements with gold as dangerous errors; do not claim
+  value support, source truth or eligibility safety."
+
+These exact sentences in [doc 18](../18-evaluation-harness.md) also remain
+**strict**, unchanged:
+
+- "Other text only collapses whitespace, preserving case, wording and
+  nationality phrases."
+- "A present collection value (documents/funding/degrees) is one atomic value,
+  not token overlap."
+- "For conditions, score multiset membership by kind/value/required/applies_to,
+  ignoring evidence and notes; conditions are implicitly present, never an
+  absent status."
+- "Labels/notes/evidence are not matching keys."
+- "Dangerous errors list each verified field/deadline/condition whose normalized
+  claim disagrees with gold, including slug, field, prediction, gold and quotes."
+
+The failed/rejected exclusions and independent presence oracle also remain.
+ADR 024 adds the following separately named mode; it does not revise strict
+numbers or any of those sentences.
 
 ## Evidence-matched mode
 
@@ -62,6 +77,8 @@ adds the following separately named mode; it does not revise those numbers.
    labels. It never changes TP/FP/FN, verification, pairing or dangerous errors.
    Compare text after the existing whitespace-only value normalization, with
    missing/null optional properties treated consistently. No semantic judgement.
+   Each named field's notes add at most one advisory observation, separate from
+   its paired entries; missing text on both sides adds no observation.
 5. Only in this mode, normalize required_documents strings with case folding,
    whitespace collapse and removal of one leading standalone a/an/the. Compare
    the resulting multiset, retaining duplicates. Other named fields retain
