@@ -1,5 +1,10 @@
 # Evaluation harness (report version 2)
 
+The existing scoring contract below remains **strict**, unchanged.
+[ADR 024](adr/024-evidence-matched-scoring.md) adds a parallel **evidence-matched**
+mode using deterministic literal quote containment, structured comparisons and
+advisory text agreement. Both modes are reported; no fuzzy matching is used.
+
 The harness evaluates extractor content against explicitly attributed labels;
 an independent baseline requires independently hand-written labels.
 It never writes labels, saves/refetches snapshots, judges support or calls a model

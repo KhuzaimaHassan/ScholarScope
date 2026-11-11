@@ -27,3 +27,4 @@ These records capture the accepted architecture and policy decisions for Scholar
 | [021](021-numeric-provenance-guard.md) | Numeric then URL provenance before domain validation, with positive language-score backstops |
 | [022](022-funding-item-term-guard.md) | English funding-category term provenance after numeric checks, retaining rejected items and siblings |
 | [023](023-static-inert-evidence-report.md) | Static inert evidence view, category-only persisted diagnostics and cache-only local CLI |
+| [024](024-evidence-matched-scoring.md) | Parallel containment-only evidence pairing and structured scoring; strict metrics retained unchanged |

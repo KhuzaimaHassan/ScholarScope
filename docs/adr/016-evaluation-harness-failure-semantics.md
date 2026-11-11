@@ -14,6 +14,12 @@ page context remain private under ADR 007/015.
 
 ## Decision
 
+Owner-authorized extension (2026-11-11): this ADR's scoring sentences remain
+unchanged for **strict** mode. [ADR 024](024-evidence-matched-scoring.md) adds a
+parallel **evidence-matched** diagnostic with literal quote-containment pairing
+and structured comparisons. It does not replace strict results or alter the
+failure exclusions, presence oracle, privacy boundaries or AI-assisted warning.
+
 Use schema-validated, hand-written labels and exact-hash local bytes only.
 Owner-authorized amendment (2026-11-10): diagnostic comparisons may also use
 explicitly AI-assisted labels. Record every used label's ID/pass, and when any
