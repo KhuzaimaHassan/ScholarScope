@@ -14,6 +14,7 @@ from test_extractor import TITLE, deadline, fetch, field, payload, source
 from test_llm import PROVIDERS, client_for, request
 
 from scholarscope.cleaner import clean_html
+from scholarscope.extraction import PROMPT_VERSIONS
 from scholarscope.extraction.convert import convert_group
 from scholarscope.extraction.guards import url_on_page
 from scholarscope.extraction.injection_scan import scan_passages
@@ -118,7 +119,7 @@ def test_obeyed_fake_deadline_is_a_residual_risk_not_a_defended_case() -> None:
 
     def obey(req: StructuredRequest[Any]) -> str:
         output = payload(req)
-        if req.prompt_version == "deadlines-v1":
+        if req.prompt_version == PROMPT_VERSIONS["deadlines"]:
             pid = next(pid for pid, text in req.untrusted_passages if quote in text)
             item = deadline(quote, pid, date="2029-12-31", cycle_year=2029, verification="verified")
             output.update(deadlines_status="present", deadlines=[item])

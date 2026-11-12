@@ -1,0 +1,60 @@
+Extract ONLY deadlines_status, deadlines, linked_url and notes.
+Each deadline has label, type, cycle_year, date, time, timezone, rolling, status,
+evidence and notes. Types: application, document, recommender, scholarship,
+interview, other.
+
+Type definitions (use these enum names exactly):
+application: submit an application or complete the whole application.
+document: submit or complete documents, rather than the whole application.
+recommender: send recommendations.
+scholarship: an award-specific milestone not covered by another action type.
+interview: attend an interview.
+other: a stated deadline whose action fits none of the other types.
+
+The type follows the action the applicant must perform by that date: submit an
+application, submit or complete documents, send recommendations, or attend an
+interview. Whole-application completeness is application; document-only
+completeness is document. Use scholarship only for award-specific milestones,
+never because the page is about a scholarship. An application submission or
+whole-application completion cutoff remains application even for an award.
+
+Fictional examples (illustrations only, never facts about the page):
+- Fictional Kestrel Institute, 2034-2035 intake: "Lodge the online candidacy form
+  no later than 8 October 2034." -> type application.
+- Fictional Mossbridge College, 2034-2035 intake: "Every section of the entire
+  application must be finalized by 19 November 2034." -> type application.
+- Fictional Cobalt Academy, 2034-2035 intake: "Referees must transmit their
+  recommendations before 7 December 2034." -> type recommender.
+
+Rolling requires date null. Present nonrolling requires a date.
+An ambiguous deadline requires date null and evidence for conflicting candidates
+in notes. Keep separate entries for different cycles/types/routes; do not duplicate.
+Do not invent a date when the year is missing: retain the wording as ambiguous.
+The whole set is absent when unstated; linked sets have no entries and a linked_url.
+Ambiguous sets may contain candidate entries; conditions are not deadlines.
+
+Copy quotes verbatim, at most 400 characters each: choose the shortest passage
+that carries the fact; use several quotes for facts split across passages.
+Cite passage_id exactly as supplied. Never infer or guess. Do not set verification.
+For ordinary fields use status absent, value null, evidence [] when unstated.
+Use in_linked_document with linked_url, value null and evidence [] when the page
+points elsewhere; never follow links. Ambiguous fields have value null and quotes;
+put conflicting candidates in notes. Present fields need nonempty values and quotes.
+Return every schema property; use null for missing nullable properties.
+
+Normalize values only (never rewrite quotes): dates YYYY-MM-DD, with a year only
+when explicitly stated in the sentence, row or directly governing heading. Never
+infer the year from today. Times HH:MM (24 hour); leave midnight/end of day/close
+of business uninterpreted with time null. Timezone only if explicitly named;
+unknown if time is given without a zone, null if time is null. JST -> Asia/Tokyo,
+Beijing time -> Asia/Shanghai, CET -> UTC+01:00, CEST -> UTC+02:00. Other abbreviations
+become an explicit UTC offset only when unambiguous, otherwise unknown with notes.
+Money: amount/currency/period as stated, never converted; up to -> amount_max.
+GPA: {value, scale} as stated; missing scale -> condition kind other, never assume
+4.0. Degree levels require explicit words: master/MSc/MA/laurea magistrale -> master;
+PhD/doctoral -> phd; graduate alone is ambiguous. Nationality wording stays verbatim.
+Closed/stale cycles stay as printed; never modernize them. Explicit not required
+conditions use required false. Recommenders explicitly not required use counts 0.
+For language alternatives use logic any or all with options exactly as stated.
+Use only the fictional examples in this task for illustrative reasoning;
+no outside knowledge or examples may supply missing facts.

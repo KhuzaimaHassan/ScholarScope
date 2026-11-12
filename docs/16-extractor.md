@@ -3,7 +3,7 @@
 The baseline makes five `generate_structured` calls, in fixed order: identity
 (program_name, institution, application_link, degree_levels), funding
 (funding_coverage), documents (required_documents, recommenders), deadlines, and
-conditions. Identity uses v2, funding v4, conditions v3, documents v2 and deadlines v1.
+conditions. Identity uses v2, funding v4, conditions v3, documents v2 and deadlines v2.
 Provider retries and caching remain the LLM interface's responsibility; there is
 no additional retry loop.
 Temperature is zero. Provider/model identity and all five prompt versions are
@@ -186,8 +186,8 @@ Trusted system/task strings contain no interpolated page text. All page content,
 including instruction-like strings, travels only as `(passage_id, text)` pairs in
 untrusted_passages. Prompts require verbatim short quotes, explicit citations,
 abstention/linked information, and the labeling guide's value normalization.
-They use only the fictional Example Excellence Scholarship. Tests read gold
-files without writing them and prohibit page-derived values, quotes and source
+Prompts use fictional examples only. Tests read gold files without writing
+them and prohibit page-derived values, quotes and source
 URLs in prompts; common schema vocabulary is necessarily shared.
 
 funding-v4 retains v2's `other` for costs outside named categories and preserves
@@ -198,6 +198,16 @@ uses kind `other` and the requirement sentence when proficiency is required
 without a named test or score. Empty-options language conditions remain domain
 validation errors. Each changed task/version invalidates the corresponding cache
 key; historical prompt files remain available as baselines.
+
+deadlines-v2 defines the six existing enum types by the required action: whole
+application submission/completion uses application, document-only completion
+uses document, and recommendations use recommender; scholarship is reserved for
+award-specific milestones, never the page's subject. Three fictional 2034-2035
+examples illustrate submission, whole-application completeness and recommender
+cutoffs. The owner authorized these explanations from the action rule because
+the schema/guide list enum names without per-type prose. deadlines-v1 remains a
+historical baseline; task/version changes invalidate its cache entries. Offline
+FakeClient tests verify wiring and cache identity, not real-model type choices.
 
 identity-v2 separates the offered programme/award level from applicant prerequisites.
 funding-v4 retains v3's amount semantics: what the funder pays/grants, leaving a reduced fee
