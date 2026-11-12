@@ -11,7 +11,7 @@ from copy import deepcopy
 from dataclasses import replace
 from io import BytesIO
 from pathlib import Path
-from typing import Any
+from typing import Any, get_args
 
 import pytest
 from pydantic import ValidationError
@@ -29,11 +29,11 @@ from scholarscope.llm.base import (
     render_user_message,
     schema_nodes,
 )
-from scholarscope.llm.cache import FileCache
+from scholarscope.llm.cache import FileCache, cache_key
 from scholarscope.llm.fake import FakeClient
 from scholarscope.llm.gemini import unsupported_keywords
 from scholarscope.pipeline import run_pipeline
-from scholarscope.schema import RequirementFields, RequirementRecord, Source
+from scholarscope.schema import DeadlineType, RequirementFields, RequirementRecord, Source
 from scholarscope.segmenter import segment
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -295,7 +295,7 @@ def assert_no_page_strings(text: str, candidates: list[str], vocabulary: set[str
 
 def test_prompt_files_contain_no_real_gold_content() -> None:
     prompts = list((ROOT / "scholarscope/extraction/prompts").glob("*.txt"))
-    assert len(prompts) == 12  # Include all historical baselines in the leak check.
+    assert len(prompts) == 13  # Include all historical baselines in the leak check.
 
     # Check page-derived values/evidence/URLs, not common contract vocabulary
     # (e.g. 'absent', 'en', schema version), which must appear in instructions.
@@ -378,7 +378,7 @@ def test_leak_check_rejects_quote_copied_from_fictional_gold_file(
     label["fields"]["program_name"]["value"] = "Fictional Harbour Fellowship"
     label["fields"]["program_name"]["evidence"] = [{"quote": quote}]
     (gold_dir / "fictional-leak-canary.json").write_text(json.dumps(label), encoding="utf-8")
-    for index in range(12):
+    for index in range(13):
         (prompts / f"fictional-{index}.txt").write_text(
             "Shared contract tokens: master UTC+05:30", encoding="utf-8"
         )
@@ -713,7 +713,7 @@ def test_prompt_normalization_and_versions() -> None:
             "identity": "v2",
             "funding": "v4",
             "documents": "v2",
-            "deadlines": "v1",
+            "deadlines": "v2",
             "conditions": "v3",
         }[group]
         assert version == f"{group}-{revision}"
@@ -728,9 +728,66 @@ def test_prompt_normalization_and_versions() -> None:
             "never converted",
             "scale",
             "explicit",
-            "Example Excellence Scholarship",
         ):
             assert required in text
+        if group == "deadlines":
+            assert "fictional examples" in text
+        else:
+            assert "Example Excellence Scholarship" in text
+
+
+def test_deadlines_v2_loads_existing_types_and_fictional_action_examples() -> None:
+    client = FakeClient(responses=[scripted("simple")] * 5)
+    result = run_pipeline(fetch(content("simple")), client)
+    assert result.status == "ok" and PROMPT_VERSIONS["deadlines"] == "deadlines-v2"
+    req = next(r for r in client.requests if r.prompt_version == "deadlines-v2")
+    assert req.task == (ROOT / "scholarscope/extraction/prompts/deadlines.v2.txt").read_text(
+        encoding="utf-8"
+    )
+    definitions = [
+        line.split(":", 1)[0]
+        for line in req.task.splitlines()
+        if line.split(":", 1)[0] in get_args(DeadlineType)
+    ]
+    assert definitions == list(get_args(DeadlineType))
+    assert "whole-application completion cutoff remains application" in req.task
+    assert "document-only\ncompleteness is document" in req.task
+    assert "never because the page is about a scholarship" in req.task
+    assert re.findall(r"-> type (\w+)\.", req.task) == ["application", "application", "recommender"]
+    assert req.task.count("2034-2035 intake") == 3
+    assert (ROOT / "scholarscope/extraction/prompts/deadlines.v1.txt").is_file()
+    versions = result.versions["prompts"]
+    assert isinstance(versions, dict) and versions["deadlines"] == "deadlines-v2"
+
+
+def test_deadlines_v1_cache_replays_but_v2_version_misses(tmp_path: Path) -> None:
+    capture = FakeClient(responses=[scripted("simple")] * 5)
+    run_pipeline(fetch(content("simple")), capture)
+    current = next(r for r in capture.requests if r.prompt_version == "deadlines-v2")
+    prior = replace(
+        current,
+        prompt_version="deadlines-v1",
+        task=(ROOT / "scholarscope/extraction/prompts/deadlines.v1.txt").read_text(
+            encoding="utf-8"
+        ),
+    )
+    directory = tmp_path / "cache"
+    old_writer = FakeClient(responses=[scripted("simple")], cache=FileCache(directory))
+    assert old_writer.generate_structured(prior).status == "ok" and old_writer.calls == 1
+    reader = FakeClient(cache=FileCache(directory, mode="read_only"))
+    replay = reader.generate_structured(prior)
+    assert replay.status == "ok" and replay.cached
+    files = {path.name: path.read_bytes() for path in directory.iterdir()}
+    version_only = replace(prior, prompt_version="deadlines-v2")
+    assert version_only.task == prior.task
+    assert cache_key("fake", "fake-v1", prior) != cache_key("fake", "fake-v1", version_only)
+    assert reader.generate_structured(version_only).status == "unavailable"
+    assert reader.generate_structured(current).status == "unavailable"
+    assert reader.calls == 0
+    assert {path.name: path.read_bytes() for path in directory.iterdir()} == files
+    new_writer = FakeClient(responses=[scripted("simple")], cache=FileCache(directory))
+    assert new_writer.generate_structured(current).status == "ok" and new_writer.calls == 1
+    assert reader.generate_structured(current).cached and reader.calls == 0
 
 
 def test_unsupported_format_and_naive_fetch_timestamp() -> None:

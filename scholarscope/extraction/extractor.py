@@ -26,7 +26,7 @@ PROMPT_VERSIONS = {
     "identity": "identity-v2",
     "funding": "funding-v4",
     "documents": "documents-v2",
-    "deadlines": "deadlines-v1",
+    "deadlines": "deadlines-v2",
     "conditions": "conditions-v3",
 }
 SYSTEM = (
