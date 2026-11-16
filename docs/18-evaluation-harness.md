@@ -1,4 +1,4 @@
-# Evaluation harness (report version 3)
+# Evaluation harness (report version 4)
 
 The existing scoring contract below remains **strict**, unchanged.
 [ADR 024](adr/024-evidence-matched-scoring.md) adds a parallel **evidence-matched**
@@ -14,6 +14,24 @@ Fictional FakeClient tests establish software contracts, not scholarship accurac
 The two remaining SKELETON files are unfinished and produce no benchmark scores.
 The owner-authorized AI-assisted pilot label is pending human review pass 2.
 It can produce diagnostic comparisons, not an independent baseline.
+
+Version 4 adds private `item_diagnostics` to each program under both
+`scoring_modes`, grouped by conditions, funding_coverage entries and deadlines.
+Each family lists `missed_gold_items` and `unmatched_predicted_items` in ascending
+original index order, with the category, all presence-oracle-normalized evidence
+quotes/locators, reason, counterpart `paired_index` when applicable, and prediction
+verification. Funding entries inherit field-level evidence and verification.
+Strict diagnostics use exact normalized multiset subtraction, consuming equal
+duplicates by ascending index; funding keys include item notes as in the strict
+whole-value comparison. Evidence-matched diagnostics reuse existing pairings:
+items with no pair use `no_pair`; both sides of a paired structured mismatch use
+`structured_disagreement`. Structurally agreeing pairs are omitted even when
+advisory text differs. Excluded families have empty lists and `excluded: true`;
+they are not scored misses. Dedicated Markdown sections follow the dangerous-error
+sections. These entry lists do not change scores or dangerous-error semantics;
+strict funding metrics still count the whole field, so diagnostic entry counts
+need not equal that field's FP/FN. Raw quote-bearing reports remain private and
+gitignored; committed fixtures contain fictional examples only.
 
 ## Inputs and execution
 
