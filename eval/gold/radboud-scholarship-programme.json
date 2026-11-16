@@ -18,9 +18,9 @@
   },
   "labeler": {
     "id": "codex-ai-assisted",
-    "pass": 1,
-    "labeled_on": "2026-11-10",
-    "minutes_spent": 4.62
+    "pass": 2,
+    "labeled_on": "2026-11-16",
+    "minutes_spent": 4.88
   },
   "fields": {
     "program_name": {
@@ -110,7 +110,7 @@
           "locator": "Scope of the programme"
         }
       ],
-      "notes": "The quoted fee is the provisional residual fee paid by the student, not the funder payment. No monetary award amount or per-cost payment period is stated. Nominal programme duration is stated separately; it is not inferred as a payment period. Living/study costs are explicitly excluded. No housing or stipend is stated."
+      "notes": "The quoted fee is the provisional residual fee paid by the student, not the funder payment. No monetary award amount or per-cost payment period is stated. Currency is set only for an explicitly stated award amount or amount_max; a currency attached to the residual student fee does not supply the award currency. All null-amount items therefore retain null currency. Nominal programme duration is stated separately; it is not inferred as a payment period. Living/study costs are explicitly excluded. No housing or stipend is stated."
     },
     "required_documents": {
       "status": "present",
@@ -131,7 +131,7 @@
       "value": {
         "count_min": 2,
         "count_max": 2,
-        "type": "academic (preferred)"
+        "type": "academic"
       },
       "evidence": [
         {
@@ -143,7 +143,7 @@
           "locator": "Selection procedure / References"
         }
       ],
-      "notes": "Two letters are requested; academic references are preferred, not an exclusive mandatory referee category. Linked reference guidelines were not followed."
+      "notes": "Two letters are requested; the source says preferably two academic references. Academic is the stated preferred type, not an exclusive mandatory referee category. The current schema accepts free-text recommender types; the preference qualifier is kept here rather than in type. Linked reference guidelines were not followed."
     },
     "application_link": {
       "status": "present",
@@ -274,7 +274,7 @@
       "notes": "No named language test or numerical score appears on this page. No language options or zero-score placeholders are invented; linked programme requirements are not fetched."
     },
     {
-      "kind": "enrollment_status",
+      "kind": "other",
       "value": "have been fully admitted to the English-taught Master's programme starting 1 September 2027 as stated in the formal letter of admission.",
       "required": true,
       "applies_to": null,
@@ -284,7 +284,7 @@
           "locator": "Conditions"
         }
       ],
-      "notes": "Formal admission for the explicitly stated programme start is distinct from full-time enrollment."
+      "notes": "A formal-admission requirement, classified as other: admission does not by itself establish actual enrollment. The separate full-time enrollment requirement remains enrollment_status. The schema does not define a dedicated admission kind."
     },
     {
       "kind": "other",
@@ -324,33 +324,7 @@
         }
       ],
       "notes": "Conditional renewal requirement, not an unconditional first-time application requirement."
-    },
-    {
-      "kind": "other",
-      "value": "Faculty of Arts, Faculty of Law, Nijmegen School of Management, Faculty of Philosophy, Theology and Religious Studies, Faculty of Social Sciences, Faculty of Science",
-      "required": true,
-      "applies_to": null,
-      "evidence": [
-        {
-          "quote": "Faculty of Arts, Faculty of Law, Nijmegen School of Management, Faculty of Philosophy, Theology and Religious Studies, Faculty of Social Sciences, Faculty of Science",
-          "locator": "Faculty involved"
-        }
-      ],
-      "notes": "Listed faculty scope is preserved as text, without inventing discipline equivalence or additional programme eligibility."
-    },
-    {
-      "kind": "other",
-      "value": "We recommend you hand in your proof of English proficiency before the deadline of 14 February 2027 as well.",
-      "required": false,
-      "applies_to": null,
-      "evidence": [
-        {
-          "quote": "We recommend you hand in your proof of English proficiency before the deadline of 14 February 2027 as well.",
-          "locator": "Deadline"
-        }
-      ],
-      "notes": "Recommended submission timing, not a separately mandatory document or an additional hard deadline."
     }
   ],
-  "notes": "AI-ASSISTED LABEL: explicitly authorized by the owner on 2026-11-10; authored by Codex from the frozen source HTML/text before inspecting the cached extraction report. Not an independently human-written gold label or a blind human relabel. Human review is still required before treating this as an independent extraction-quality baseline. minutes_spent measures elapsed agent source-labeling work from first source inspection to this save, not human labor. Original snapshot retrieval date/hash are preserved; no live page or linked document was fetched. Page state remains unknown without an explicit open/closed statement. No numeric GPA/language threshold is stated. Qualitative selection factors are not invented eligibility cutoffs; a mentioned motivation letter does not establish another mandatory upload on this page. The approximate result-announcement window is not an applicant-action deadline, and no precise day is inferred. The full scholarship duration is stated but does not establish per-cost payment frequency. Judgement calls are recorded in docs/labeling-decisions.md."
+  "notes": "AI-ASSISTED LABEL: pass 1 was explicitly authorized by the owner on 2026-11-10 and authored by Codex from the frozen source before inspecting the cached extraction report. The owner authorized this source-based review on 2026-11-16; pass 2 by codex-ai-assisted checked the live page and the existing evidence report's source-text section, not model predictions as ground truth. This is neither an independently human-written label nor a blind relabel. Independent human review remains necessary before using it as an extraction-quality baseline. minutes_spent records elapsed agent work on this review, not human labor or the suggested 30-minute estimate; pass 1 recorded 4.62 minutes separately. Original snapshot retrieval date/hash and evidence quotes are preserved. The live page's allocation totals have changed, but those totals are not labeled fields; this review does not replace the frozen source or claim a new snapshot retrieval. No linked document was followed. Page state remains unknown without an explicit open/closed statement. No numeric GPA/language threshold is stated. Qualitative selection factors are not invented eligibility cutoffs; a mentioned motivation letter does not establish another mandatory upload. Faculty metadata and optional proof-submission timing are omitted from conditions because neither is an applicant requirement; required false is reserved for explicit non-requirements, not recommendations. Both whole-application cutoffs remain application. The approximate result-announcement window is not an applicant-action deadline, and no precise day is inferred. Full scholarship duration does not establish per-cost payment frequency. Judgement calls are recorded in docs/labeling-decisions.md."
 }
