@@ -108,20 +108,30 @@ def strict_cases(tmp_path: Path) -> dict[str, ProgramEvaluation]:
     }
 
 
-def strict_numbers(p: ProgramEvaluation) -> dict[str, Any]:
-    def numeric_tree(value: Any) -> Any:
-        if isinstance(value, dict):
-            return {
-                key: numeric_tree(child)
-                for key, child in value.items()
-                if key
-                not in {"dangerous_errors", "failed_groups", "rejected_items", "verifier_bugs"}
-                and not isinstance(child, str)
+def numeric_tree(value: Any) -> Any:
+    if isinstance(value, dict):
+        return {
+            key: numeric_tree(child)
+            for key, child in value.items()
+            if key
+            not in {
+                "dangerous_errors",
+                "failed_groups",
+                "rejected_items",
+                "verifier_bugs",
+                "kind_disagreements",
+                "other_structured_disagreements",
+                "unpaired_verified_items",
+                "item_diagnostics",
             }
-        if isinstance(value, list):
-            return [numeric_tree(child) for child in value if not isinstance(child, str)]
-        return value
+            and not isinstance(child, str)
+        }
+    if isinstance(value, list):
+        return [numeric_tree(child) for child in value if not isinstance(child, str)]
+    return value
 
+
+def strict_numbers(p: ProgramEvaluation) -> dict[str, Any]:
     return numeric_tree(aggregate([score_program(p)]))
 
 
@@ -131,6 +141,16 @@ def test_strict_numbers_byte_identical_to_pre_change_fixtures(tmp_path: Path) ->
     )
     source = (ROOT / "scholarscope/eval/metrics.py").read_text(encoding="utf-8")
     assert hashlib.sha256(source.encode()).hexdigest() == frozen["strict_source_sha256"]
+    matched_frozen = json.loads(
+        (ROOT / "tests/fixtures/evidence-matched-evaluation-numbers.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    matched_source = (ROOT / "scholarscope/eval/evidence_matched.py").read_text(encoding="utf-8")
+    assert (
+        hashlib.sha256(matched_source.encode()).hexdigest()
+        == matched_frozen["evidence_matched_source_sha256"]
+    )
     for name, p in strict_cases(tmp_path).items():
         before = json.dumps(frozen["cases"][name], sort_keys=True, separators=(",", ":")).encode()
         current = json.dumps(strict_numbers(p), sort_keys=True, separators=(",", ":")).encode()
@@ -142,6 +162,18 @@ def test_strict_numbers_byte_identical_to_pre_change_fixtures(tmp_path: Path) ->
             == aggregate([score_program(p)])
         )
         assert report["scoring_modes"]["strict"]["programs"] == report["programs"]
+        for mode, expected in (
+            ("strict", frozen["cases"][name]),
+            ("evidence-matched", matched_frozen["cases"][name]),
+        ):
+            actual = numeric_tree(report["scoring_modes"][mode]["overall"])
+            assert (
+                json.dumps(actual, sort_keys=True, separators=(",", ":")).encode()
+                == json.dumps(expected, sort_keys=True, separators=(",", ":")).encode()
+            )
+        assert report["scoring_modes"]["evidence-matched"]["overall"] == aggregate_evidence_matched(
+            [score_evidence_matched(p)]
+        )
 
 
 def test_same_quote_paraphrased_condition_value_pairs(tmp_path: Path) -> None:
@@ -380,7 +412,7 @@ def test_rejected_exclusions_unchanged(tmp_path: Path, group: str, index: Any) -
 def test_reports_label_both_modes_and_keep_original_sections(tmp_path: Path) -> None:
     p = program(tmp_path)
     report = build_report([p], [], date="2026-11-11", git_commit="fictional")
-    assert report["report_version"] == "3"
+    assert report["report_version"] == "4"
     rendered = markdown(report)
     for text in (
         "strict",

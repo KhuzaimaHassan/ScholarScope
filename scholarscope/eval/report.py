@@ -13,6 +13,7 @@ from scholarscope.cleaner import CLEANER_VERSION
 from scholarscope.eval.evidence_matched import aggregate_evidence_matched, score_evidence_matched
 from scholarscope.eval.loader import ROOT, SkippedLabel
 from scholarscope.eval.metrics import ProgramEvaluation, aggregate, owners, score_program
+from scholarscope.eval.unmatched import FAMILIES, item_diagnostics
 from scholarscope.extraction import PROMPT_VERSIONS
 from scholarscope.llm.base import RENDERING_VERSION
 from scholarscope.pdf_text import PDF_EXTRACTOR_VERSION
@@ -77,6 +78,11 @@ def build_report(
         score_evidence_matched(program, strict)
         for program, strict in zip(sorted(programs, key=lambda p: p.gold.slug), scores, strict=True)
     ]
+    for program, strict, matched in zip(
+        sorted(programs, key=lambda p: p.gold.slug), scores, matched_scores, strict=True
+    ):
+        strict["item_diagnostics"] = item_diagnostics(program, strict)
+        matched["item_diagnostics"] = item_diagnostics(program, strict, matched)
     strict_overall = aggregate(scores)
     strict_layouts = {
         layout: aggregate([p for p in scores if p["layout"] == layout])
@@ -94,7 +100,7 @@ def build_report(
         )
     ai_assisted = any("ai-assisted" in item["labeler_id"].casefold() for item in provenance)
     return {
-        "report_version": "3",
+        "report_version": "4",
         "header": AI_ASSISTED_LABEL_WARNING if ai_assisted else "Evaluation results",
         "date": date,
         "git_commit": git_commit,
@@ -244,6 +250,54 @@ def _matched_markdown(report: dict[str, Any]) -> list[str]:
     return lines
 
 
+def _items_markdown(report: dict[str, Any], mode: str) -> list[str]:
+    lines = ["", f"## {mode} — missed gold and unmatched predicted items", ""]
+    lines += [
+        (
+            "Item diagnostics do not change scoring. Strict funding metrics count a whole field, "
+            "while these diagnostics identify individual entries. Paired structured disagreements "
+            "appear on both sides with the counterpart index. Quotes use presence-oracle normalization."
+        ),
+        "",
+    ]
+    for program in report["scoring_modes"][mode]["programs"]:
+        lines += [f"### {_cell(program['slug'])}", ""]
+        for family in FAMILIES:
+            data = program["item_diagnostics"][family]
+            lines += [f"#### {family}", ""]
+            if data["excluded"]:
+                lines += [
+                    "Excluded by existing failed/rejected rules; no scored misses listed.",
+                    "",
+                ]
+                continue
+            for key, title in (
+                ("missed_gold_items", "Missed gold items"),
+                ("unmatched_predicted_items", "Unmatched predicted items"),
+            ):
+                lines += [
+                    f"{title}:",
+                    "",
+                    "| Index | Kind / item / type | Reason | Paired index | Verification | Normalized evidence / locator |",
+                    "|---:|---|---|---:|---|---|",
+                ]
+                for item in data[key]:
+                    category = next(item[k] for k in ("kind", "item", "type") if k in item)
+                    values = (
+                        item["index"],
+                        category,
+                        item["reason"],
+                        item["paired_index"],
+                        item.get("verification", "not applicable (gold)"),
+                        json.dumps(item["evidence"], ensure_ascii=False, sort_keys=True),
+                    )
+                    lines.append("| " + " | ".join(_cell(value) for value in values) + " |")
+                if not data[key]:
+                    lines.append("| — | None | | | | |")
+                lines.append("")
+    return lines
+
+
 def markdown(report: dict[str, Any]) -> str:
     lines = [
         "# " + report["header"],
@@ -323,12 +377,14 @@ def markdown(report: dict[str, Any]) -> str:
             f"| {_cell(json.dumps(entry, ensure_ascii=False, sort_keys=True))} |"
             for entry in entries
         ] or ["| None |"]
+    lines += _items_markdown(report, "strict")
     lines += ["", "## Labels skipped", ""]
     lines += [
         f"- {_cell(item['slug'])}: {_cell(item['reason'])}" for item in report["labels_skipped"]
     ]
     lines += ["", "Not measured: " + "; ".join(report["not_measured"]), ""]
     lines += _matched_markdown(report)
+    lines += _items_markdown(report, "evidence-matched")
     return "\n".join(lines)
 
 
