@@ -10,9 +10,9 @@ ScholarScope is designed to turn an official program URL into a traceable requir
 
 ## Project status
 
-The Python pipeline and planning components below exist and have synthetic unit tests. The web product and eligibility rule engine are still planned. "Built and unit-tested" describes software contracts, not measured scholarship extraction quality.
+The Python pipeline and planning components below exist and have synthetic unit tests. The web product, deterministic eligibility rule engine, and missing-document detector are still planned. "Built and unit-tested" describes software contracts, not measured scholarship extraction quality.
 
-No accuracy numbers are published yet. The 36-program gold set is being hand-labeled; results will be added with date and versions once a baseline exists.
+No independent accuracy baseline is published yet. The 36-program gold set is being hand-labeled. The current Radboud development label is explicitly AI-assisted, so evaluation reports from it are provisional rather than a baseline; reproducible baseline results will be added with their date and versions once independent labels exist.
 
 | Stage | What exists / contract | Status |
 |---|---|---|
@@ -28,7 +28,7 @@ No accuracy numbers are published yet. The 36-program gold set is being hand-lab
 | Injection defenses | [request fencing](scholarscope/llm/base.py), [URL guard](scholarscope/extraction/guards.py) and [advisory scan](scholarscope/extraction/injection_scan.py); [doc 17](docs/17-threat-model-injection.md) | built and unit-tested |
 | Evidence verifier | [verifier.py](scholarscope/verifier.py): formatting-tolerant quote presence, original offsets; [doc 13](docs/13-verifier.md) | built and unit-tested |
 | Deadline model | [schema.py](scholarscope/schema.py) and [deadlines.py](scholarscope/deadlines.py): explicit date/zone resolution and conservative comparison; [doc 11](docs/11-deadlines.md) | built and unit-tested |
-| Evaluation harness | [eval/](scholarscope/eval) and [run_eval.py](scripts/run_eval.py): failure-aware metrics, provenance and human audit export; [doc 18](docs/18-evaluation-harness.md) | built and unit-tested |
+| Evaluation harness | [eval/](scholarscope/eval) and [run_eval.py](scripts/run_eval.py): strict and evidence-matched scoring, failure-aware metrics, label provenance and private human-audit export; [doc 18](docs/18-evaluation-harness.md) | built and unit-tested; no independent baseline yet |
 | Profile schema | [profile.py](scholarscope/profile.py): private typed inputs and exact-scale GPA lookup, no conversion; [doc 20](docs/20-profile.md) | built and unit-tested |
 | Checklist generator | [checklist.py](scholarscope/checklist.py): verified-only dates, explicit buffer policy and timezone warnings; [doc 21](docs/21-checklist.md) | built and unit-tested |
 | Static evidence report | [report.py](scholarscope/report.py): inert local HTML, source highlights and checklist; [doc 22](docs/22-evidence-report.md) | built and unit-tested |
@@ -133,7 +133,7 @@ Add `--source-url https://example.invalid/award` to supply the original HTTP(S) 
 | M0 — Foundations and docs | Built: docs, ADRs, templates and CI. The separate [domain task](https://github.com/KhuzaimaHassan/ScholarScope/issues/6) remains open. |
 | M1 — Fetch, clean, segment | Built and unit-tested, including private snapshot tooling and optional rendering. |
 | M2 — Evidence-linked extraction | Built and unit-tested; real-world accuracy and model compliance are not established. |
-| M3 — Gold set and evaluation | Harness built; hand labels, baseline results, support audit and evaluation CI gate pending. |
+| M3 — Gold set and evaluation | Harness built; the current AI-assisted development label is provisional. Independent hand labels, baseline results, support audit and evaluation CI gate remain pending. |
 | M4 — Eligibility and checklist | Partly built: profile schema and checklist exist; rules, verdicts and missing-document detection remain. |
 | M5 — API and UI | Not started. |
 | M6 — Deploy and polish | Not started: deployment/demo work remains; this README is preparation only. |
